@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction B — Field Notes</title>
+<meta name="description" content="Mockup B: warm editorial / research-journal direction for the portfolio home page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f1e8; --paper-2:#eee7da; --ink:#1d1a16; --ink-2:#5a534a; --rule:#d9d0c1;
+    --accent:#d9481c; --accent-soft:#f6d7c9; --blue:#2b5f8f; --hl:#ffe88a;
+    --serif:"Fraunces",Georgia,"Times New Roman",serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;
+       background-image:radial-gradient(rgba(29,26,22,.06) 1px,transparent 1px);background-size:22px 22px}
+  a{color:var(--blue);text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+  a:hover{color:var(--accent)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 16px}
+  nav{border-bottom:1px solid var(--rule);background:rgba(246,241,232,.9);position:sticky;top:0;z-index:10;backdrop-filter:blur(6px)}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center;height:60px}
+  .brand{font-family:var(--serif);font-weight:700;font-size:20px;letter-spacing:-.01em}
+  .brand em{font-style:italic;font-weight:400;color:var(--ink-2)}
+  nav ul{list-style:none;display:flex;gap:24px;margin:0;padding:0;font-size:14px}
+  nav ul a{text-decoration:none;color:var(--ink-2)} nav ul a:hover{color:var(--accent)}
+  .btn{display:inline-block;padding:10px 18px;border:1.5px solid var(--ink);border-radius:999px;color:var(--ink);text-decoration:none;font-weight:500;font-size:14px;background:transparent}
+  .btn.primary{background:var(--ink);color:var(--paper)}
+  .btn:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+  /* hero */
+  .hero{padding:80px 0 56px;display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:end;border-bottom:1px solid var(--rule)}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--serif);font-size:clamp(40px,6vw,72px);line-height:1;letter-spacing:-.02em;margin:14px 0 18px;font-weight:600}
+  h1 .u{background:linear-gradient(transparent 62%,var(--hl) 62%)}
+  .lead{font-size:19px;max-width:56ch;color:var(--ink-2);margin:0 0 28px}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .margin-note{font-family:var(--serif);font-style:italic;font-size:16px;color:var(--ink-2);border-left:2px solid var(--accent);padding-left:16px;line-height:1.5}
+  .margin-note small{display:block;font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-top:10px;color:var(--accent)}
+  /* sections */
+  section{padding:56px 0;border-bottom:1px solid var(--rule)}
+  h2{font-family:var(--serif);font-size:32px;font-weight:600;letter-spacing:-.01em;margin:0 0 6px}
+  .sub-h{font-family:var(--mono);font-size:12px;color:var(--ink-2);letter-spacing:.08em;text-transform:uppercase;margin-bottom:26px}
+  .two{display:grid;grid-template-columns:1.2fr .8fr;gap:48px}
+  .two p{font-size:17px;margin:0 0 16px}
+  .dl{font-size:14px;border-top:1px solid var(--rule)}
+  .dl div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid var(--rule)}
+  .dl dt{font-family:var(--mono);font-size:12px;color:var(--ink-2);text-transform:uppercase;letter-spacing:.06em;margin:0}
+  .dl dd{margin:0}
+  /* project list */
+  .proj{display:grid;grid-template-columns:72px 1fr 300px;gap:26px;padding:28px 0;border-bottom:1px solid var(--rule);align-items:start}
+  .proj:last-child{border-bottom:none}
+  .num{font-family:var(--serif);font-size:44px;line-height:1;color:var(--rule);font-weight:700}
+  .proj h3{font-family:var(--serif);font-size:28px;margin:0 0 8px;font-weight:600}
+  .proj h3 a{text-decoration:none;color:var(--ink)} .proj h3 a:hover{color:var(--accent)}
+  .proj p{margin:0 0 12px;color:var(--ink-2);font-size:16px;max-width:60ch}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--ink-2)}
+  .meta b{color:var(--accent);font-weight:500}
+  .fig{aspect-ratio:4/3;background:var(--paper-2);border:1px solid var(--rule);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--ink-2);transform:rotate(-1deg);box-shadow:4px 4px 0 var(--accent-soft);transition:transform .25s}
+  .proj:hover .fig{transform:rotate(0)}
+  .figcap{font-family:var(--mono);font-size:11px;color:var(--ink-2);margin-top:8px}
+  .todo{background:var(--hl);font-family:var(--mono);font-size:12px;padding:1px 4px}
+  /* activities timeline */
+  .tl{display:grid;grid-template-columns:repeat(2,1fr);gap:18px 40px}
+  .tl article{padding:16px 0 16px 18px;border-left:2px solid var(--rule);position:relative}
+  .tl article::before{content:"";position:absolute;left:-6px;top:22px;width:10px;height:10px;border-radius:50%;background:var(--accent)}
+  .tl time{font-family:var(--mono);font-size:12px;color:var(--accent)}
+  .tl h4{font-family:var(--serif);font-size:20px;margin:4px 0 6px;font-weight:600}
+  .tl p{margin:0;color:var(--ink-2);font-size:15px}
+  footer{padding:36px 0;font-size:13px;color:var(--ink-2);font-family:var(--mono)}
+  /* subpage preview */
+  .preview{border:1px dashed var(--accent);padding:20px;background:rgba(238,231,218,.5)}
+  .preview .label{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+  .sub{display:grid;grid-template-columns:1fr 220px;gap:22px}
+  .sub h3{font-family:var(--serif);font-size:30px;margin:0 0 6px}
+  .sub .media{aspect-ratio:16/9;background:var(--paper-2);border:1px solid var(--rule);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--ink-2);margin:12px 0}
+  .sub p{font-size:15px;color:var(--ink-2);margin:0 0 8px}
+  .sub .pull{font-family:var(--serif);font-style:italic;font-size:18px;border-left:2px solid var(--accent);padding-left:14px;margin:12px 0}
+  .sub aside{font-size:13px}
+  .sub aside .box{border-top:2px solid var(--ink);padding-top:10px}
+  .sub aside dt{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-2);margin-top:10px}
+  .sub aside dd{margin:2px 0 0}
+  @media (max-width:860px){.hero,.two,.sub{grid-template-columns:1fr}.proj{grid-template-columns:1fr}.num{display:none}.tl{grid-template-columns:1fr}nav ul{display:none}.fig{transform:none}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="brand">Tymoteusz Jaskólski <em>— field notes</em></div>
+  <ul><li><a href="#about">About</a></li><li><a href="#projects">Projects</a></li><li><a href="#activities">Activities</a></li><li><a href="#contact">Contact</a></li></ul>
+  <a class="btn" href="#">Download CV</a>
+</div></nav>
+
+<header class="wrap hero">
+  <div>
+    <div class="kicker">Poznań · Game Development student · open to junior roles</div>
+    <h1><span class="u">Junior Gameplay Programmer</span><br>(Unity / C#)</h1>
+    <p class="lead">I write the systems that make games feel like games: abilities, turn engines, enemy AI, save data. And I write about why they work — on my channel about the psychology of play.</p>
+    <div class="hero-actions"><a class="btn primary" href="#projects">See the projects</a><a class="btn" href="#">CV (PDF)</a><a class="btn" href="https://github.com/tmtjsk">GitHub</a></div>
+  </div>
+  <aside class="margin-note">"Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics prototype. It's also how I approach systems work.
+    <small>note in the margin</small></aside>
+</header>
+
+<section id="about"><div class="wrap two">
+  <div>
+    <h2>About me</h2>
+    <div class="sub-h">who · specialisation · interests · goals</div>
+    <p>I'm a BA Game Development student at Collegium Da Vinci, Poznań (2024 – present), specialising in gameplay programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a data-driven ability system, a deterministic grid-tactics engine, a 2D dungeon crawler.</p>
+    <p>I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore that on my YouTube channel <a href="https://youtube.com/@phanto.official">phanto</a>, and it feeds back into how I design mechanics.</p>
+    <p><span class="todo">TODO: career goals (first person, 2–3 sentences).</span></p>
+  </div>
+  <dl class="dl">
+    <div><dt>Engine</dt><dd>Unity 6 (URP), Unreal Engine 5 (Blueprints / C++)</dd></div>
+    <div><dt>Language</dt><dd>C#</dd></div>
+    <div><dt>Systems</dt><dd>Gameplay AI, NavMesh, Input System, Cinemachine, ScriptableObjects, UI Toolkit</dd></div>
+    <div><dt>Workflow</dt><dd>Git / GitHub (LFS, PRs), Jira, Azure DevOps</dd></div>
+    <div><dt>Interests</dt><dd>Gameplay systems &amp; AI, tactics / roguelite design, game psychology</dd></div>
+  </dl>
+</div></section>
+
+<section id="projects"><div class="wrap">
+  <h2>Projects</h2>
+  <div class="sub-h">personal, playable on itch.io — each has its own write-up</div>
+
+  <article class="proj">
+    <div class="num">01</div>
+    <div>
+      <h3><a href="#">SurvivorLike</a></h3>
+      <p>A 3D survivors-like. ScriptableObject abilities (projectile, aura, whip, instant), pooled VFX and enemies, timed waves on a NavMesh, level-up cards, passives and a JSON save system.</p>
+      <div class="meta"><b>Unity 6 · URP · Cinemachine 3 · Input System</b> · solo · <span class="todo">build pending</span></div>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 1 — level-up card screen</div></div>
+  </article>
+
+  <article class="proj">
+    <div class="num">02</div>
+    <div>
+      <h3><a href="#">Turn-Based Tactics Prototype <span class="todo">title TBD</span></a></h3>
+      <p>Deterministic grid tactics inspired by Into the Breach and King's Bounty: cardinal BFS movement, push and collision damage, melee retaliation, typed weaknesses, a paced enemy AI that reveals intent one unit at a time. Covered by 16 EditMode tests.</p>
+      <div class="meta"><b>Unity 6 · URP 2D · Tilemap · NUnit</b> · solo · <span class="todo">build pending</span></div>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 2 — enemy intent reveal</div></div>
+  </article>
+
+  <article class="proj">
+    <div class="num">03</div>
+    <div>
+      <h3><a href="#">DungeonForge</a></h3>
+      <p>A 2D dungeon crawler: box-cast movement with knockback, melee weapon upgrades, XP and levels, a player that persists across scenes, portals, doors and a PlayerPrefs save.</p>
+      <div class="meta"><b>Unity 6 · URP 2D · Tilemap</b> · solo · <span class="todo">build fixes needed</span></div>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 3 — dungeon room</div></div>
+  </article>
+</div></section>
+
+<section id="activities"><div class="wrap">
+  <h2>Activities</h2>
+  <div class="sub-h">teams, channel, community</div>
+  <div class="tl">
+    <article><time>Oct 2026 – present</time><h4>TagTheGame — team project</h4><p>Unity 6 / URP 3D multiplayer "bomb tag". Bomb-fuse &amp; explosion mechanic, host-authoritative multiplayer architecture design, team Git LFS / PR workflow.</p></article>
+    <article><time>Jul 2026 – present</time><h4>phanto — YouTube channel</h4><p>English video essays on the psychology of video games.</p></article>
+    <article><time>Jun 2026</time><h4>Academic CS2 Championships</h4><p>Organising team, AZS Collegium Da Vinci — Poznań &amp; Wielkopolska.</p></article>
+    <article><time>May 2026</time><h4>Animal Shelter — team project</h4><p>Unreal Engine 5.6, Blueprints / C++.</p></article>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap two">
+  <div>
+    <h2>Contact</h2>
+    <div class="sub-h">email · github · youtube · cv</div>
+    <dl class="dl">
+      <div><dt>Email</dt><dd><a href="mailto:tmtjsk@gmail.com">tmtjsk@gmail.com</a></dd></div>
+      <div><dt>GitHub</dt><dd><a href="https://github.com/tmtjsk">github.com/tmtjsk</a></dd></div>
+      <div><dt>YouTube</dt><dd><a href="https://youtube.com/@phanto.official">@phanto.official</a></dd></div>
+      <div><dt>CV</dt><dd><a href="#">CV_Tymoteusz_Jaskolski_EN.pdf</a></dd></div>
+    </dl>
+  </div>
+  <div class="preview">
+    <div class="label">Preview — project subpage in this direction</div>
+    <div class="sub">
+      <div>
+        <h3>Turn-Based Tactics</h3>
+        <div class="meta">Unity 6 · URP 2D · solo · Mar 2026 –</div>
+        <div class="media">[ hero gif / video ]</div>
+        <p>Long-form, essay-like page: what the game is, then "What I built" with figures, then a technical breakdown with short code excerpts, then credits.</p>
+        <div class="pull">Enemies don't telegraph before your turn — they reveal intent one at a time on theirs.</div>
+      </div>
+      <aside><div class="box"><dl>
+        <dt>Play</dt><dd><a href="#">itch.io ↗</a></dd>
+        <dt>Source</dt><dd><a href="#">GitHub ↗</a></dd>
+        <dt>Tools</dt><dd>Unity 6, URP 2D, Tilemap, Input System, NUnit</dd>
+        <dt>Credits</dt><dd>PixelBattleText, sprite packs (TODO)</dd>
+      </dl></div></aside>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">© 2026 Tymoteusz Jaskólski · Astro · GitHub Pages</div></footer>
+</body>
+</html>

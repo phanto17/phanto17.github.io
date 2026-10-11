@@ -1,0 +1,45 @@
+---
+/**
+ * The blurred rainbow light band from the reference images. Purely decorative.
+ * One per hero; at most one more per page, with `small`. Never behind body text at full opacity.
+ */
+interface Props {
+  small?: boolean;
+  top?: string;
+  class?: string;
+}
+const { small = false, top = '-40px', class: cls = '' } = Astro.props;
+---
+
+<div class:list={['prism', { small }, cls]} style={`top:${top}`} aria-hidden="true"></div>
+
+<style>
+  .prism {
+    position: absolute;
+    left: -10%;
+    right: -10%;
+    height: 420px;
+    transform: rotate(-8deg);
+    filter: blur(28px);
+    opacity: 0.75;
+    pointer-events: none;
+    z-index: 0;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      #e95c3a 18%,
+      #f27c52 30%,
+      #f6d370 42%,
+      #9fd3a8 52%,
+      #8fc3df 62%,
+      #cab5ce 72%,
+      #faa193 82%,
+      transparent 100%
+    );
+  }
+  .prism.small {
+    height: 200px;
+    opacity: 0.35;
+    filter: blur(40px);
+  }
+</style>

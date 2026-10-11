@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction A — Inspector</title>
+<meta name="description" content="Mockup A: dark editor / debug-overlay direction for the portfolio home page.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0d1117; --panel:#131a22; --panel-2:#192230; --line:#263140;
+    --text:#e6edf3; --muted:#8b98a8; --accent:#5de4a1; --accent-2:#5cc8ff; --warn:#ffb454;
+    --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+    --sans:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --radius:6px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;
+       background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+       background-size:48px 48px;background-position:-1px -1px}
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;
+       background:radial-gradient(ellipse at 20% 0%,rgba(93,228,161,.10),transparent 55%),radial-gradient(ellipse at 100% 100%,rgba(92,200,255,.08),transparent 50%)}
+  a{color:var(--accent-2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1100px;margin:0 auto;padding:0 16px;position:relative}
+  /* nav */
+  nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(8px);background:rgba(13,17,23,.8);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+  .brand{font-family:var(--mono);font-size:14px;color:var(--muted)}
+  .brand b{color:var(--accent)}
+  nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0;font-size:14px}
+  nav ul a{color:var(--muted)} nav ul a:hover{color:var(--text);text-decoration:none}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--radius);
+       border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:600;font-size:14px}
+  .btn.primary{background:var(--accent);color:#06130c;border-color:var(--accent)}
+  .btn:hover{text-decoration:none;filter:brightness(1.08)}
+  /* hero */
+  .hero{padding:88px 0 64px;display:grid;grid-template-columns:1.2fr .8fr;gap:40px;align-items:center}
+  .eyebrow{font-family:var(--mono);color:var(--accent);font-size:13px;letter-spacing:.04em}
+  h1{font-size:clamp(34px,5.2vw,58px);line-height:1.05;margin:12px 0 10px;letter-spacing:-.02em}
+  h1 .cursor{display:inline-block;width:.55ch;height:.95em;background:var(--accent);vertical-align:-.1em;margin-left:4px;animation:blink 1s steps(2) infinite}
+  .lead{color:var(--muted);font-size:18px;max-width:52ch;margin:0 0 26px}
+  .hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+  .inspector{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-family:var(--mono);font-size:13px;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .inspector .bar{display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--panel-2);color:var(--muted)}
+  .inspector .bar i{width:10px;height:10px;border-radius:50%;background:var(--line);display:inline-block}
+  .inspector table{width:100%;border-collapse:collapse}
+  .inspector td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  .inspector td:first-child{color:var(--muted);width:38%}
+  .inspector .k{color:var(--accent-2)} .inspector .s{color:var(--accent)} .inspector .n{color:var(--warn)}
+  /* sections */
+  section{padding:56px 0;border-top:1px solid var(--line)}
+  h2{font-size:14px;font-family:var(--mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin:0 0 22px}
+  h2::before{content:"// ";color:var(--accent)}
+  .grid{display:grid;gap:18px}
+  .grid.c3{grid-template-columns:repeat(3,1fr)}
+  .grid.c2{grid-template-columns:repeat(2,1fr)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;transition:transform .2s,border-color .2s;display:flex;flex-direction:column}
+  .card:hover{transform:translateY(-3px);border-color:var(--accent)}
+  .thumb{aspect-ratio:16/9;background:linear-gradient(135deg,#1b2a3a,#0f1a26);position:relative;display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:12px}
+  .thumb::after{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(93,228,161,.12) 1px,transparent 1px),linear-gradient(90deg,rgba(93,228,161,.12) 1px,transparent 1px);background-size:24px 24px}
+  .card .body{padding:16px 16px 18px;display:flex;flex-direction:column;gap:8px;flex:1}
+  .card h3{margin:0;font-size:18px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:8px}
+  .tag{font-family:var(--mono);font-size:11px;padding:3px 8px;border:1px solid var(--line);border-radius:999px;color:var(--muted)}
+  .tag.play{border-color:var(--accent);color:var(--accent)}
+  .status{font-family:var(--mono);font-size:11px;color:var(--warn)}
+  .about{display:grid;grid-template-columns:1.1fr .9fr;gap:40px}
+  .about p{color:var(--text);font-size:16px}
+  .about .mono{font-family:var(--mono);font-size:13px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .about .mono div{padding:3px 0}
+  .act{display:grid;grid-template-columns:140px 1fr;gap:16px;padding:14px 0;border-bottom:1px dashed var(--line)}
+  .act time{font-family:var(--mono);font-size:12px;color:var(--muted);padding-top:3px}
+  .act h4{margin:0 0 4px;font-size:15px}
+  .act p{margin:0;color:var(--muted);font-size:14px}
+  .todo{color:var(--warn);font-family:var(--mono);font-size:12px}
+  footer{padding:40px 0;color:var(--muted);font-size:13px;font-family:var(--mono);border-top:1px solid var(--line)}
+  /* subpage preview */
+  .preview{border:1px dashed var(--line);border-radius:var(--radius);padding:18px;background:rgba(19,26,34,.6)}
+  .preview .label{font-family:var(--mono);font-size:11px;color:var(--warn);margin-bottom:12px}
+  .sub{display:grid;grid-template-columns:1fr 280px;gap:18px}
+  .sub .media{aspect-ratio:16/9;border-radius:var(--radius);background:linear-gradient(135deg,#1b2a3a,#0f1a26);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);font-family:var(--mono);font-size:12px}
+  .sub .tabs{display:flex;gap:2px;margin:14px 0 10px;font-family:var(--mono);font-size:12px}
+  .sub .tabs span{padding:6px 10px;border:1px solid var(--line);border-bottom:none;color:var(--muted);border-radius:4px 4px 0 0}
+  .sub .tabs span.on{color:var(--accent);background:var(--panel)}
+  .sub .text{font-size:14px;color:var(--muted);border:1px solid var(--line);padding:14px;border-radius:0 4px 4px 4px;background:var(--panel)}
+  .sub aside .inspector{box-shadow:none}
+  @keyframes blink{50%{opacity:0}}
+  @media (max-width:860px){.hero,.about,.sub{grid-template-columns:1fr}.grid.c3,.grid.c2{grid-template-columns:1fr}.act{grid-template-columns:1fr}nav ul{display:none}}
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="brand"><b>tmtjsk</b>@portfolio:~$</div>
+  <ul><li><a href="#about">about</a></li><li><a href="#projects">projects</a></li><li><a href="#activities">activities</a></li><li><a href="#contact">contact</a></li></ul>
+  <a class="btn" href="#">↓ CV.pdf</a>
+</div></nav>
+
+<header class="wrap hero">
+  <div>
+    <div class="eyebrow">tymoteusz jaskólski · poznań, pl</div>
+    <h1>Junior Gameplay Programmer<br>(Unity / C#)<span class="cursor"></span></h1>
+    <p class="lead">I build gameplay systems and AI in Unity: ability frameworks, turn engines, pooling and save systems. I'm also interested in why games feel the way they do — I run a YouTube channel about game psychology.</p>
+    <div class="hero-actions"><a class="btn primary" href="#projects">Play my projects</a><a class="btn" href="#">Download CV</a><a class="btn" href="https://github.com/tmtjsk">GitHub</a></div>
+  </div>
+  <div class="inspector" aria-label="Inspector panel">
+    <div class="bar"><i></i><i></i><i></i>&nbsp;Inspector — Tymoteusz.cs</div>
+    <table>
+      <tr><td>role</td><td class="s">"Junior Gameplay Programmer"</td></tr>
+      <tr><td>engine</td><td><span class="k">Unity 6</span> (URP) · C#</td></tr>
+      <tr><td>education</td><td>BA Game Development, Collegium Da Vinci <span class="n">2024–</span></td></tr>
+      <tr><td>focus</td><td>gameplay systems · AI · tactics/roguelite design</td></tr>
+      <tr><td>playableProjects</td><td class="n">3 <span style="color:var(--muted)">// itch.io</span></td></tr>
+      <tr><td>status</td><td class="s">open to junior roles / internships</td></tr>
+    </table>
+  </div>
+</header>
+
+<section id="about"><div class="wrap about">
+  <div>
+    <h2>About me</h2>
+    <p>I'm a Game Development student at Collegium Da Vinci in Poznań, specialising in gameplay programming in Unity and C#. What I enjoy most is the systems layer: data-driven abilities, deterministic turn logic, enemy AI, and the glue that makes a loop replayable.</p>
+    <p>Outside the engine I think a lot about the psychology of play: tension, telegraphing, risk and reward. That's what my channel <a href="https://youtube.com/@phanto.official">phanto</a> is about, and it shapes the design decisions in my prototypes.</p>
+    <p><span class="todo">TODO: career goals paragraph (2–3 sentences, first person).</span></p>
+  </div>
+  <div class="mono">
+    <div><span class="k">skills</span> = [ Unity 6 (URP), C#, Input System, Cinemachine,</div>
+    <div>&nbsp;&nbsp;NavMesh, ScriptableObjects, UI Toolkit, Netcode (architecture),</div>
+    <div>&nbsp;&nbsp;Git / LFS / PRs, Jira, Azure DevOps, UE5 Blueprints/C++ ];</div>
+    <div>&nbsp;</div>
+    <div><span class="k">interests</span> = [ gameplay systems, AI, tactics & roguelites, game psychology ];</div>
+  </div>
+</div></section>
+
+<section id="projects"><div class="wrap">
+  <h2>Personal projects — playable on itch.io</h2>
+  <div class="grid c3">
+    <article class="card">
+      <div class="thumb">[ screenshot / gif ]</div>
+      <div class="body">
+        <h3>SurvivorLike</h3>
+        <p>3D survivors-like with a ScriptableObject ability system, pooled projectiles/VFX, wave spawner, level-up cards and a JSON save system.</p>
+        <div class="status">status: WebGL build pending</div>
+        <div class="tags"><span class="tag play">▶ play</span><span class="tag">Unity 6</span><span class="tag">URP</span><span class="tag">Cinemachine 3</span><span class="tag">NavMesh</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="thumb">[ screenshot / gif ]</div>
+      <div class="body">
+        <h3>Turn-Based Tactics Prototype <span class="todo">(title TBD)</span></h3>
+        <p>Deterministic grid tactics: cardinal BFS pathing, push/collision, melee retaliation, typed weaknesses, paced enemy AI, 16 EditMode tests.</p>
+        <div class="status">status: WebGL build pending</div>
+        <div class="tags"><span class="tag play">▶ play</span><span class="tag">Unity 6</span><span class="tag">URP 2D</span><span class="tag">Tilemap</span><span class="tag">NUnit</span></div>
+      </div>
+    </article>
+    <article class="card">
+      <div class="thumb">[ screenshot / gif ]</div>
+      <div class="body">
+        <h3>DungeonForge</h3>
+        <p>2D dungeon crawler: box-cast movement, melee with knockback, XP/levels, weapon upgrades, scene-persistent player and PlayerPrefs save.</p>
+        <div class="status">status: build fixes needed</div>
+        <div class="tags"><span class="tag play">▶ play</span><span class="tag">Unity 6</span><span class="tag">URP 2D</span><span class="tag">Tilemap</span></div>
+      </div>
+    </article>
+  </div>
+</div></section>
+
+<section id="activities"><div class="wrap">
+  <h2>Activities</h2>
+  <div class="act"><time>Oct 2026 – now</time><div><h4>TagTheGame — team project, Unity 6 / URP</h4><p>3D multiplayer "bomb tag". Bomb-fuse &amp; explosion mechanic, host-authoritative multiplayer architecture design, team Git LFS / PR workflow.</p></div></div>
+  <div class="act"><time>Jul 2026 – now</time><div><h4>phanto — YouTube channel</h4><p>English-language video essays on the psychology of video games.</p></div></div>
+  <div class="act"><time>Jun 2026</time><div><h4>Academic CS2 Championships of Poznań &amp; Wielkopolska</h4><p>Organising team, AZS Collegium Da Vinci.</p></div></div>
+  <div class="act"><time>May 2026</time><div><h4>Animal Shelter — team project, Unreal Engine 5.6</h4><p>Gameplay mechanics in Blueprints / C++.</p></div></div>
+</div></section>
+
+<section id="contact"><div class="wrap">
+  <h2>Contact</h2>
+  <div class="grid c2">
+    <div class="inspector"><div class="bar"><i></i><i></i><i></i>&nbsp;contact.json</div>
+      <table><tr><td>email</td><td><a href="mailto:tmtjsk@gmail.com">tmtjsk@gmail.com</a></td></tr>
+      <tr><td>github</td><td><a href="https://github.com/tmtjsk">github.com/tmtjsk</a></td></tr>
+      <tr><td>youtube</td><td><a href="https://youtube.com/@phanto.official">youtube.com/@phanto.official</a></td></tr>
+      <tr><td>cv</td><td><a href="#">CV_Tymoteusz_Jaskolski_EN.pdf</a></td></tr></table></div>
+    <div class="preview">
+      <div class="label">PREVIEW — how a project subpage looks in this direction</div>
+      <div class="sub">
+        <div>
+          <div class="media">[ hero video / gif ]</div>
+          <div class="tabs"><span class="on">Overview</span><span>My contribution</span><span>Tech breakdown</span><span>Credits</span></div>
+          <div class="text">Each tab is a panel. "Tech breakdown" shows a system diagram plus short code excerpts; "Credits" lists every third-party pack.</div>
+        </div>
+        <aside><div class="inspector"><div class="bar"><i></i><i></i><i></i>&nbsp;Project</div>
+          <table><tr><td>role</td><td>solo</td></tr><tr><td>engine</td><td>Unity 6 / URP</td></tr><tr><td>status</td><td class="s">playable</td></tr><tr><td>play</td><td><a href="#">itch.io ↗</a></td></tr><tr><td>source</td><td><a href="#">GitHub ↗</a></td></tr></table></div></aside>
+      </div>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">© 2026 Tymoteusz Jaskólski · built with Astro · hosted on GitHub Pages</div></footer>
+</body>
+</html>

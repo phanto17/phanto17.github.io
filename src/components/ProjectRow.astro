@@ -1,0 +1,88 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import Figure from './Figure.astro';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index: number;
+}
+const { project, index } = Astro.props;
+const d = project.data;
+const href = `/projects/${project.id}/`;
+const cover = d.media[0];
+const statusLabel = { playable: '▶ play on itch.io', 'in-progress': 'build in progress', planned: 'rework planned' }[d.status];
+---
+
+<article class="proj">
+  <div class="num">{String(index + 1).padStart(2, '0')}</div>
+  <div class="body">
+    <h3><a href={href}>{d.title}</a></h3>
+    <p class="muted">{d.summary}</p>
+    {d.highlights.length > 0 && <p class="meta"><b>{d.highlights.join(' · ')}</b></p>}
+    <p class="meta">{d.engine} · {d.role} · {d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</p>
+    <div>
+      {
+        d.status === 'playable' && d.itchUrl ? (
+          <a class="pill play" href={d.itchUrl}>{statusLabel}</a>
+        ) : (
+          <span class="pill wip">{statusLabel}</span>
+        )
+      }
+      <a class="pill" href={href}>write-up →</a>
+    </div>
+  </div>
+  <a class="cover" href={href} aria-label={`${d.title} write-up`}>
+    <Figure type={cover?.type} src={cover?.src} alt={cover?.alt ?? `${d.title} screenshot`} caption={cover?.caption ?? `Fig. ${index + 1} — ${d.title}`} ratio="4 / 3" />
+  </a>
+</article>
+
+<style>
+  .proj {
+    display: grid;
+    grid-template-columns: 64px 1fr 300px;
+    gap: 28px;
+    padding: 32px 0;
+    border-bottom: var(--line);
+    align-items: start;
+  }
+  .proj:last-child {
+    border-bottom: none;
+  }
+  .num {
+    font-family: var(--display);
+    font-size: 40px;
+    line-height: 1;
+    color: var(--umber);
+    font-weight: 600;
+    font-variation-settings: var(--soft);
+  }
+  h3 {
+    margin-bottom: 8px;
+  }
+  h3 a {
+    color: var(--text);
+  }
+  h3 a:hover {
+    color: var(--peach);
+  }
+  .body p {
+    margin-bottom: 10px;
+    max-width: 60ch;
+  }
+  .cover {
+    display: block;
+  }
+  .cover:hover :global(.frame) {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.18);
+  }
+  @media (max-width: 860px) {
+    .proj {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .num {
+      display: none;
+    }
+  }
+</style>

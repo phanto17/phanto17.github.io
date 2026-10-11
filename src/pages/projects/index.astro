@@ -1,0 +1,17 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import ProjectRow from '../../components/ProjectRow.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base title="Projects" description="Playable personal projects by Tymoteusz Jaskólski, each with a technical write-up.">
+  <section class="section">
+    <div class="wrap">
+      <h2>Projects</h2>
+      <p class="sub-h">personal, playable on itch.io — each has its own write-up</p>
+      {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
+    </div>
+  </section>
+</Base>

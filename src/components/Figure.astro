@@ -1,0 +1,80 @@
+---
+/**
+ * A screenshot / GIF / video in a Prism frame with a mono caption.
+ * When `src` is missing the frame renders as a labelled placeholder (TODO).
+ */
+interface Props {
+  type?: 'image' | 'video' | 'gif';
+  src?: string;
+  alt?: string;
+  caption?: string;
+  ratio?: string;
+}
+const { type = 'image', src, alt = '', caption, ratio = '16 / 9' } = Astro.props;
+---
+
+<figure class="fig">
+  <div class="frame" style={`aspect-ratio:${ratio}`}>
+    {
+      src ? (
+        type === 'video' ? (
+          <video src={src} controls muted loop playsinline preload="metadata" aria-label={alt} />
+        ) : (
+          <img src={src} alt={alt} loading="lazy" decoding="async" />
+        )
+      ) : (
+        <span class="placeholder">[ {type} TODO{alt ? `: ${alt}` : ''} ]</span>
+      )
+    }
+  </div>
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .fig {
+    margin: 0;
+  }
+  .frame {
+    border-radius: var(--r-md);
+    background: linear-gradient(160deg, #3a3224, #1a1713 60%);
+    border: 1px solid var(--umber);
+    display: grid;
+    place-items: center;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, box-shadow 0.25s;
+  }
+  .frame::after {
+    content: '';
+    position: absolute;
+    inset: auto -20% -40% -20%;
+    height: 70%;
+    filter: blur(24px);
+    opacity: 0.6;
+    background: linear-gradient(90deg, #e95c3a, #f6d370, #8fc3df, #faa193);
+    pointer-events: none;
+  }
+  .frame img,
+  .frame video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+  }
+  .placeholder {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-3);
+    position: relative;
+    z-index: 1;
+    padding: 12px;
+    text-align: center;
+  }
+  figcaption {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+    margin-top: 10px;
+  }
+</style>

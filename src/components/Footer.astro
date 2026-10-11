@@ -1,0 +1,38 @@
+---
+import { site } from '../data/site';
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <span>© {year} {site.name}</span>
+    <span class="sep">·</span>
+    <a href={site.github}>GitHub</a>
+    <span class="sep">·</span>
+    <a href={site.youtube}>YouTube</a>
+    <span class="sep">·</span>
+    <a href={`mailto:${site.email}`}>{site.email}</a>
+    <span class="sep">·</span>
+    <span>built with Astro, hosted on GitHub Pages</span>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    padding: 48px 0;
+    font-size: 13px;
+    color: var(--text-3);
+    font-family: var(--mono);
+    border-top: var(--line);
+    position: relative;
+    z-index: 1;
+  }
+  .footer .wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .sep {
+    color: var(--umber);
+  }
+</style>

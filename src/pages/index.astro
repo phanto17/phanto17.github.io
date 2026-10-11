@@ -1,0 +1,248 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Prism from '../components/Prism.astro';
+import ProjectRow from '../components/ProjectRow.astro';
+import { site } from '../data/site';
+import { activities, experience, education } from '../data/activities';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base>
+  <header class="hero">
+    <Prism />
+    <div class="wrap grid">
+      <div>
+        <p class="kicker">{site.location} · Game Development student · open to junior roles</p>
+        <h1>Junior Gameplay Programmer<br /><em>(Unity / C#)</em></h1>
+        <p class="lead">{site.tagline}</p>
+        <div class="actions">
+          <a class="btn primary" href="#projects">See the projects</a>
+          <a class="btn" href={site.cv} download>CV (PDF)</a>
+          <a class="btn" href={site.github}>GitHub</a>
+        </div>
+      </div>
+      <aside class="note">
+        "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how I approach systems work.
+        <small>note in the margin</small>
+      </aside>
+    </div>
+  </header>
+
+  <section id="about" class="section">
+    <div class="wrap two">
+      <div>
+        <h2>About me</h2>
+        <p class="sub-h">who · specialisation · interests · goals</p>
+        <p>
+          I'm a BA Game Development student at Collegium Da Vinci in Poznań (2024 – present), specialising in gameplay
+          programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a
+          data-driven ability system, a deterministic grid-tactics engine, and a 2D dungeon crawler I'm rebuilding from
+          the ground up.
+        </p>
+        <p>
+          I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore that on
+          my YouTube channel <a href={site.youtube}>phanto</a>, and it feeds back into how I design mechanics.
+        </p>
+        <p>
+          <span class="todo">TODO: career goals in games — 2–3 sentences, first person (assignment requirement 1).</span>
+        </p>
+      </div>
+      <dl class="dl">
+        <div><dt>Engine</dt><dd>Unity 6 (URP) · Unreal Engine 5 (Blueprints / C++)</dd></div>
+        <div><dt>Language</dt><dd>C#</dd></div>
+        <div><dt>Gameplay</dt><dd>AI &amp; NavMesh, ScriptableObject-driven design, Input System, Cinemachine, UI Toolkit</dd></div>
+        <div><dt>Multiplayer</dt><dd>Netcode for GameObjects (architecture)</dd></div>
+        <div><dt>Workflow</dt><dd>Git / GitHub (LFS, pull requests), Jira, Azure DevOps</dd></div>
+        <div><dt>Also</dt><dd>DaVinci Resolve, Photoshop</dd></div>
+        <div><dt>Interests</dt><dd>Gameplay systems &amp; AI, tactics / roguelite design, game psychology</dd></div>
+        <div><dt>Education</dt><dd>{education.title} ({education.period})</dd></div>
+        <div><dt>Languages</dt><dd>Polish (native), English (C1)</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section id="projects" class="section">
+    <Prism small top="55%" />
+    <div class="wrap">
+      <h2>Projects</h2>
+      <p class="sub-h">personal, playable on itch.io — each has its own write-up</p>
+      {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
+    </div>
+  </section>
+
+  <section id="activities" class="section">
+    <div class="wrap">
+      <h2>Activities</h2>
+      <p class="sub-h">team projects, channel, community</p>
+      <div class="tl">
+        {
+          activities.map((a) => (
+            <article>
+              <time>{a.period}</time>
+              <h4>{a.title}</h4>
+              <p class="kind">{a.kind}</p>
+              <p>{a.text}</p>
+              {a.credits && <p class="credits">{a.credits}</p>}
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="experience" class="section">
+    <div class="wrap two">
+      <div>
+        <h2>Experience</h2>
+        <p class="sub-h">outside games — what transfers</p>
+        {
+          experience.map((e) => (
+            <article class="exp">
+              <time class="meta">{e.period}</time>
+              <h4>{e.title}</h4>
+              <p class="muted">{e.text}</p>
+            </article>
+          ))
+        }
+      </div>
+      <aside class="note">
+        I don't have game-industry employment yet. The projects above are where I've done my real gameplay work.
+        <small>honest note</small>
+      </aside>
+    </div>
+  </section>
+
+  <section id="contact" class="section">
+    <div class="wrap two">
+      <div>
+        <h2>Contact</h2>
+        <p class="sub-h">email · github · youtube · cv</p>
+        <dl class="dl">
+          <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+          <div><dt>GitHub</dt><dd><a href={site.github}>github.com/{site.githubHandle}</a></dd></div>
+          <div><dt>YouTube</dt><dd><a href={site.youtube}>{site.youtubeHandle}</a></dd></div>
+          <div><dt>CV</dt><dd><a href={site.cv} download>CV_Tymoteusz_Jaskolski_EN.pdf</a></dd></div>
+        </dl>
+      </div>
+      <div class="cta">
+        <p class="lead">Looking for a junior gameplay programmer or an intern? I'd love to talk.</p>
+        <a class="btn primary" href={`mailto:${site.email}`}>Write to me</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    position: relative;
+    padding: 112px 0 80px;
+    overflow: hidden;
+  }
+  .hero .grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 48px;
+    align-items: end;
+  }
+  h1 {
+    margin: 16px 0 20px;
+  }
+  h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--peach);
+  }
+  .lead {
+    margin-bottom: 32px;
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .note {
+    font-family: var(--display);
+    font-style: italic;
+    font-size: 17px;
+    color: var(--lavender);
+    border-left: 2px solid var(--coral);
+    padding-left: 18px;
+    line-height: 1.5;
+    font-variation-settings: 'SOFT' 60;
+  }
+  .note small {
+    display: block;
+    font-family: var(--mono);
+    font-style: normal;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--brick);
+    margin-top: 12px;
+  }
+  .tl {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px 40px;
+  }
+  .tl article {
+    padding: 20px 0 20px 22px;
+    border-left: 1px solid var(--umber);
+    position: relative;
+  }
+  .tl article::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 26px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--coral);
+    box-shadow: 0 0 10px var(--coral);
+  }
+  .tl time {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    letter-spacing: 0.06em;
+  }
+  .tl h4 {
+    margin: 6px 0 2px;
+  }
+  .tl .kind {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--steel);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .tl p {
+    color: var(--text-2);
+    font-size: 15px;
+    margin: 0;
+  }
+  .tl .credits {
+    font-size: 13px;
+    color: var(--text-3);
+    margin-top: 8px;
+  }
+  .exp h4 {
+    margin: 6px 0;
+  }
+  .cta {
+    align-self: center;
+  }
+  @media (max-width: 860px) {
+    .hero {
+      padding: 80px 0 56px;
+    }
+    .hero .grid,
+    .tl {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

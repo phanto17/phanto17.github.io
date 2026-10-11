@@ -1,0 +1,83 @@
+---
+import { site, nav } from '../data/site';
+---
+
+<nav class="nav" aria-label="Main">
+  <div class="wrap bar">
+    <a class="brand" href="/">{site.name} <em>— field notes</em></a>
+    <ul>
+      {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+    </ul>
+    <a class="btn cv" href={site.cv} download><span class="long">Download CV</span><span class="short">CV</span></a>
+  </div>
+</nav>
+
+<style>
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: rgba(26, 23, 19, 0.78);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(93, 65, 43, 0.6);
+  }
+  .bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    gap: 16px;
+  }
+  .brand {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 600;
+    font-variation-settings: var(--soft);
+    letter-spacing: -0.01em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .brand:hover {
+    color: var(--peach);
+  }
+  .brand em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--text-2);
+  }
+  ul {
+    list-style: none;
+    display: flex;
+    gap: 28px;
+    margin: 0;
+    padding: 0;
+    font-size: 15px;
+  }
+  ul a {
+    color: var(--text-2);
+  }
+  ul a:hover {
+    color: var(--text);
+  }
+  .cv {
+    white-space: nowrap;
+  }
+  .cv .short {
+    display: none;
+  }
+  @media (max-width: 860px) {
+    ul {
+      display: none;
+    }
+    .brand em {
+      display: none;
+    }
+    .cv .long {
+      display: none;
+    }
+    .cv .short {
+      display: inline;
+    }
+  }
+</style>

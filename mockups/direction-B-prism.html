@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Direction B — Prism</title>
+<meta name="description" content="Revised direction B: field-notes structure on a dark, grainy, prism-light palette extracted from the reference images.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,100,1;1,9..144,400..700,100,1&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* --- palette sampled from /references --- */
+    --bg-0:#0b070b;      /* vignette edge, deepest */
+    --bg:#1a1713;        /* page background */
+    --surface:#2f291b;   /* cards, panels */
+    --surface-2:#3a3224; /* hover / raised */
+    --umber:#5d412b;     /* borders, dividers */
+    --brick:#a95c3d;     /* muted accent, hr, quotes */
+    --coral:#f27c52;     /* primary accent (links, CTA, glow) */
+    --peach:#f2b180;     /* secondary accent, hover */
+    --gold:#f6d370;      /* highlight, eyebrows */
+    --pink:#faa193;      /* prism */
+    --mint:#9fd3a8;      /* prism */
+    --sky:#8fc3df;       /* prism */
+    --lavender:#cab5ce;  /* prism, quotes */
+    --steel:#979ca4;     /* metadata, cool grey */
+    --teal:#4e6367;      /* deep cool accent */
+    --text:#f3e6d3;      /* primary text, cream */
+    --text-2:#b9a68f;    /* secondary text */
+    --text-3:#8a7a66;    /* tertiary / disabled */
+    --display:"Fraunces",Georgia,serif;
+    --sans:"DM Sans",system-ui,sans-serif;
+    --mono:"DM Mono",ui-monospace,monospace;
+    --r-xs:6px; --r-sm:10px; --r-md:16px; --r-lg:24px; --r-pill:999px;
+    --glow:0 0 14px rgba(242,124,82,.55),0 0 48px rgba(242,177,128,.28);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.6;font-size:17px;position:relative;overflow-x:hidden}
+  /* film grain */
+  body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:50;opacity:.14;mix-blend-mode:soft-light;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+  /* vignette */
+  body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(11,7,11,.75) 100%)}
+  a{color:var(--coral);text-decoration:none}
+  a:hover{color:var(--peach);text-shadow:0 0 10px rgba(242,124,82,.5)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+  /* prism band */
+  .prism{position:absolute;left:-10%;right:-10%;height:420px;top:-40px;transform:rotate(-8deg);filter:blur(28px);opacity:.75;pointer-events:none;z-index:0;
+    background:linear-gradient(180deg,transparent 0%,#e95c3a 18%,#f27c52 30%,#f6d370 42%,#9fd3a8 52%,#8fc3df 62%,#cab5ce 72%,#faa193 82%,transparent 100%)}
+  .prism.sm{height:200px;opacity:.35;filter:blur(40px)}
+  nav{position:sticky;top:0;z-index:20;background:rgba(26,23,19,.78);backdrop-filter:blur(10px);border-bottom:1px solid rgba(93,65,43,.6)}
+  nav .wrap{display:flex;justify-content:space-between;align-items:center;height:64px}
+  .brand{font-family:var(--display);font-size:22px;font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1;letter-spacing:-.01em}
+  .brand em{font-style:italic;font-weight:400;color:var(--text-2)}
+  nav ul{list-style:none;display:flex;gap:28px;margin:0;padding:0;font-size:15px}
+  nav ul a{color:var(--text-2)} nav ul a:hover{color:var(--text)}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:var(--r-pill);font-weight:500;font-size:15px;border:1px solid var(--umber);color:var(--text);background:rgba(47,41,27,.6);transition:transform .2s,box-shadow .2s,background .2s}
+  .btn:hover{transform:translateY(-1px);background:var(--surface-2);color:var(--text);text-shadow:none}
+  .btn.primary{background:var(--coral);color:#1a1713;border-color:var(--coral);box-shadow:var(--glow)}
+  .btn.primary:hover{background:var(--peach);border-color:var(--peach)}
+  /* hero */
+  .hero{position:relative;padding:112px 0 80px;overflow:hidden}
+  .hero .grid{display:grid;grid-template-columns:1fr 300px;gap:48px;align-items:end}
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)}
+  h1{font-family:var(--display);font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1,"opsz" 144;font-size:clamp(44px,6.6vw,80px);line-height:.98;letter-spacing:-.015em;margin:16px 0 20px;text-shadow:var(--glow)}
+  h1 em{font-style:italic;font-weight:400;color:var(--peach)}
+  .lead{font-size:19px;color:var(--text-2);max-width:56ch;margin:0 0 32px}
+  .actions{display:flex;gap:12px;flex-wrap:wrap}
+  .note{font-family:var(--display);font-style:italic;font-size:17px;color:var(--lavender);border-left:2px solid var(--coral);padding-left:18px;line-height:1.5;font-variation-settings:"SOFT" 60}
+  .note small{display:block;font-family:var(--mono);font-style:normal;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--brick);margin-top:12px}
+  /* sections */
+  section{padding:80px 0;border-top:1px solid rgba(93,65,43,.5);position:relative}
+  h2{font-family:var(--display);font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1;font-size:36px;letter-spacing:-.01em;margin:0 0 6px;text-shadow:0 0 24px rgba(242,124,82,.25)}
+  .sub-h{font-family:var(--mono);font-size:12px;color:var(--steel);letter-spacing:.1em;text-transform:uppercase;margin:0 0 32px}
+  .two{display:grid;grid-template-columns:1.2fr .8fr;gap:48px}
+  .two p{margin:0 0 16px}
+  .dl{border-top:1px solid var(--umber);font-size:15px}
+  .dl div{display:grid;grid-template-columns:110px 1fr;gap:12px;padding:12px 0;border-bottom:1px solid rgba(93,65,43,.5)}
+  .dl dt{font-family:var(--mono);font-size:11px;color:var(--steel);text-transform:uppercase;letter-spacing:.08em;margin:0;padding-top:3px}
+  .dl dd{margin:0;color:var(--text)}
+  /* projects */
+  .proj{display:grid;grid-template-columns:64px 1fr 300px;gap:28px;padding:32px 0;border-bottom:1px solid rgba(93,65,43,.5);align-items:start}
+  .proj:last-child{border-bottom:none}
+  .num{font-family:var(--display);font-size:40px;line-height:1;color:var(--umber);font-weight:600;font-variation-settings:"SOFT" 100}
+  .proj h3{font-family:var(--display);font-size:30px;margin:0 0 8px;font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1}
+  .proj h3 a{color:var(--text)} .proj h3 a:hover{color:var(--peach)}
+  .proj p{margin:0 0 14px;color:var(--text-2);font-size:16px;max-width:60ch}
+  .meta{font-family:var(--mono);font-size:12px;color:var(--steel)}
+  .meta b{color:var(--gold);font-weight:500}
+  .fig{aspect-ratio:4/3;border-radius:var(--r-md);background:linear-gradient(160deg,#3a3224,#1a1713 60%);border:1px solid var(--umber);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--text-3);position:relative;overflow:hidden;transition:transform .25s,box-shadow .25s}
+  .fig::after{content:"";position:absolute;inset:auto -20% -40% -20%;height:70%;filter:blur(24px);opacity:.6;background:linear-gradient(90deg,#e95c3a,#f6d370,#8fc3df,#faa193)}
+  .proj:hover .fig{transform:translateY(-3px);box-shadow:0 20px 50px rgba(0,0,0,.5),0 0 30px rgba(242,124,82,.18)}
+  .figcap{font-family:var(--mono);font-size:11px;color:var(--text-3);margin-top:10px}
+  .todo{background:rgba(246,211,112,.18);color:var(--gold);font-family:var(--mono);font-size:12px;padding:2px 6px;border-radius:var(--r-xs)}
+  .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:var(--r-pill);border:1px solid var(--umber);color:var(--text-2);margin:8px 6px 0 0}
+  .pill.play{border-color:var(--coral);color:var(--coral);box-shadow:0 0 12px rgba(242,124,82,.25)}
+  /* activities */
+  .tl{display:grid;grid-template-columns:repeat(2,1fr);gap:20px 40px}
+  .tl article{padding:20px 0 20px 22px;border-left:1px solid var(--umber);position:relative}
+  .tl article::before{content:"";position:absolute;left:-5px;top:26px;width:9px;height:9px;border-radius:50%;background:var(--coral);box-shadow:0 0 10px var(--coral)}
+  .tl time{font-family:var(--mono);font-size:12px;color:var(--gold);letter-spacing:.06em}
+  .tl h4{font-family:var(--display);font-size:22px;margin:6px 0 6px;font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1}
+  .tl p{margin:0;color:var(--text-2);font-size:15px}
+  /* subpage preview */
+  .preview{border:1px dashed var(--brick);border-radius:var(--r-lg);padding:24px;background:rgba(47,41,27,.45)}
+  .preview .label{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:16px}
+  .sub{display:grid;grid-template-columns:1fr 220px;gap:24px}
+  .sub h3{font-family:var(--display);font-size:30px;margin:0 0 6px;font-weight:600;font-variation-settings:"SOFT" 100,"WONK" 1;text-shadow:var(--glow)}
+  .sub .media{aspect-ratio:16/9;border-radius:var(--r-md);background:linear-gradient(160deg,#3a3224,#1a1713);border:1px solid var(--umber);display:grid;place-items:center;font-family:var(--mono);font-size:12px;color:var(--text-3);margin:14px 0}
+  .sub p{font-size:15px;color:var(--text-2);margin:0 0 8px}
+  .sub .pull{font-family:var(--display);font-style:italic;font-size:19px;color:var(--lavender);border-left:2px solid var(--coral);padding-left:16px;margin:14px 0;font-variation-settings:"SOFT" 60}
+  .sub aside{font-size:14px}
+  .sub aside .box{background:var(--surface);border:1px solid var(--umber);border-radius:var(--r-md);padding:16px}
+  .sub aside dt{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--steel);margin-top:12px}
+  .sub aside dt:first-child{margin-top:0}
+  .sub aside dd{margin:3px 0 0}
+  footer{padding:48px 0;font-size:13px;color:var(--text-3);font-family:var(--mono);border-top:1px solid rgba(93,65,43,.5);position:relative}
+  @media (max-width:860px){.hero .grid,.two,.sub{grid-template-columns:1fr}.proj{grid-template-columns:1fr}.num{display:none}.tl{grid-template-columns:1fr}nav ul{display:none}.wrap{padding:0 16px}section{padding:56px 0}.hero{padding:80px 0 56px}}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<nav><div class="wrap">
+  <div class="brand">Tymoteusz Jaskólski <em>— field notes</em></div>
+  <ul><li><a href="#about">About</a></li><li><a href="#projects">Projects</a></li><li><a href="#activities">Activities</a></li><li><a href="#contact">Contact</a></li></ul>
+  <a class="btn" href="#">Download CV</a>
+</div></nav>
+
+<header class="hero">
+  <div class="prism" aria-hidden="true"></div>
+  <div class="wrap grid">
+    <div>
+      <div class="kicker">Poznań · Game Development student · open to junior roles</div>
+      <h1>Junior Gameplay Programmer<br><em>(Unity / C#)</em></h1>
+      <p class="lead">I write the systems that make games feel like games: abilities, turn engines, enemy AI, save data. And I write about why they work — on my channel about the psychology of play.</p>
+      <div class="actions"><a class="btn primary" href="#projects">See the projects</a><a class="btn" href="#">CV (PDF)</a><a class="btn" href="https://github.com/phanto17">GitHub</a></div>
+    </div>
+    <aside class="note">"Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics prototype. It's also how I approach systems work.
+      <small>note in the margin</small></aside>
+  </div>
+</header>
+
+<section id="about"><div class="wrap two">
+  <div>
+    <h2>About me</h2>
+    <div class="sub-h">who · specialisation · interests · goals</div>
+    <p>I'm a BA Game Development student at Collegium Da Vinci, Poznań (2024 – present), specialising in gameplay programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a data-driven ability system, a deterministic grid-tactics engine, a 2D dungeon crawler.</p>
+    <p>I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore that on my YouTube channel <a href="https://youtube.com/@phanto.official">phanto</a>, and it feeds back into how I design mechanics.</p>
+    <p><span class="todo">TODO: career goals (first person, 2–3 sentences).</span></p>
+  </div>
+  <dl class="dl">
+    <div><dt>Engine</dt><dd>Unity 6 (URP), Unreal Engine 5 (Blueprints / C++)</dd></div>
+    <div><dt>Language</dt><dd>C#</dd></div>
+    <div><dt>Systems</dt><dd>Gameplay AI, NavMesh, Input System, Cinemachine, ScriptableObjects, UI Toolkit</dd></div>
+    <div><dt>Workflow</dt><dd>Git / GitHub (LFS, PRs), Jira, Azure DevOps</dd></div>
+    <div><dt>Interests</dt><dd>Gameplay systems &amp; AI, tactics / roguelite design, game psychology</dd></div>
+  </dl>
+</div></section>
+
+<section id="projects">
+  <div class="prism sm" aria-hidden="true" style="top:60%"></div>
+  <div class="wrap">
+  <h2>Projects</h2>
+  <div class="sub-h">personal, playable on itch.io — each has its own write-up</div>
+
+  <article class="proj">
+    <div class="num">01</div>
+    <div>
+      <h3><a href="#">SurvivorLike</a></h3>
+      <p>A 3D survivors-like. ScriptableObject abilities (projectile, aura, whip, instant), pooled VFX and enemies, timed waves on a NavMesh, level-up cards, passives and a JSON save system.</p>
+      <div class="meta"><b>Unity 6 · URP · Cinemachine 3 · Input System</b> · solo</div>
+      <span class="pill play">▶ play on itch.io</span><span class="pill">write-up</span>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 1 — level-up card screen</div></div>
+  </article>
+
+  <article class="proj">
+    <div class="num">02</div>
+    <div>
+      <h3><a href="#">Turn-Based Tactics <span class="todo">title TBD</span></a></h3>
+      <p>Deterministic grid tactics inspired by Into the Breach and King's Bounty: cardinal BFS movement, push and collision damage, melee retaliation, typed weaknesses, a paced enemy AI that reveals intent one unit at a time. Covered by EditMode tests.</p>
+      <div class="meta"><b>Unity 6 · URP 2D · Tilemap · NUnit</b> · solo</div>
+      <span class="pill play">▶ play on itch.io</span><span class="pill">write-up</span>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 2 — enemy intent reveal</div></div>
+  </article>
+
+  <article class="proj">
+    <div class="num">03</div>
+    <div>
+      <h3><a href="#">DungeonForge</a></h3>
+      <p>A 2D dungeon crawler, rebuilt with my own systems: enemy state machines, data-driven weapons and rooms, XP and upgrades, JSON saves.</p>
+      <div class="meta"><b>Unity 6 · URP 2D · Tilemap</b> · solo · <span class="todo">rework planned</span></div>
+      <span class="pill play">▶ play on itch.io</span><span class="pill">write-up</span>
+    </div>
+    <div><div class="fig">[ screenshot ]</div><div class="figcap">Fig. 3 — dungeon room</div></div>
+  </article>
+</div></section>
+
+<section id="activities"><div class="wrap">
+  <h2>Activities</h2>
+  <div class="sub-h">team projects, channel, community</div>
+  <div class="tl">
+    <article><time>Oct 2026 – present</time><h4>TagTheGame — team project</h4><p>Unity 6 / URP 3D multiplayer "bomb tag". Bomb-fuse &amp; explosion mechanic, host-authoritative multiplayer architecture design, team Git LFS / PR workflow.</p></article>
+    <article><time>Oct 2025 – Jul 2026</time><h4>Mansion of Grief — team project</h4><p>First-person horror in Unity 6 / URP. Bear enemy AI (patrol / roar / chase, FOV + raycast, danger post-processing), pause &amp; main menu, inventory, four puzzle systems, level intro flow.</p></article>
+    <article><time>Jun – Jul 2026</time><h4>Garden Simulator VR — team project</h4><p>Unity 2022.3 / XR Interaction Toolkit. Inventory &amp; vendor economy, crate deposit, collect-on-grab, pest infestation system, mushroom spawner.</p></article>
+    <article><time>Jul 2026 – present</time><h4>phanto — YouTube channel</h4><p>English video essays on the psychology of video games.</p></article>
+    <article><time>Jun 2026</time><h4>Academic CS2 Championships</h4><p>Organising team, AZS Collegium Da Vinci — Poznań &amp; Wielkopolska.</p></article>
+    <article><time>May 2026</time><h4>Animal Shelter — team project</h4><p>Unreal Engine 5.6, Blueprints / C++.</p></article>
+  </div>
+</div></section>
+
+<section id="contact"><div class="wrap two">
+  <div>
+    <h2>Contact</h2>
+    <div class="sub-h">email · github · youtube · cv</div>
+    <dl class="dl">
+      <div><dt>Email</dt><dd><a href="mailto:tmtjsk@gmail.com">tmtjsk@gmail.com</a></dd></div>
+      <div><dt>GitHub</dt><dd><a href="https://github.com/phanto17">github.com/phanto17</a></dd></div>
+      <div><dt>YouTube</dt><dd><a href="https://youtube.com/@phanto.official">@phanto.official</a></dd></div>
+      <div><dt>CV</dt><dd><a href="#">CV_Tymoteusz_Jaskolski_EN.pdf</a></dd></div>
+    </dl>
+  </div>
+  <div class="preview">
+    <div class="label">Preview — project subpage in this direction</div>
+    <div class="sub">
+      <div>
+        <h3>Turn-Based Tactics</h3>
+        <div class="meta">Unity 6 · URP 2D · solo · Mar 2026 –</div>
+        <div class="media">[ hero gif / video ]</div>
+        <p>Long-form page: what the game is, then "What I built" with figures, then a technical breakdown with short code excerpts, then credits.</p>
+        <div class="pull">Enemies don't telegraph before your turn — they reveal intent one at a time on theirs.</div>
+      </div>
+      <aside><div class="box"><dl>
+        <dt>Play</dt><dd><a href="#">itch.io ↗</a></dd>
+        <dt>Source</dt><dd><a href="#">GitHub ↗</a></dd>
+        <dt>Tools</dt><dd>Unity 6, URP 2D, Tilemap, Input System, NUnit</dd>
+        <dt>Credits</dt><dd>Kenney (tiles), itch.io character pack, PixelBattleText</dd>
+      </dl></div></aside>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">© 2026 Tymoteusz Jaskólski · Astro · GitHub Pages</div></footer>
+</body>
+</html>

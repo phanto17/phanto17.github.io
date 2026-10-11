@@ -1,0 +1,63 @@
+# Plan — next sessions (written 2026-10-11)
+
+Goal order: **three playable projects on itch.io as early as possible**, then polish. Hours are
+estimates for focused work; "you" marks steps only Tymoteusz can do.
+
+Prerequisite for every Unity session: Unity Hub → 6000.6.3f1 → Add modules → **Web Build Support**
+(≈ 1.1 GB download). *(you, 0.5 h)*
+
+## Session 2 — Push Comes to Shove on itch.io (≈ 9 h)
+
+| # | Title | Description | Objective | Hours |
+|---|---|---|---|---|
+| 2.0 | Publish the scaffold | `gh repo create phanto17/phanto17.github.io --public`, first commit, push `main`, set Pages source to GitHub Actions, confirm the deploy. | The site exists at phanto17.github.io from day one; every later push updates it. | 0.5 |
+| 2.1 | Git + LFS baseline for IntotheMewgenics | Unity `.gitignore`, `.gitattributes` with LFS for binaries, baseline commit before any change. | Safe to upgrade and edit. | 1 |
+| 2.2 | Upgrade to 6000.6.3f1 and strip tooling | Open in 6000.6.3f1, accept the upgrade, remove `com.ivanmurzak.unity.mcp*`, `com.unity.ai.assistant`, `Assets/Plugins/NuGet`, `TutorialInfo`; fix any compile errors; run the 23 EditMode tests. | Clean, buildable project with green tests. | 1.5 |
+| 2.3 | Fixed damage | Remove `RollDamage` / set `DamageMax` to 0 on the three attack assets; retune Melee/Ranged damage to single values; update tests and `DESIGN.md`. | The game matches its "deterministic" pillar. | 1 |
+| 2.4 | Public title in-game | Product name, banner/result text and any title card say "Push Comes to Shove"; no "Mewgenics" string remains. | Nothing leaks the old name. | 0.5 |
+| 2.5 | WebGL build | Web player settings (Gzip + decompression fallback, 960×600 or 16:9 canvas, Forward renderer check), build, test in Chrome and Firefox, fix aspect/framing issues. | A build that runs in the browser. | 2.5 |
+| 2.6 | itch.io page | Upload the build as HTML, set viewport size, description, controls, screenshots, GIF of a push into a pit, credits (Kenney, character pack, PixelBattleText). | Playable public link. | 1 |
+| 2.7 | Site update | Add `itchUrl`, status `playable`, media files (WebP + MP4), fill credit names/licences in `push-comes-to-shove.md`; push. | Project 1 complete per assignment. | 1 |
+
+## Session 3 — Horde Hours on itch.io (≈ 16.5 h, may split in two)
+
+| # | Title | Description | Objective | Hours |
+|---|---|---|---|---|
+| 3.1 | Git + LFS baseline for SurvivorLike | As 2.1. | Safe to change. | 1 |
+| 3.2 | Upgrade + package cleanup | 6000.6.3f1 upgrade; remove `com.unity.postprocessing`; delete unused pack demo scenes/materials; fix compile. | Clean project. | 2 |
+| 3.3 | Main menu scene | Build `MenuScene`: title, Play, Continue (only if a save exists), Credits panel listing every pack, Quit hidden on WebGL; wire `MainMenuManager` to `Game1`. | First build scene is a real menu. | 3 |
+| 3.4 | Static Field without VFX Graph | Rebuild the Static Field visual as a Particle System prefab; keep `DamagingAura` logic. | Ability works on WebGL. | 2 |
+| 3.5 | Bug pass | Fix the inverted magnet check in `ExperienceGem`, the reversed `timeElapsed` save, the `HealthController` null branch, the frame-rate-dependent wave timer (accumulator), remove cursor lock, hide Quit on web. | Known defects gone before anyone plays. | 2 |
+| 3.6 | Asset diet | WAV → Vorbis, texture max sizes, strip unused packs, check build report size. | Build small enough for itch and fast to load. | 2 |
+| 3.7 | WebGL build + perf | Build, profile in browser, confirm Forward+ or fall back to Forward, fix; capture screenshots and a GIF. | Runs smoothly in a browser. | 3 |
+| 3.8 | itch page + site update | As 2.6 / 2.7 with the full credits table. | Project 2 complete. | 1.5 |
+
+## Sessions 4–5 — Cinderhold rework (≈ 29 h)
+
+Order chosen to ship early: foundation → combat → enemies → progression/save → UI/feel → build,
+with two hand-made floors; room generation comes last.
+
+| # | Title | Description | Objective | Hours |
+|---|---|---|---|---|
+| 4.1 | New foundation | New 6000.6.3f1 project (keep the old one as reference only), Input System actions, asmdef, Kenney tiles + Tilemap, git + LFS. | Nothing from the tutorial remains. | 3 |
+| 4.2 | Combat core | `IDamageable`, `Health` with events, hit-stop/knockback, `WeaponData` SOs, overlap-box hitboxes. | Data-driven melee that feels good. | 5 |
+| 4.3 | Enemy AI | `EnemyDefinition` SO + state machine (Idle/Patrol/Chase/Attack/Flee) with sight; 2–3 types; boss with telegraphed pattern. | A real AI system for the breakdown page. | 6 |
+| 4.4 | Progression & save | XP/levels, coins, weapon shop, JSON save via `ISaveSystemElement`. | Your own loop and persistence. | 3 |
+| 4.5 | UI & feel | HUD, death screen, floating text pool, screen shake, SFX. | itch-ready polish. | 4 |
+| 4.6 | Two hand-made floors + web build + itch page | Author two floors, exit portal, build, screenshots, page, site update. | Project 3 playable. | 2 |
+| 5.1 | Room-based generator | Room templates stitched into a floor, doors, key/lock. | Replaces the hand-made floors; second write-up section. | 6 |
+
+## Session 6 — Site polish and submission (≈ 8 h)
+
+| # | Title | Description | Objective | Hours |
+|---|---|---|---|---|
+| 6.1 | Content TODOs | Career-goals paragraph, design-intent paragraphs, code excerpts + diagrams in each breakdown, remaining credit names/licences. | No `TODO` marker left on the site. | 2 |
+| 6.2 | CV regeneration | New PDF: GitHub `phanto17`; Mansion of Grief as team project Oct 2025 – Jul 2026 with the git-verified claims; Animal Shelter Feb 2026 with the honest scope; add Garden Simulator VR; drop the Jira claim if not true. | Site and CV agree (CLAUDE.md rule). | 1.5 (you) |
+| 6.3 | Media pipeline | Convert all screenshots to WebP, videos to MP4/WebM, add OG image, lazy loading check, repo size check. | Fast pages, small repo. | 1.5 |
+| 6.4 | Quality pass | Lighthouse (performance, a11y, SEO), keyboard navigation, reduced-motion test, 320 px width test, link check. | Submission-grade quality. | 1.5 |
+| 6.5 | Optional extras | Devlog page (reuse the content collection), "How I work" section, 404 page. | Stronger profile. | 1.5 |
+
+## Later (team consent needed)
+
+- Mansion of Grief as a fourth project page with a downloadable Windows build (team agreement, credits, asset-licence check).
+- Short clips for Garden Simulator VR and TagTheGame.
