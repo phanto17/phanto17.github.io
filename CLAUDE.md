@@ -104,9 +104,11 @@ names. If they diverge, tell me – don't silently change either.
 
 Astro 7.3.8 scaffold is in place and builds clean (`npm run build`, `astro check` 0 errors):
 home (hero, About, Projects, Activities, Experience, Contact), `/projects/<id>/` subpages from
-`src/content/projects/*.md`, GitHub Actions deploy workflow. Not yet in git, not pushed, repo not
-created. Open `TODO` markers on the site are deliberate placeholders. Session plan with hours:
-`docs/plan-sessions.md`.
+`src/content/projects/*.md`, GitHub Actions deploy workflow. **Live at https://phanto17.github.io
+since 2026-10-11** (repo `phanto17/phanto17.github.io`, Pages build type = workflow; every push to
+`main` redeploys in ~5 min). Local git identity: Tymoteusz Jaskólski <tmtjsk@gmail.com>. Open `TODO`
+markers on the site are deliberate placeholders. Session plan with hours: `docs/plan-sessions.md`
+(task 2.0 done; next is 2.1).
 
 ## Working rules
 
