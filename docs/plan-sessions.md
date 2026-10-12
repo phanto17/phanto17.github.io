@@ -8,6 +8,8 @@ Prerequisite for every Unity session: Unity Hub → 6000.6.3f1 → Add modules �
 
 ## Session 2 — Push Comes to Shove on itch.io (≈ 9 h)
 
+**Progress 2026-10-12:** 2.0 ✅ (site live) · 2.1 ✅ (baseline `443e37a`) · 2.2 ✅ (6000.6.3f1, packages stripped, 25/25 tests, commit `abe4464`) · 2.3 ✅ (fixed damage 4/3/1) · 2.4 ✅ (product name + shader renamed) · 2.5 ✅ web build verified in the browser (`Builds/PushComesToShove-web-0.1.0.zip`, 35 MB; Canvas Scaler fix `FixCanvasScalers.cs`; serve locally with `node tools/serve-web.mjs`) · 2.6 **waiting on you**: upload the zip to itch.io (copy in `docs/itch/push-comes-to-shove.md`) · 2.7 media added, `itchUrl` pending. Added out of plan: Eternity Keeper project page (live).
+
 | # | Title | Description | Objective | Hours |
 |---|---|---|---|---|
 | 2.0 | Publish the scaffold | `gh repo create phanto17/phanto17.github.io --public`, first commit, push `main`, set Pages source to GitHub Actions, confirm the deploy. | The site exists at phanto17.github.io from day one; every later push updates it. | 0.5 |
