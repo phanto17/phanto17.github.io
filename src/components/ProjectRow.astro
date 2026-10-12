@@ -10,7 +10,13 @@ const { project, index } = Astro.props;
 const d = project.data;
 const href = `/projects/${project.id}/`;
 const cover = d.media[0];
-const statusLabel = { playable: '▶ play on itch.io', 'in-progress': 'build in progress', planned: 'rework planned' }[d.status];
+const statusLabel = {
+  playable: '▶ play on itch.io',
+  released: '↓ download on GitHub',
+  'in-progress': 'build in progress',
+  planned: 'rework planned',
+}[d.status];
+const liveUrl = d.status === 'playable' ? d.itchUrl : d.status === 'released' ? d.downloadUrl : undefined;
 ---
 
 <article class="proj">
@@ -22,8 +28,8 @@ const statusLabel = { playable: '▶ play on itch.io', 'in-progress': 'build in 
     <p class="meta">{d.engine} · {d.role} · {d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</p>
     <div>
       {
-        d.status === 'playable' && d.itchUrl ? (
-          <a class="pill play" href={d.itchUrl}>{statusLabel}</a>
+        liveUrl ? (
+          <a class="pill play" href={liveUrl}>{statusLabel}</a>
         ) : (
           <span class="pill wip">{statusLabel}</span>
         )

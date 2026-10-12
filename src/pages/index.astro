@@ -39,7 +39,8 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
           I'm a BA Game Development student at Collegium Da Vinci in Poznań (2024 – present), specialising in gameplay
           programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a
           data-driven ability system, a deterministic grid-tactics engine, and a 2D dungeon crawler I'm rebuilding from
-          the ground up.
+          the ground up. Since July 2026 I've also been shipping Eternity Keeper, an open-source save editor for Pillars
+          of Eternity — reverse-engineering a real RPG's save format and verifying every edit in the game.
         </p>
         <p>
           I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore that on
@@ -67,7 +68,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     <Prism small top="55%" />
     <div class="wrap">
       <h2>Projects</h2>
-      <p class="sub-h">personal, playable on itch.io — each has its own write-up</p>
+      <p class="sub-h">personal — games playable on itch.io, tools released on GitHub — each has its own write-up</p>
       {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
     </div>
   </section>

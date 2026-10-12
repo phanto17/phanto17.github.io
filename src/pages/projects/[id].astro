@@ -27,7 +27,13 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
       <p class="meta">{d.engine} · {d.role} · {period}</p>
       <div class="actions">
         {
-          d.itchUrl ? (
+          d.kind === 'tool' ? (
+            d.downloadUrl ? (
+              <a class="btn primary" href={d.downloadUrl}>↓ Download (Windows)</a>
+            ) : (
+              <span class="btn" aria-disabled="true">↓ Download <span class="todo">TODO: link</span></span>
+            )
+          ) : d.itchUrl ? (
             <a class="btn primary" href={d.itchUrl}>▶ Play on itch.io</a>
           ) : (
             <span class="btn" aria-disabled="true">▶ Play on itch.io <span class="todo">TODO: link</span></span>
@@ -97,9 +103,19 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
       <div class="box">
         <dl>
           <dt>Status</dt>
-          <dd>{d.status === 'playable' ? 'Playable' : d.status === 'in-progress' ? 'Build in progress' : 'Rework planned'}</dd>
-          <dt>Play</dt>
-          <dd>{d.itchUrl ? <a href={d.itchUrl}>itch.io ↗</a> : <span class="todo">TODO</span>}</dd>
+          <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
+          <dt>{d.kind === 'tool' ? 'Download' : 'Play'}</dt>
+          <dd>
+            {
+              d.kind === 'tool' ? (
+                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="todo">TODO</span>
+              ) : d.itchUrl ? (
+                <a href={d.itchUrl}>itch.io ↗</a>
+              ) : (
+                <span class="todo">TODO</span>
+              )
+            }
+          </dd>
           <dt>Source</dt>
           <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="todo">TODO</span>}</dd>
           <dt>Role</dt>

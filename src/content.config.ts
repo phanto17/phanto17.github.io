@@ -13,8 +13,10 @@ const projects = defineCollection({
     title: z.string(),
     summary: z.string().max(220),
     genre: z.string(),
-    /** playable = itch.io link live · in-progress = being built for release · planned = not started */
-    status: z.enum(['playable', 'in-progress', 'planned']),
+    /** game (needs an itch.io link to count as playable) or tool (released on GitHub) */
+    kind: z.enum(['game', 'tool']).default('game'),
+    /** playable = itch.io link live · released = tool download live · in-progress · planned */
+    status: z.enum(['playable', 'released', 'in-progress', 'planned']),
     dates: z.object({
       start: z.string(), // "2026-03" (YYYY-MM)
       end: z.string().optional(), // omit = ongoing
@@ -36,6 +38,8 @@ const projects = defineCollection({
       .default([]),
     /** Required for a playable project; leave out while the build isn't published yet. */
     itchUrl: z.string().url().optional(),
+    /** For tools: the release/download page. */
+    downloadUrl: z.string().url().optional(),
     githubUrl: z.string().url().optional(),
     /** Every third-party asset, pack, font and sound used. */
     credits: z

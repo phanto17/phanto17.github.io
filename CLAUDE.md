@@ -44,9 +44,16 @@ Live, public game-dev portfolio website. It is both a university course assignme
 | Into the Mewgenics → public title **Push Comes to Shove** | `D:\UnityProjects\IntotheMewgenics` | 6000.3.10f1, URP 2D, Input System | Deterministic grid tactics (Into the Breach / King's Bounty inspired). Same project as "Turn-Based Tactics Prototype" on my CV. Design docs: `Docs/DESIGN.md`, `Docs/PLAN-core-loop.md`. Has Unity MCP installed (strip before building). `PixelBattleText` is third-party; tiles from Kenney; character sheets bought on itch.io. **Damage must be fixed, not random** (decided 2026-10-11; code currently rolls ranges). "Mewgenics" is the title of an existing commercial game – never use it publicly. |
 | DungeonForge → public title **Cinderhold** | `D:\UnityProjects\DungeonForge` | 6000.0.25f1, URP 2D | 2D dungeon crawler. **Every element is tutorial-derived (confirmed 2026-10-11) → to be reworked into my own project** with original architecture, data and licensed art (Kenney). Plan in `docs/audit-2026-10-11.md`. Until then, nothing in it may be presented as my contribution. |
 
-None of these projects is under git yet (agreed: put each under git at the start of its first Unity session).
-Full audit: `docs/audit-2026-10-11.md`. **Only Unity 6000.6.3f1 is installed and no editor has Web
-Build Support** – all three projects get upgraded to 6000.6.3f1 and the Web module is installed there.
+| **Eternity Keeper** (tool, not a game) | `D:\PillarsEditor\eternity-keeper` (repo `phanto17/eternity-keeper`, fork of `aybrkaknc/eternity-keeper`, GPL-3.0) | Java 8 + JCEF, Maven; own `CLAUDE.md` with strict toolchain and save-safety rules – **read it before touching that repo** | Pillars of Eternity save editor. My work Jul 12 – Oct 9 2026: ~90 commits (identities `tjaskol`, `boogiewoogie`), ~44 k lines added incl. tests, releases 1.0.0-beta (2026-10-06) and 1.0.1-beta (2026-10-09), PR #1 open upstream, Reddit announcements. 708 JUnit tests, CI + Package workflows. **Most code was written with Claude Code under my direction – the site and CV must say so** (the repo and Reddit posts already do). Site page: `src/content/projects/eternity-keeper.md` (kind: tool). Screenshots copied to `public/media/eternity-keeper/`. |
+
+IntotheMewgenics is under git since 2026-10-12 (baseline `443e37a`, LFS for binaries); SurvivorLike and
+DungeonForge are not yet (put each under git at the start of its first Unity session).
+Full audit: `docs/audit-2026-10-11.md`. Only Unity **6000.6.3f1** is installed; **Web Build Support is
+installed on it** (2026-10-11). All three projects get upgraded to 6000.6.3f1.
+
+**Never run `git` commands that rely on the shell's current directory** – one session wrote a Unity
+baseline commit into the Eternity Keeper repo because the cwd was not what `cd` implied (2026-10-12;
+reverted). Always use `git -C <absolute path>` and absolute file paths.
 
 ### Team projects (git-verified contribution; Activities, not Projects, for now)
 
