@@ -37,9 +37,12 @@ media:
   - { type: image, src: /media/push-comes-to-shove/move-range.webp, alt: "A selected soldier with its reachable tiles highlighted in green", caption: "Fig. 3 — path-aware move range of the selected unit" }
 # itchUrl: TODO after the WebGL build is published on itch.io
 credits:
-  - { asset: "Isometric tile sheet", author: "Kenney", url: "https://kenney.nl", license: "CC0" }
-  - { asset: "Character sprite sheets (Elf, Goblin, Human, Orc)", author: "TODO: itch.io pack name & author" }
-  - { asset: "PixelBattleText", author: "TODO author" }
+  - { asset: "Isometric Sandbox tile sheet", author: "Kenney", url: "https://kenney.nl", license: "CC0" }
+  - { asset: "Humans — Top Down Pixel Art Character Assets", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io/humans-top-down-pixel-art-character-assets", license: "Purchased; commercial use allowed, no resale" }
+  - { asset: "Orc — Top Down Pixel Art Characters", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io/orc-top-down-pixel-art-characters", license: "Purchased; commercial use allowed, no resale" }
+  - { asset: "Elf and Goblin character sheets", author: "TODO: confirm pack (Sanctum Pixel?)" }
+  - { asset: "PixelBattleText (animated damage numbers, bundles the Alphapix font)", author: "Psychic Fur", url: "https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358", license: "Free, Unity Asset Store EULA" }
+  - { asset: "Pixellari font (UI)", author: "Zacchary Dempsey-Plante", url: "https://www.dafont.com/pixellari.font", license: "100% free, credit requested" }
 ---
 
 ## The game

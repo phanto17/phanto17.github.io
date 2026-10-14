@@ -31,9 +31,11 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 
 ### Credits
 
-- Isometric tiles: Kenney (kenney.nl), CC0
-- Character sprites: TODO pack name and author (bought on itch.io)
-- Damage numbers: PixelBattleText — TODO author
-- Everything else: Tymoteusz Jaskólski
+- Isometric Sandbox tiles: [Kenney](https://kenney.nl), CC0
+- Human and Orc characters: [Sanctum Pixel](https://sanctumpixel.itch.io) — *Humans – Top Down Pixel Art Character Assets* and *Orc – Top Down Pixel Art Characters*
+- Elf and Goblin characters: TODO confirm the pack
+- Animated damage numbers: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
+- UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
+- Design and code: Tymoteusz Jaskólski
 
 Inspired by *Into the Breach* and *King's Bounty*.

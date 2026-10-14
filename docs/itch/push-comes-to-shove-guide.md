@@ -83,16 +83,18 @@ One level for now. Feedback welcome in the comments — especially on how readab
 
 ### Credits
 
-- Isometric tiles: [Kenney](https://kenney.nl) (CC0)
-- Character sprites: TODO pack name and author (bought on itch.io)
-- Damage numbers: PixelBattleText by TODO author
+- Isometric Sandbox tiles: [Kenney](https://kenney.nl), CC0
+- Human and Orc characters: [Sanctum Pixel](https://sanctumpixel.itch.io) — *Humans – Top Down Pixel Art Character Assets* and *Orc – Top Down Pixel Art Characters*
+- Elf and Goblin characters: TODO confirm the pack
+- Animated damage numbers: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
+- UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
 - Design and code: Tymoteusz Jaskólski
 
 Inspired by *Into the Breach* and *King's Bounty*.
 ```
 
-Fill in the two TODO credits before publishing — the pack you bought on itch.io and
-PixelBattleText's author (both are in the Unity project's folder names or purchase history).
+One TODO credit left: confirm where the Elf and Goblin sheets come from (Sanctum Pixel sells
+matching packs; check your itch.io purchases).
 
 | Field | Value |
 |---|---|
@@ -147,7 +149,7 @@ Preview, then **Save**. On a phone the banner scales down; check that the title 
 
 - [ ] zip uploaded, "played in the browser" ticked
 - [ ] 1280×720, fullscreen on, autostart off, SharedArrayBuffer off
-- [ ] description pasted, two TODO credits filled
+- [ ] description pasted, Elf/Goblin credit confirmed
 - [ ] genre, 10 tags, AI disclosure answered
 - [ ] cover 630×500, 3–5 screenshots 1280×720, GIF optional
 - [ ] theme colours and banner set
