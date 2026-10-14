@@ -84,17 +84,15 @@ One level for now. Feedback welcome in the comments — especially on how readab
 ### Credits
 
 - Isometric Sandbox tiles: [Kenney](https://kenney.nl), CC0
-- Human and Orc characters: [Sanctum Pixel](https://sanctumpixel.itch.io) — *Humans – Top Down Pixel Art Character Assets* and *Orc – Top Down Pixel Art Characters*
-- Elf and Goblin characters: TODO confirm the pack
-- Animated damage numbers: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
+- Characters (Humans, Orc, Elf, Goblin): [Sanctum Pixel](https://sanctumpixel.itch.io) — the *Top Down Pixel Art Characters* packs
+- Animated damage numbers and their Alphapix font: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
 - UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
 - Design and code: Tymoteusz Jaskólski
 
 Inspired by *Into the Breach* and *King's Bounty*.
 ```
 
-One TODO credit left: confirm where the Elf and Goblin sheets come from (Sanctum Pixel sells
-matching packs; check your itch.io purchases).
+All credits are confirmed.
 
 | Field | Value |
 |---|---|
@@ -149,7 +147,7 @@ Preview, then **Save**. On a phone the banner scales down; check that the title 
 
 - [ ] zip uploaded, "played in the browser" ticked
 - [ ] 1280×720, fullscreen on, autostart off, SharedArrayBuffer off
-- [ ] description pasted, Elf/Goblin credit confirmed
+- [ ] description pasted with the credits block
 - [ ] genre, 10 tags, AI disclosure answered
 - [ ] cover 630×500, 3–5 screenshots 1280×720, GIF optional
 - [ ] theme colours and banner set

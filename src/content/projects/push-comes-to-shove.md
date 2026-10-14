@@ -40,7 +40,7 @@ credits:
   - { asset: "Isometric Sandbox tile sheet", author: "Kenney", url: "https://kenney.nl", license: "CC0" }
   - { asset: "Humans — Top Down Pixel Art Character Assets", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io/humans-top-down-pixel-art-character-assets", license: "Purchased; commercial use allowed, no resale" }
   - { asset: "Orc — Top Down Pixel Art Characters", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io/orc-top-down-pixel-art-characters", license: "Purchased; commercial use allowed, no resale" }
-  - { asset: "Elf and Goblin character sheets", author: "TODO: confirm pack (Sanctum Pixel?)" }
+  - { asset: "Elf and Goblin — Top Down Pixel Art Characters", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io", license: "Purchased; commercial use allowed, no resale" }
   - { asset: "PixelBattleText (animated damage numbers, bundles the Alphapix font)", author: "Psychic Fur", url: "https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358", license: "Free, Unity Asset Store EULA" }
   - { asset: "Pixellari font (UI)", author: "Zacchary Dempsey-Plante", url: "https://www.dafont.com/pixellari.font", license: "100% free, credit requested" }
 ---

@@ -32,9 +32,8 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 ### Credits
 
 - Isometric Sandbox tiles: [Kenney](https://kenney.nl), CC0
-- Human and Orc characters: [Sanctum Pixel](https://sanctumpixel.itch.io) — *Humans – Top Down Pixel Art Character Assets* and *Orc – Top Down Pixel Art Characters*
-- Elf and Goblin characters: TODO confirm the pack
-- Animated damage numbers: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
+- Characters (Humans, Orc, Elf, Goblin): [Sanctum Pixel](https://sanctumpixel.itch.io) — the *Top Down Pixel Art Characters* packs
+- Animated damage numbers and their Alphapix font: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
 - UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
 - Design and code: Tymoteusz Jaskólski
 
