@@ -41,7 +41,7 @@ Live, public game-dev portfolio website. It is both a university course assignme
 | Project | Path | Unity | Notes |
 |---|---|---|---|
 | SurvivorLike → public title **Horde Hours** | `D:\UnityProjects\SurvivorLike 4\SurvivorLike` | 6000.0.38f1, URP 17, Cinemachine 3, Input System | Vampire-Survivors-like. Build scenes: MenuScene (currently **empty** – a menu must be built), Game1. My code: `Assets/_Game` (abilities, waves, object pooling, level-up, save system, HUD). Third-party: ten asset packs (VFX, characters, weapons), rat model from Sketchfab, fonts from dafont, AI-generated icons, music from Pixabay – credit them; never claim them. Static Field ability uses VFX Graph (unsupported on WebGL) → rebuild its visual as a Particle System. |
-| Into the Mewgenics → public title **Push Comes to Shove** | `D:\UnityProjects\IntotheMewgenics` | 6000.3.10f1, URP 2D, Input System | Deterministic grid tactics (Into the Breach / King's Bounty inspired). Same project as "Turn-Based Tactics Prototype" on my CV. Design docs: `Docs/DESIGN.md`, `Docs/PLAN-core-loop.md`. Has Unity MCP installed (strip before building). Third-party (confirmed 2026-10-14): Kenney Isometric Sandbox tiles (CC0); Sanctum Pixel *Top Down Pixel Art Characters* packs – Humans, Orc, Elf, Goblin (purchased, credit optional, no resale); PixelBattleText by Psychic Fur (free, Asset Store EULA, bundles the Alphapix font); UI font Pixellari by Zacchary Dempsey-Plante (100 % free, credit requested). The dafont "Pixel" font (krolesz94, personal use only) is **not** in the project. **Damage must be fixed, not random** (decided 2026-10-11; code currently rolls ranges). "Mewgenics" is the title of an existing commercial game – never use it publicly. |
+| Into the Mewgenics → public title **Push Comes to Shove** | `D:\UnityProjects\IntotheMewgenics` | 6000.3.10f1, URP 2D, Input System | Deterministic grid tactics (Into the Breach / King's Bounty inspired). Same project as "Turn-Based Tactics Prototype" on my CV. Design docs: `Docs/DESIGN.md`, `Docs/PLAN-core-loop.md`. Has Unity MCP installed (strip before building). Third-party (confirmed 2026-10-14): Kenney Isometric Sandbox tiles (CC0); Sanctum Pixel *Top Down Pixel Art Characters* packs – Humans, Orc, Elf, Goblin (purchased, credit optional, no resale); PixelBattleText by Psychic Fur (free, Asset Store EULA, bundles the Alphapix font); UI font Pixellari by Zacchary Dempsey-Plante (100 % free, credit requested). The dafont "Pixel" font (krolesz94, personal use only) is **not** in the project. Damage is fixed since 2026-10-12 (Melee 4 / Ranged 3 / Line 1). itch.io page: `https://fanto1.itch.io/push-comes-to-shove` (itch handle is **fanto1**, not phanto17). "Mewgenics" is the title of an existing commercial game – never use it publicly. |
 | DungeonForge → public title **Cinderhold** | `D:\UnityProjects\DungeonForge` | 6000.0.25f1, URP 2D | 2D dungeon crawler. **Every element is tutorial-derived (confirmed 2026-10-11) → to be reworked into my own project** with original architecture, data and licensed art (Kenney). Plan in `docs/audit-2026-10-11.md`. Until then, nothing in it may be presented as my contribution. |
 
 | **Eternity Keeper** (tool, not a game) | `D:\PillarsEditor\eternity-keeper` (repo `phanto17/eternity-keeper`, fork of `aybrkaknc/eternity-keeper`, GPL-3.0) | Java 8 + JCEF, Maven; own `CLAUDE.md` with strict toolchain and save-safety rules – **read it before touching that repo** | Pillars of Eternity save editor. My work Jul 12 – Oct 9 2026: ~90 commits (identities `tjaskol`, `boogiewoogie`), ~44 k lines added incl. tests, releases 1.0.0-beta (2026-10-06) and 1.0.1-beta (2026-10-09), PR #1 open upstream, Reddit announcements. 708 JUnit tests, CI + Package workflows. **Most code was written with Claude Code under my direction – the site and CV must say so** (the repo and Reddit posts already do). Site page: `src/content/projects/eternity-keeper.md` (kind: tool). Screenshots copied to `public/media/eternity-keeper/`. |
@@ -99,8 +99,7 @@ names. If they diverge, tell me – don't silently change either.
 - **Astro**, fully static. Projects live in a content collection (one Markdown/MDX file per
   project → its own subpage). Schema fields: title, summary, genre, status, dates, role,
   myContribution, tools, media, itchUrl, githubUrl (optional), credits.
-- Hosted on **GitHub Pages** from repo `phanto17/phanto17.github.io` (does not exist yet; create
-  with `gh repo create`), deployed by GitHub Actions on push to `main` → live at
+- Hosted on **GitHub Pages** from repo `phanto17/phanto17.github.io`, deployed by GitHub Actions on push to `main` → live at
   `https://phanto17.github.io`. `gh` CLI 2.102 is installed (`C:\Program Files\GitHub CLI`).
 - Unity builds do **not** go in this repo – they go to itch.io.
 - Media: WebP/AVIF images, MP4/WebM instead of large GIFs, lazy loading, keep the repo small.
@@ -115,7 +114,7 @@ home (hero, About, Projects, Activities, Experience, Contact), `/projects/<id>/`
 since 2026-10-11** (repo `phanto17/phanto17.github.io`, Pages build type = workflow; every push to
 `main` redeploys in ~5 min). Local git identity: Tymoteusz Jaskólski <tmtjsk@gmail.com>. Open `TODO`
 markers on the site are deliberate placeholders. Session plan with hours: `docs/plan-sessions.md`
-(task 2.0 done; next is 2.1).
+(session 2 done up to the itch upload; next is session 3, Horde Hours).
 
 ## Working rules
 
