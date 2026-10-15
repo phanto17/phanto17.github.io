@@ -23,6 +23,8 @@ Prerequisite for every Unity session: Unity Hub → 6000.6.3f1 → Add modules �
 
 ## Session 3 — Horde Hours on itch.io (≈ 16.5 h, may split in two)
 
+**Progress 2026-10-15:** 3.1 ✅ baseline `8a41e19` · 3.2 ✅ 6000.6.3f1, PPv2 + VFX Graph removed, demo folders dropped · 3.3 ✅ menu scene built from code (`HordeHoursSetup.BuildMenuScene`) · 3.4 ✅ Static Field as a particle ring · 3.5 ✅ bug pass (magnet, timer, save, cursor, GetEntityId) · 3.6 ✅ Vorbis audio, 1024 px web textures, unused report in `Logs/asset-usage-report.txt` · 3.7 ✅ `Builds/HordeHours-web-0.1.0.zip` (27 MB), verified in the browser, no console errors · 3.8 **waiting on you**: itch upload (copy in `docs/itch/horde-hours.md`, art in `docs/itch/assets/`), then `itchUrl` on the site.
+
 | # | Title | Description | Objective | Hours |
 |---|---|---|---|---|
 | 3.1 | Git + LFS baseline for SurvivorLike | As 2.1. | Safe to change. | 1 |
