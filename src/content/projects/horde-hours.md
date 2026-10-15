@@ -31,24 +31,27 @@ tools:
   - AI Navigation (NavMesh)
   - Shader Graph
   - TextMesh Pro
-media: []
+media:
+  - { type: image, src: /media/horde-hours/fireball.webp, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 1 — a run in the web build (800 px capture — TODO recapture at 1280)" }
+  - { type: image, src: /media/horde-hours/arena.webp, alt: "Four slimes closing in on the player across the arena", caption: "Fig. 2 — the first wave arrives" }
+  - { type: image, src: /media/horde-hours/menu.webp, alt: "Horde Hours main menu with Play and Credits buttons", caption: "Fig. 3 — the menu built for the web release" }
 # itchUrl: TODO after the WebGL build is published
 credits:
   - { asset: "Character Pack", author: "Supercyan" }
   - { asset: "Character Pack — Zombie Sample", author: "Supercyan" }
+  - { asset: "Monster Pack (slime, bat) and Skeleton enemies", author: "TODO authors (Asset Store purchase history)" }
+  - { asset: "RPG Weapons", author: "TODO author" }
   - { asset: "BTM Items — Gems", author: "BTM Assets" }
-  - { asset: "Explosions VFX", author: "TODO author" }
+  - { asset: "Comic FX explosions", author: "TODO author" }
   - { asset: "Fire Effects (HunFX)", author: "TODO author" }
   - { asset: "Slash Effects FREE", author: "Matthew Guz" }
-  - { asset: "RPG Weapons", author: "TODO author" }
-  - { asset: "Static Field VFX", author: "TODO author" }
   - { asset: "VFX Pack Impact (Free Version)", author: "WALLCOEUR" }
   - { asset: "Zap VFX URP", author: "Vefects" }
   - { asset: "Stylized Grass Texture", author: "TODO author" }
   - { asset: "Dancing rat model", author: "TODO author (Sketchfab)" }
   - { asset: "Hints & Stars Lite SFX", author: "TODO author" }
   - { asset: "Music: Darkness, Forest, Happy, Mystery, Space Walk", author: "TODO authors (Pixabay)" }
-  - { asset: "Fonts: Caslon Antique, Gondens (demo), League Gothic, Retro Floral", author: "TODO authors (dafont)" }
+  - { asset: "Fonts: League Gothic (OFL), Caslon Antique, Retro Floral", author: "TODO authors (dafont)" }
   - { asset: "Ability icons", author: "AI-generated" }
 ---
 
@@ -74,8 +77,9 @@ Enemies, projectiles, hit VFX, damage popups and gems all go through one `Object
 
 `LevelUpManager` turns every enemy kill into XP, drives the XP curve, and builds the three-card offer from the ability and passive databases: owned items appear as "level N+1" only below their cap, unowned ones only while a slot is free. The screen pauses time, unlocks the cursor and preselects the first card for controller play. The save system finds every `ISaveSystemElement` in the scene, lets each write into one `SaveData` object, serialises it to JSON in the persistent data path and restores abilities by name from the database on load.
 
-### Known issues I'm fixing for the web build
+### What changed for the web build (October 2026)
 
-- The first build scene is an empty menu — a real main menu is being built.
-- The Static Field effect used VFX Graph, which browsers don't support; it is being rebuilt as a particle system.
-- The XP-magnet range check was inverted, so the magnet passive did nothing; fixed in the rework.
+- A real main menu (Play, Credits, Quit) replaced the empty first scene.
+- The Static Field effect used VFX Graph, which browsers don't support; it is now a particle-system ring driven by the same `DamagingAura` logic.
+- The XP-magnet range check was inverted, so the magnet passive did nothing. Fixed, along with a frame-rate-dependent wave timer, a save field that was written backwards, and a pointer lock the game never needed.
+- Forward+ rendering switched to Forward, audio moved to Vorbis, textures capped at 1024 px for the web.
