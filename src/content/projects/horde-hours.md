@@ -52,7 +52,8 @@ credits:
   - { asset: "Stylized Grass Texture", author: "LowlyPoly", url: "https://assetstore.unity.com/packages/2d/textures-materials/glass/stylized-grass-texture-153153", license: "Asset Store EULA" }
   - { asset: "Free – Casual & Relaxing Game Music Pack (track \"Happy Harmony\")", author: "SLD Audio", url: "https://assetstore.unity.com/packages/audio/music/free-casual-relaxing-game-music-pack-262740", license: "Asset Store EULA" }
   - { asset: "Hints Stars Points & Rewards Sound Effects – Lite Pack", author: "Cyberwave Orchestra", url: "https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538", license: "Asset Store EULA" }
-  - { asset: "Rat character and Flair animation", author: "Mixamo (Adobe)", url: "https://www.mixamo.com", license: "Mixamo terms, royalty-free" }
+  - { asset: "Rat model (mesh and texture)", author: "TODO: original modeller unknown; the file was rigged through Mixamo" }
+  - { asset: "Flair dance animation (retargeted)", author: "Mixamo (Adobe)", url: "https://www.mixamo.com", license: "Mixamo terms, royalty-free" }
   - { asset: "League Gothic font", author: "The League of Moveable Type", url: "https://www.theleagueofmoveabletype.com/league-gothic", license: "SIL OFL" }
   - { asset: "Caslon Antique font", author: "Typographer Mediengestaltung", url: "https://www.1001fonts.com/caslon-antique-font.html", license: "1001Fonts Free For Commercial Use" }
   - { asset: "Ability icons", author: "AI-generated" }
