@@ -37,21 +37,23 @@ media:
   - { type: image, src: /media/horde-hours/menu.webp, alt: "Horde Hours main menu with Play and Credits buttons", caption: "Fig. 3 — the menu built for the web release" }
 # itchUrl: TODO after the WebGL build is published
 credits:
-  - { asset: "Character Pack", author: "Supercyan" }
-  - { asset: "Character Pack — Zombie Sample", author: "Supercyan" }
-  - { asset: "Monster Pack (slime, bat) and Skeleton enemies", author: "TODO authors (Asset Store purchase history)" }
-  - { asset: "RPG Weapons", author: "TODO author" }
-  - { asset: "BTM Items — Gems", author: "BTM Assets" }
-  - { asset: "Comic FX explosions", author: "TODO author" }
-  - { asset: "Fire Effects (HunFX)", author: "TODO author" }
-  - { asset: "Slash Effects FREE", author: "Matthew Guz" }
-  - { asset: "VFX Pack Impact (Free Version)", author: "WALLCOEUR" }
-  - { asset: "Zap VFX URP", author: "Vefects" }
-  - { asset: "Stylized Grass Texture", author: "TODO author" }
+  - { asset: "Character Pack: Free Sample", author: "Supercyan", url: "https://assetstore.unity.com/packages/3d/characters/humanoids/character-pack-free-sample-79870", license: "Asset Store EULA" }
+  - { asset: "Character Pack: Zombie Sample", author: "Supercyan", url: "https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/character-pack-zombie-sample-131604", license: "Asset Store EULA" }
+  - { asset: "Level 1 Monster Pack", author: "PI Entertainment Limited", url: "https://assetstore.unity.com/packages/3d/characters/creatures/level-1-monster-pack-77703", license: "Asset Store EULA" }
+  - { asset: "Stylized Free Skeleton", author: "ThunderForgeStudio", url: "https://assetstore.unity.com/packages/3d/characters/creatures/stylized-free-skeleton-298650", license: "Asset Store EULA" }
+  - { asset: "FREE – RPG Weapons", author: "Blink", url: "https://assetstore.unity.com/packages/3d/props/weapons/free-rpg-weapons-199738", license: "Asset Store EULA" }
+  - { asset: "Simple Gems and Items Ultimate Animated Customizable Pack", author: "BenjaTheMaker", url: "https://assetstore.unity.com/packages/3d/props/simple-gems-and-items-ultimate-animated-customizable-pack-73764", license: "Asset Store EULA" }
+  - { asset: "Comic Explosion Effect", author: "CartoonVFX9x", url: "https://assetstore.unity.com/packages/vfx/particles/fire-explosions/comic-explosion-effect-317348", license: "Asset Store EULA" }
+  - { asset: "(Free) StylizedVFX Fire Pack", author: "Hun0FX", url: "https://assetstore.unity.com/packages/vfx/particles/fire-explosions/free-stylizedvfx-fire-pack-321082", license: "Asset Store EULA" }
+  - { asset: "Slash Effects FREE", author: "Matthew Guz", url: "https://assetstore.unity.com/packages/vfx/particles/spells/slash-effects-free-295209", license: "Asset Store EULA" }
+  - { asset: "Hit Impact Effects FREE", author: "Travis Game Assets", url: "https://assetstore.unity.com/packages/vfx/particles/hit-impact-effects-free-218385", license: "Asset Store EULA" }
+  - { asset: "VFX – Impact and Hit – Light Version", author: "Cartoon VFX by Wallcoeur", url: "https://assetstore.unity.com/packages/vfx/particles/vfx-impact-and-hit-light-version-335800", license: "Asset Store EULA" }
+  - { asset: "Zap VFX – URP", author: "Vefects", url: "https://assetstore.unity.com/packages/vfx/particles/spells/zap-vfx-urp-303479", license: "Asset Store EULA" }
+  - { asset: "Stylized Grass Texture", author: "LowlyPoly", url: "https://assetstore.unity.com/packages/2d/textures-materials/glass/stylized-grass-texture-153153", license: "Asset Store EULA" }
+  - { asset: "Free – Casual & Relaxing Game Music Pack (track \"Happy Harmony\")", author: "SLD Audio", url: "https://assetstore.unity.com/packages/audio/music/free-casual-relaxing-game-music-pack-262740", license: "Asset Store EULA" }
+  - { asset: "Hints Stars Points & Rewards Sound Effects – Lite Pack", author: "Cyberwave Orchestra", url: "https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538", license: "Asset Store EULA" }
   - { asset: "Dancing rat model", author: "TODO author (Sketchfab)" }
-  - { asset: "Hints & Stars Lite SFX", author: "TODO author" }
-  - { asset: "Music: Darkness, Forest, Happy, Mystery, Space Walk", author: "TODO authors (Pixabay)" }
-  - { asset: "Fonts: League Gothic (OFL), Caslon Antique, Retro Floral", author: "TODO authors (dafont)" }
+  - { asset: "Fonts: League Gothic (OFL), Caslon Antique, Retro Floral", author: "League of Moveable Type; TODO (dafont)" }
   - { asset: "Ability icons", author: "AI-generated" }
 ---
 

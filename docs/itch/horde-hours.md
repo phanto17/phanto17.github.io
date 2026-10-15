@@ -38,12 +38,13 @@ Feedback welcome in the comments — especially on weapon feel and difficulty.
 
 ### Credits
 
-- Characters: Supercyan — *Character Pack* and *Character Pack: Zombie Sample*
-- Enemies and weapons: TODO exact pack names (Skeleton / Slime / Bat packs, RPG Weapons)
-- Effects: Explosions VFX · Fire Effects (HunFX) · Slash Effects FREE by Matthew Guz · VFX Pack Impact (Free) by WALLCOEUR · Zap VFX URP by Vefects · Static Field VFX
-- Gems: BTM Assets · Grass: Stylized Grass Texture · Rat model from Sketchfab (TODO author)
-- Music from Pixabay (TODO track authors) · SFX: Hints & Stars Lite (TODO author) and others
-- Fonts: League Gothic (OFL), Caslon Antique, Retro Floral
+- Characters: [Character Pack: Free Sample](https://assetstore.unity.com/packages/3d/characters/humanoids/character-pack-free-sample-79870) and [Zombie Sample](https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/character-pack-zombie-sample-131604) by Supercyan
+- Enemies: [Level 1 Monster Pack](https://assetstore.unity.com/packages/3d/characters/creatures/level-1-monster-pack-77703) by PI Entertainment Limited · [Stylized Free Skeleton](https://assetstore.unity.com/packages/3d/characters/creatures/stylized-free-skeleton-298650) by ThunderForgeStudio
+- Weapons and items: [FREE – RPG Weapons](https://assetstore.unity.com/packages/3d/props/weapons/free-rpg-weapons-199738) by Blink · [Simple Gems and Items](https://assetstore.unity.com/packages/3d/props/simple-gems-and-items-ultimate-animated-customizable-pack-73764) by BenjaTheMaker
+- Effects: [Comic Explosion Effect](https://assetstore.unity.com/packages/vfx/particles/fire-explosions/comic-explosion-effect-317348) by CartoonVFX9x · [(Free) StylizedVFX Fire Pack](https://assetstore.unity.com/packages/vfx/particles/fire-explosions/free-stylizedvfx-fire-pack-321082) by Hun0FX · [Slash Effects FREE](https://assetstore.unity.com/packages/vfx/particles/spells/slash-effects-free-295209) by Matthew Guz · [Hit Impact Effects FREE](https://assetstore.unity.com/packages/vfx/particles/hit-impact-effects-free-218385) by Travis Game Assets · [VFX – Impact and Hit – Light Version](https://assetstore.unity.com/packages/vfx/particles/vfx-impact-and-hit-light-version-335800) by Cartoon VFX by Wallcoeur · [Zap VFX – URP](https://assetstore.unity.com/packages/vfx/particles/spells/zap-vfx-urp-303479) by Vefects
+- Environment: [Stylized Grass Texture](https://assetstore.unity.com/packages/2d/textures-materials/glass/stylized-grass-texture-153153) by LowlyPoly · rat model from Sketchfab (TODO author)
+- Audio: "Happy Harmony" from [Free – Casual & Relaxing Game Music Pack](https://assetstore.unity.com/packages/audio/music/free-casual-relaxing-game-music-pack-262740) by SLD Audio · [Hints Stars Points & Rewards – Lite Pack](https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538) by Cyberwave Orchestra
+- Fonts: League Gothic (OFL), Caslon Antique, Retro Floral (dafont)
 - Ability icons: AI-generated
 - Design and code: Tymoteusz Jaskólski
 
