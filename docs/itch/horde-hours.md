@@ -3,6 +3,11 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.1.0.zip` (27 MB)
+- **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
+- **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
+- **Known rough edges in 0.1.0:** no sound-mix pass, no win condition (by design), several pack authors still missing from the credits
+
 ## Title / slug
 
 `Horde Hours` · `fanto1.itch.io/horde-hours`
