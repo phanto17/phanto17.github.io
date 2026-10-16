@@ -116,7 +116,7 @@ home (hero, About, Projects, Activities, Experience, Contact), `/projects/<id>/`
 since 2026-10-11** (repo `phanto17/phanto17.github.io`, Pages build type = workflow; every push to
 `main` redeploys in ~5 min). Local git identity: Tymoteusz Jaskólski <tmtjsk@gmail.com>. Open `TODO`
 markers on the site are deliberate placeholders. Session plan with hours: `docs/plan-sessions.md`
-(sessions 2–4 complete; all three projects playable on itch.io since 2026-10-16; next is session 6 polish).
+(sessions 2–4 complete; all three projects playable on itch.io since 2026-10-16; session 6 polish done 2026-10-16 except the career-goals paragraph and the Horde Hours design intent/start month, which only the owner can write). Tools: `tools/check-links.mjs` (run after `npm run build`), `tools/make-og.py` (Open Graph images), `tools/serve-web.mjs`, `tools/extract-unitypackage.py`.
 
 ## Working rules
 
