@@ -42,10 +42,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString()
     <meta name="twitter:image" content={ogImage} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <!-- Fonts load without blocking the first paint: fallback text shows at once, web fonts swap in. -->
-    <link rel="preload" as="style" href={fontsHref} />
-    <link rel="stylesheet" href={fontsHref} media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href={fontsHref} /></noscript>
+    <!-- Render-blocking on purpose: an async load made the hero re-wrap when Fraunces swapped in
+         (CLS 0.22 on /projects/eternity-keeper/, Lighthouse 2026-10-16) with no LCP gain. -->
+    <link rel="stylesheet" href={fontsHref} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
