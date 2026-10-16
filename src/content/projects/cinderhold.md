@@ -40,22 +40,119 @@ media:
 credits:
   - { asset: "Tiny Dungeon tileset and characters", author: "Kenney", url: "https://kenney.nl/assets/tiny-dungeon", license: "CC0" }
   - { asset: "Liberation Sans (UI font, bundled with TextMesh Pro)", author: "Red Hat", url: "https://github.com/liberationfonts/liberation-fonts", license: "SIL Open Font License" }
-  - { asset: "Sound effects", author: "generated procedurally in code — no recorded audio" }
+  - { asset: "Sound effects", author: "generated procedurally in code — no recorded audio", license: "n/a (own code)" }
 ---
 
 ## The game
 
-Cinderhold will be a short top-down dungeon crawler: fight through a handful of rooms, pick up coins and keys, upgrade your weapon between floors, and face a boss with a telegraphed attack pattern. Small on purpose — the goal is a complete, polished loop that runs in the browser.
+Cinderhold is a short top-down dungeon crawler. You fight down two floors of slimes, bats and rats, level up for more health, buy a heavier weapon from the smith with the coins they drop, and face Cinderclaw, the guardian that seals the last exit. Every enemy attack is marked on the floor before it lands: step out of the red mark, then punish. It is small on purpose, a complete loop that runs in the browser.
 
-## The plan
+The first version of this project, in 2025, was a tutorial follow-along. It is kept only as a frozen reference and nothing from it is reused; the current game started in October 2026 from Unity's empty 2D template.
 
-The first version of this project was a tutorial follow-along, and I'm not going to pretend otherwise. The rework replaces every system with my own:
+## Technical breakdown
 
-1. **Foundation** — fresh Unity 6 project, Input System actions, assembly definitions, Kenney tileset, git with LFS. *Done.*
-2. **Combat core** — `IDamageable`, health with events, hit-stop and knockback, `WeaponData` ScriptableObjects (arc, damage, cooldown), overlap-box hitboxes. *Done.*
-3. **Enemy AI** — `EnemyDefinition` assets and a state machine (Idle / Patrol / Chase / Attack / Flee) with sight checks; three enemy types and one boss. *Done.*
-4. **Rooms** — hand-made room templates stitched into a floor, doors, a locked door and key, an exit.
-5. **Progression & save** — XP and levels, coins, a weapon shop, JSON saves reusing the `ISaveSystemElement` pattern from Horde Hours. *Done.*
-6. **UI & feel** — HUD, death screen, floating text pool, screen shake, sound. *Done (sound is synthesised placeholder audio for now).*
-7. **Web build** — itch.io page, screenshots, credits. *Done: [playable on itch.io](https://phanto-official.itch.io/cinderhold).*
+### 1. Enemies as small state machines
 
+Each enemy type is an `EnemyDefinition` asset (sprite, health, speeds, sight range, an attack pattern and how cowardly it is) applied to one generic prefab at spawn. Behaviour is six states. They are plain C# objects that only see an interface of senses and actions, so every transition is tested against a fake instead of a scene.
+
+<figure class="diagram">
+<svg viewBox="0 0 760 320" role="img" aria-labelledby="sm-t sm-d">
+<title id="sm-t">Enemy state machine</title>
+<desc id="sm-d">Idle and Patrol alternate on timers. Seeing the player or being hit starts a Chase. In range and in sight, Chase becomes Attack; when the target steps out of range, Attack returns to Chase. Losing sight for longer than the enemy's memory returns Chase to Idle. At low health, a cowardly enemy Flees; when it is far enough away or cornered it Recovers, an idle that ignores the player, then patrols again.</desc>
+<defs><marker id="sm-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b9a68f"/></marker></defs>
+<g fill="#3a3224" stroke="#5d412b">
+<rect x="40" y="60" width="120" height="44" rx="10"/>
+<rect x="40" y="196" width="120" height="44" rx="10"/>
+<rect x="320" y="128" width="120" height="44" rx="10"/>
+<rect x="600" y="60" width="120" height="44" rx="10" stroke="#f27c52"/>
+<rect x="600" y="196" width="120" height="44" rx="10" stroke="#cab5ce"/>
+<rect x="320" y="250" width="120" height="44" rx="10"/>
+</g>
+<g class="mono" font-size="13" fill="#f6d370" text-anchor="middle">
+<text x="100" y="87">IDLE</text><text x="100" y="223">PATROL</text><text x="380" y="155">CHASE</text>
+<text x="660" y="87" fill="#f27c52">ATTACK</text><text x="660" y="223" fill="#cab5ce">FLEE</text><text x="380" y="277">RECOVER</text>
+</g>
+<g fill="none" stroke="#b9a68f" stroke-width="1.5" marker-end="url(#sm-ah)">
+<line x1="84" y1="106" x2="84" y2="192"/>
+<line x1="116" y1="194" x2="116" y2="108"/>
+<line x1="162" y1="90" x2="316" y2="138"/>
+<line x1="162" y1="212" x2="316" y2="162"/>
+<path d="M380 126 Q300 30 164 62"/>
+<line x1="442" y1="140" x2="596" y2="92"/>
+<path d="M620 106 Q560 172 444 162"/>
+<line x1="660" y1="106" x2="660" y2="192"/>
+<line x1="442" y1="166" x2="596" y2="210"/>
+<line x1="598" y1="232" x2="444" y2="266"/>
+<line x1="318" y1="268" x2="164" y2="230"/>
+</g>
+<g class="mono" font-size="10.5" fill="#b9a68f">
+<text x="78" y="152" text-anchor="end">time up</text>
+<text x="124" y="152">arrived</text>
+<text x="234" y="140" text-anchor="middle">sees player or is hit</text>
+<text x="286" y="50" text-anchor="middle">lost sight longer than memory</text>
+<text x="515" y="80" text-anchor="middle">in range and in sight</text>
+<text x="545" y="180" text-anchor="middle">out of range</text>
+<text x="668" y="154">low health</text>
+<text x="530" y="290" text-anchor="middle">far enough or cornered</text>
+<text x="240" y="274" text-anchor="middle">time up</text>
+</g>
+</svg>
+<figcaption>Fig. — the six states. Recover is an idle that ignores the player, so an enemy that has just fled is not pulled straight back into the fight.</figcaption>
+</figure>
+
+The attack state carries the pacing rule that makes fights readable: swing, wait the swing out, then pause before deciding again. That pause is the player's window to hit back.
+
+```csharp
+public override EnemyState Tick(IEnemyContext ctx, float dt)
+{
+    EnemyStats s = ctx.Stats;
+    if (!ctx.HasTarget) return new IdleState(s.RandomIdleTime(ctx.Random01()));
+    if (ctx.IsAttacking) return null;
+
+    if (_swung)
+    {
+        _pause += dt;
+        if (_pause < s.AttackPause) return null;
+        if (ctx.CanFlee) return new FleeState();
+        _swung = false;
+        _pause = 0f;
+    }
+
+    if (ctx.DistanceToTarget > s.AttackRange * LeaveRangeFactor) return new ChaseState();
+
+    Vector2 direction = ctx.TargetPosition - ctx.Position;
+    if (ctx.TryAttack(direction)) _swung = true;
+    return null; // weapon on cooldown: hold position and try again next tick
+}
+```
+<p class="excerpt-caption">AttackState.cs — <code>Tick</code>, unedited. A state returns the next state, or null to keep running.</p>
+
+The boss is the same brain with a longer weapon list (slam, slam, sweep). There is no boss-specific code.
+
+### 2. Floors written as text
+
+Both floors are text maps inside an editor script, built into scenes from the command line: walls, doorways, props, the spawn, the smith, the exit and every enemy. Changing a floor means editing a few characters and re-running one build step.
+
+```text
+####################
+#.........#........#
+#..S......#...B....#
+#.........D........#
+#....P....#........#
+#.........#....S...#
+#######D########...#
+#.........$........#
+#..B...............#
+#........x...S....E#
+#........b.........#
+####################
+```
+<p class="excerpt-caption">Floor 1 as authored. # wall · D doorway · P spawn · $ smith · E exit · S slime · B bat · x crate · b barrel.</p>
+
+### 3. A playtest that became a test
+
+The first recorded playtest showed the player walking straight through walls. The cause was a composite collider that, built by script, produced no geometry at runtime, and the unit tests could not see it because they never loaded a floor. The fix shipped with a test that loads Floor 1 and drives the player and an enemy into a wall, so the same failure cannot return unnoticed.
+
+### What's next
+
+A pixel UI font to match the art, recorded sound in place of the synthesised placeholders, and a room generator that stitches hand-made rooms into floors.

@@ -41,8 +41,8 @@ media:
 downloadUrl: https://github.com/phanto17/eternity-keeper/releases
 githubUrl: https://github.com/phanto17/eternity-keeper
 credits:
-  - { asset: "Eternity Keeper (original, 2015–16)", author: "Kim Mantas", url: "https://github.com/Fyorl/eternity-keeper", license: "GPL-3.0" }
-  - { asset: "0.20a conversion work (2020)", author: "ktully", license: "GPL-3.0" }
+  - { asset: "Eternity Keeper (original, 2015–16)", author: "Kim Mantas", url: "https://bitbucket.org/Fyorl/eternity-keeper", license: "GPL-3.0" }
+  - { asset: "0.20a conversion work (2020)", author: "ktully", url: "https://github.com/ktully/eternity-keeper", license: "GPL-3.0" }
   - { asset: "0.21a update for the current game (Feb 2026)", author: "aybrkaknc (u/ayberk2766)", url: "https://github.com/aybrkaknc/eternity-keeper", license: "GPL-3.0" }
   - { asset: "JCEF, Logback, Commons IO, Guava, zip4j, org.json, UnityPy and the other libraries", author: "their authors — listed in THIRD-PARTY-NOTICES.md", license: "see notices" }
 ---
@@ -70,5 +70,3 @@ The CI workflow runs 708 JUnit tests and the node-run suites for the page's merg
 ### How I worked
 
 Most of the code was written with Claude Code. My job was the part an AI can't do from the outside: decide what the editor should do by watching the game, specify each feature in the game's own terms, review what came back, run it against real saves, load the result in the game and read the game's log. The process notes, invariants and lessons files in the repository are the record of that.
-
-<span class="todo">TODO: short GIF of an edit → Save → loaded in the game.</span>

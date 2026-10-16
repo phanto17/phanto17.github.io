@@ -32,7 +32,7 @@ tools:
   - Shader Graph
   - TextMesh Pro
 media:
-  - { type: image, src: /media/horde-hours/fireball.webp, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 1 — a run in the web build (800 px capture — TODO recapture at 1280)" }
+  - { type: image, src: /media/horde-hours/fireball.webp, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 1 — a run in the web build" }
   - { type: image, src: /media/horde-hours/arena.webp, alt: "Four slimes closing in on the player across the arena", caption: "Fig. 2 — the first wave arrives" }
   - { type: image, src: /media/horde-hours/menu.webp, alt: "Horde Hours main menu with Play and Credits buttons", caption: "Fig. 3 — the menu built for the web release" }
 itchUrl: https://phanto-official.itch.io/horde-hours
@@ -52,11 +52,11 @@ credits:
   - { asset: "Stylized Grass Texture", author: "LowlyPoly", url: "https://assetstore.unity.com/packages/2d/textures-materials/glass/stylized-grass-texture-153153", license: "Asset Store EULA" }
   - { asset: "Free – Casual & Relaxing Game Music Pack (track \"Happy Harmony\")", author: "SLD Audio", url: "https://assetstore.unity.com/packages/audio/music/free-casual-relaxing-game-music-pack-262740", license: "Asset Store EULA" }
   - { asset: "Hints Stars Points & Rewards Sound Effects – Lite Pack", author: "Cyberwave Orchestra", url: "https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538", license: "Asset Store EULA" }
-  - { asset: "Rat model (mesh and texture)", author: "TODO: original modeller unknown; the file was rigged through Mixamo" }
+  - { asset: "Rat model (mesh and texture)", author: "Original modeller unknown — the file came rigged through Mixamo. If this is your model, please contact me for credit or removal.", license: "Unknown" }
   - { asset: "Flair dance animation (retargeted)", author: "Mixamo (Adobe)", url: "https://www.mixamo.com", license: "Mixamo terms, royalty-free" }
   - { asset: "League Gothic font", author: "The League of Moveable Type", url: "https://www.theleagueofmoveabletype.com/league-gothic", license: "SIL OFL" }
   - { asset: "Caslon Antique font", author: "Typographer Mediengestaltung", url: "https://www.1001fonts.com/caslon-antique-font.html", license: "1001Fonts Free For Commercial Use" }
-  - { asset: "Ability icons", author: "AI-generated" }
+  - { asset: "Ability icons", author: "AI-generated", license: "n/a (generated)" }
 ---
 
 ## The game
@@ -71,7 +71,80 @@ Horde Hours is a top-down 3D survivors-like. You move; your weapons fire on thei
 
 Every weapon is a ScriptableObject asset derived from `Ability`: name, icon, VFX prefab, cooldown, range, damage range, damage type, targeting mode and level cap. Concrete subclasses override `Execute` — a projectile spawns a pooled `MoveTo` object and aims it, an aura attaches a pulsing `DamagingAura` to the player, a whip spawns an `AreaDamage` volume in front of the player. The controller clones the assets at runtime so each run has its own levels and cooldown timers, and passives mutate a cloned `UnitStatistics` sheet that every ability reads through. Adding a weapon means adding an asset, not touching the controller.
 
-<span class="todo">TODO: short code excerpt (Ability.GetDamage + AbilitiesController.HandleAbility) and a diagram of the flow.</span>
+The whole loop is one method on the player. Every frame, each ability ticks its own cooldown; when it is ready, it asks for a target and executes:
+
+```csharp
+private void HandleAbility(Ability ability) {
+    ability.cooldownTimer -= Time.deltaTime;
+
+    if (ability.cooldownTimer > 0) return;
+
+    GameObject target = GetTargetForAbility(ability);
+
+    bool targetFound = target != null;
+    bool isNonTargetedAbility = ability.targetingMode == TargetingMode.Self || ability.targetingMode == TargetingMode.Directional;
+
+    if (targetFound || isNonTargetedAbility) {
+        ability.Execute(runtimeStatistics, gameObject, target);
+        ability.cooldownTimer = ability.cooldown * runtimeStatistics.cooldownMultiplier;
+    }
+}
+```
+<p class="excerpt-caption">AbilitiesController.cs — <code>HandleAbility</code>, unedited.</p>
+
+Damage is rolled in one place that every weapon shares, so a passive that raises the damage multiplier or crit chance improves every weapon at once:
+
+```csharp
+public int GetDamage(UnitStatistics stats, out bool isCritical) {
+    float baseDamage = Random.Range(minDamage, maxDamage);
+    float multiplier = stats.damageMultiplier;
+
+    isCritical = Random.value <= stats.critChance;
+
+    if (isCritical) {
+        multiplier *= stats.critMultiplier;
+    }
+    return Mathf.RoundToInt(baseDamage * multiplier);
+}
+```
+<p class="excerpt-caption">Ability.cs — <code>GetDamage</code>, unedited.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 760 320" role="img" aria-labelledby="ab-t ab-d">
+<title id="ab-t">One frame of the ability loop</title>
+<desc id="ab-d">For every ability clone, HandleAbility counts the cooldown down, finds a target with an overlap sphere, and calls Execute. Each subclass decides what happens: a pooled projectile, an aura that ticks, a whip area or an instant hit. All of them roll damage with GetDamage against the run's cloned stat sheet, which passives modify. After executing, the cooldown restarts, scaled by the cooldown multiplier.</desc>
+<defs><marker id="ab-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#b9a68f"/></marker><marker id="ab-ah2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f2b180"/></marker></defs>
+<path d="M664 60 C664 22 288 22 288 58" fill="none" stroke="#f2b180" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#ab-ah2)"/>
+<text x="476" y="24" text-anchor="middle" class="mono" font-size="11" fill="#f2b180">cooldown restarts: base × cooldownMultiplier</text>
+<g font-size="12.5" fill="#b9a68f">
+<rect x="24" y="60" width="160" height="72" rx="10" fill="#3a3224" stroke="#5d412b"/>
+<text x="38" y="84" class="mono" font-size="12" fill="#f6d370">Update()</text><text x="38" y="104">for every ability</text><text x="38" y="121">(a per-run clone)</text>
+<rect x="208" y="60" width="160" height="72" rx="10" fill="#3a3224" stroke="#5d412b"/>
+<text x="222" y="84" class="mono" font-size="12" fill="#f6d370">HandleAbility</text><text x="222" y="104">cooldown −= Δt</text><text x="222" y="121">not ready → skip</text>
+<rect x="392" y="60" width="176" height="72" rx="10" fill="#3a3224" stroke="#5d412b"/>
+<text x="406" y="84" class="mono" font-size="12" fill="#f6d370">GetTargetForAbility</text><text x="406" y="104">OverlapSphere(range)</text><text x="406" y="121">closest or random enemy</text>
+<rect x="592" y="60" width="144" height="72" rx="10" fill="#3a3224" stroke="#f27c52"/>
+<text x="606" y="84" class="mono" font-size="12" fill="#f27c52">Execute(stats…)</text><text x="606" y="104">the subclass decides</text><text x="606" y="121">what happens</text>
+</g>
+<line x1="186" y1="96" x2="204" y2="96" stroke="#b9a68f" stroke-width="1.6" marker-end="url(#ab-ah)"/>
+<line x1="370" y1="96" x2="388" y2="96" stroke="#b9a68f" stroke-width="1.6" marker-end="url(#ab-ah)"/>
+<line x1="570" y1="96" x2="588" y2="96" stroke="#b9a68f" stroke-width="1.6" marker-end="url(#ab-ah)"/>
+<line x1="664" y1="134" x2="664" y2="164" stroke="#b9a68f" stroke-width="1.6" marker-end="url(#ab-ah)"/>
+<g font-size="12.5" fill="#f3e6d3">
+<rect x="392" y="168" width="344" height="28" rx="8" fill="#2f291b" stroke="#5d412b"/><text x="404" y="187"><tspan class="mono" fill="#f6d370">Projectile</tspan><tspan dx="10">pooled MoveTo: pierce, bounce, explode</tspan></text>
+<rect x="392" y="204" width="344" height="28" rx="8" fill="#2f291b" stroke="#5d412b"/><text x="404" y="223"><tspan class="mono" fill="#f6d370">Aura</tspan><tspan dx="10">DamagingAura, rolls damage per tick</tspan></text>
+<rect x="392" y="240" width="344" height="28" rx="8" fill="#2f291b" stroke="#5d412b"/><text x="404" y="259"><tspan class="mono" fill="#f6d370">Whip</tspan><tspan dx="10">AreaDamage volume in front</tspan></text>
+<rect x="392" y="276" width="344" height="28" rx="8" fill="#2f291b" stroke="#5d412b"/><text x="404" y="295"><tspan class="mono" fill="#f6d370">Instant</tspan><tspan dx="10">hit on the target</tspan></text>
+</g>
+<rect x="24" y="168" width="320" height="136" rx="10" fill="#3a3224" stroke="#9fd3a8"/>
+<text x="38" y="192" class="mono" font-size="12" fill="#9fd3a8">UnitStatistics — runtime clone</text>
+<g font-size="12.5" fill="#b9a68f"><text x="38" y="216">damageMultiplier · critChance · critMultiplier</text><text x="38" y="236">cooldownMultiplier · range, speed, magnet…</text><text x="38" y="262" fill="#f3e6d3">passives write here: PassiveItem.Apply()</text><text x="38" y="284">every weapon reads it</text></g>
+<line x1="288" y1="166" x2="288" y2="136" stroke="#9fd3a8" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ab-ah)"/>
+<line x1="346" y1="236" x2="388" y2="236" stroke="#9fd3a8" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ab-ah)"/>
+<text x="350" y="228" class="mono" font-size="10" fill="#9fd3a8">GetDamage</text>
+</svg>
+<figcaption>Fig. — one frame of the ability loop. Ability assets are cloned per run, so levels and cooldown timers never leak between runs.</figcaption>
+</figure>
 
 ### 2. One pool for everything
 

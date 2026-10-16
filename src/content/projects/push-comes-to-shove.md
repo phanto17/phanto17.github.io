@@ -32,7 +32,7 @@ tools:
   - TextMesh Pro
   - Shader Graph / HLSL
 media:
-  - { type: image, src: /media/push-comes-to-shove/enemy-turn.webp, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 1 — enemy turn: one enemy's intent at a time (web build, 800 px capture — TODO recapture at 1280)" }
+  - { type: image, src: /media/push-comes-to-shove/enemy-turn.webp, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 1 — enemy turn: one enemy's intent at a time (web build)" }
   - { type: image, src: /media/push-comes-to-shove/deploy.webp, alt: "Deployment phase with the blue player zone and four placed units", caption: "Fig. 2 — deploying the squad in the player's zone" }
   - { type: image, src: /media/push-comes-to-shove/move-range.webp, alt: "A selected soldier with its reachable tiles highlighted in green", caption: "Fig. 3 — path-aware move range of the selected unit" }
 itchUrl: https://phanto-official.itch.io/push-comes-to-shove
@@ -51,7 +51,7 @@ Push Comes to Shove is a small turn-based tactics game on an isometric grid. You
 
 The design pillar is one line: **read the board, set up the perfect turn.** Damage is fixed, not rolled, so every outcome is yours to compute.
 
-<span class="todo">TODO: 2–3 sentences on why I pivoted from pre-turn telegraphs to on-turn intent reveal, and what it did to the feel.</span>
+The first version followed Into the Breach: every enemy telegraphed its next move before my turn, so each turn was a puzzle against known threats. In June 2026 I replaced that with an on-turn reveal. Enemies act on their own turn, one at a time, and each shows its intended move or target for a beat before carrying it out, which is closer to King's Bounty's "watch the enemy act". The telegraph-based Break mechanic went with it. What the player plans against now is everything the board shows: positions, attack ranges, weaknesses and fixed damage.
 
 ## Technical breakdown
 
@@ -59,7 +59,98 @@ The design pillar is one line: **read the board, set up the perfect turn.** Dama
 
 The grid is a plain C# class over a 2D array of cells, with a second internal constructor that builds it without a Tilemap. That constructor is what the EditMode tests use: they build a 5×5 grid in memory, block some cells with throwaway units and assert on reachability, shortest paths and push outcomes. Movement is a breadth-first flood in four directions that stops at walls, hazards and occupied cells, so the highlighted "reachable" area is exactly the set of tiles the unit can actually walk to. Pushes walk the affected cells farthest-first so a chain of shoves resolves without a unit being moved onto a cell that is about to be vacated.
 
-<span class="todo">TODO: code excerpt of `Grid.Bfs` or `Attack.PushUnit`, and a GIF of a push into a pit.</span>
+A push moves its target one tile at a time and stops at the first thing in the way. Each outcome is a few lines:
+
+```csharp
+private static void PushUnit(Grid grid, RuntimeCellData cell, Vector2Int direction, int distance)
+{
+    for (int step = 0; step < distance; step++)
+    {
+        Unit unit = cell.Unit;
+        if (unit == null)
+            return;
+
+        RuntimeCellData dest = grid.GetCellAt(
+            cell.GridPosition.x + direction.x,
+            cell.GridPosition.y + direction.y);
+
+        bool blockedByWall = dest == null || !dest.IsWalkable;
+
+        if (blockedByWall)
+        {
+            unit.TakeDamage(CollisionDamage, cell);
+            return;
+        }
+
+        if (dest.IsOccupied)
+        {
+            unit.TakeDamage(CollisionDamage, cell);
+            dest.Unit.TakeDamage(CollisionDamage, dest);
+            return;
+        }
+
+        cell.Unit = null;
+        dest.Unit = unit;
+        unit.transform.position = dest.WorldPosition;
+        cell = dest;
+
+        // Shoved into a hazard (pit / water) — the unit is destroyed.
+        if (cell.IsHazard)
+        {
+            unit.TakeDamage(unit.CurrentHP, cell);
+            return;
+        }
+    }
+}
+```
+<p class="excerpt-caption">Attack.cs — <code>PushUnit</code>, unedited. <code>CollisionDamage</code> is 1.</p>
+
+<figure class="diagram">
+<svg viewBox="0 0 760 304" role="img" aria-labelledby="push-t push-d">
+<title id="push-t">The four outcomes of a push</title>
+<desc id="push-d">A line attack hits an enemy and pushes it one tile. Into a free tile it slides. Into a wall or the map edge it stops and takes 1 collision damage. Into another unit both take 1 collision damage. Into a pit or water it is destroyed.</desc>
+<defs><marker id="push-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#f2b180"/></marker><marker id="hit-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f6d370"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#5d412b"/><line x1="0" y1="0" x2="0" y2="8" stroke="#3a3224" stroke-width="3"/></pattern></defs>
+<text x="24" y="32" class="mono" font-size="11" fill="#8a7a66" letter-spacing="1.5">HIT, THEN PUSH</text>
+<text x="252" y="32" class="mono" font-size="11" fill="#8a7a66" letter-spacing="1.5">WHAT HAPPENS</text>
+<g transform="translate(0,52)">
+<rect x="24" y="0" width="44" height="44" rx="8" fill="#f6d370" fill-opacity=".16" stroke="#f6d370"/><text x="46" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f6d370">A</text>
+<line x1="70" y1="22" x2="92" y2="22" stroke="#f6d370" stroke-width="2" marker-end="url(#hit-ah)"/>
+<rect x="96" y="0" width="44" height="44" rx="8" fill="#f27c52" fill-opacity=".18" stroke="#f27c52"/><text x="118" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f27c52">E</text>
+<path d="M124 2 Q158 -14 190 2" fill="none" stroke="#f2b180" stroke-width="2" marker-end="url(#push-ah)"/>
+<rect x="168" y="0" width="44" height="44" rx="8" fill="#3a3224" stroke="#5d412b" stroke-dasharray="4 3"/>
+<text x="252" y="19" font-size="15" fill="#f3e6d3">Free tile: it slides one tile</text>
+<text x="252" y="38" font-size="12.5" fill="#b9a68f">Line Attack deals 1 damage and pushes 1; chains resolve farthest-first</text>
+</g>
+<g transform="translate(0,116)">
+<rect x="24" y="0" width="44" height="44" rx="8" fill="#f6d370" fill-opacity=".16" stroke="#f6d370"/><text x="46" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f6d370">A</text>
+<line x1="70" y1="22" x2="92" y2="22" stroke="#f6d370" stroke-width="2" marker-end="url(#hit-ah)"/>
+<rect x="96" y="0" width="44" height="44" rx="8" fill="#f27c52" fill-opacity=".18" stroke="#f27c52"/><text x="118" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f27c52">E</text>
+<path d="M124 2 Q158 -14 190 2" fill="none" stroke="#f2b180" stroke-width="2" marker-end="url(#push-ah)"/>
+<rect x="168" y="0" width="44" height="44" rx="8" fill="url(#hatch)" stroke="#5d412b"/>
+<text x="252" y="19" font-size="15" fill="#f3e6d3">Wall or map edge: it stops</text>
+<text x="252" y="38" font-size="12.5" fill="#b9a68f">and takes 1 collision damage on top of the hit</text>
+</g>
+<g transform="translate(0,180)">
+<rect x="24" y="0" width="44" height="44" rx="8" fill="#f6d370" fill-opacity=".16" stroke="#f6d370"/><text x="46" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f6d370">A</text>
+<line x1="70" y1="22" x2="92" y2="22" stroke="#f6d370" stroke-width="2" marker-end="url(#hit-ah)"/>
+<rect x="96" y="0" width="44" height="44" rx="8" fill="#f27c52" fill-opacity=".18" stroke="#f27c52"/><text x="118" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f27c52">E</text>
+<path d="M124 2 Q158 -14 190 2" fill="none" stroke="#f2b180" stroke-width="2" marker-end="url(#push-ah)"/>
+<rect x="168" y="0" width="44" height="44" rx="8" fill="#cab5ce" fill-opacity=".18" stroke="#cab5ce"/><text x="190" y="28" text-anchor="middle" class="mono" font-size="15" fill="#cab5ce">U</text>
+<text x="252" y="19" font-size="15" fill="#f3e6d3">Another unit: both stop</text>
+<text x="252" y="38" font-size="12.5" fill="#b9a68f">both take 1 collision damage, whichever side they are on</text>
+</g>
+<g transform="translate(0,244)">
+<rect x="24" y="0" width="44" height="44" rx="8" fill="#f6d370" fill-opacity=".16" stroke="#f6d370"/><text x="46" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f6d370">A</text>
+<line x1="70" y1="22" x2="92" y2="22" stroke="#f6d370" stroke-width="2" marker-end="url(#hit-ah)"/>
+<rect x="96" y="0" width="44" height="44" rx="8" fill="#f27c52" fill-opacity=".18" stroke="#f27c52"/><text x="118" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f27c52">E</text>
+<path d="M124 2 Q158 -14 190 2" fill="none" stroke="#f2b180" stroke-width="2" marker-end="url(#push-ah)"/>
+<rect x="168" y="0" width="44" height="44" rx="8" fill="#0b070b" stroke="#8fc3df"/><circle cx="190" cy="22" r="9" fill="none" stroke="#8fc3df" stroke-opacity=".5"/>
+<text x="252" y="19" font-size="15" fill="#f3e6d3">Pit or water: it falls in</text>
+<text x="252" y="38" font-size="12.5" fill="#b9a68f">destroyed outright, whatever health it has left</text>
+</g>
+</svg>
+<figcaption>Fig. — the four outcomes of <code>PushUnit</code> for one push step. A = attacker, E = enemy, U = any other unit.</figcaption>
+</figure>
 
 ### 2. One attack rule set for player and AI
 
@@ -71,4 +162,4 @@ The enemy turn is a coroutine that iterates enemies in board order. For each act
 
 ### What's next
 
-A second level, audio, and the web build. The HD-2D look pass (post-processing, depth backdrop, grounding shadows, animated sprites) is done; lit sprite materials are still to come.
+A second level and audio. The web build has been on itch.io since October 2026. The HD-2D look pass (post-processing, depth backdrop, grounding shadows, animated sprites) is done; lit sprite materials are still to come.

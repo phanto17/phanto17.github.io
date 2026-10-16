@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import Prism from '../components/Prism.astro';
+---
+
+<Base noindex title="Page not found" description="This page does not exist. The projects and the CV are one click away.">
+  <section class="lost">
+    <Prism />
+    <div class="wrap">
+      <p class="kicker">404 · off the map</p>
+      <h1>This tile isn't on the grid.</h1>
+      <p class="lead">The page you were looking for doesn't exist, or it moved when the site was rebuilt.</p>
+      <div class="actions">
+        <a class="btn primary" href="/">Back to the start</a>
+        <a class="btn" href="/projects/">All projects</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .lost {
+    position: relative;
+    overflow: hidden;
+    min-height: 70vh;
+    display: grid;
+    align-items: center;
+    padding: 96px 0;
+  }
+  .lost .wrap {
+    position: relative;
+    z-index: 1;
+  }
+  h1 {
+    max-width: 16ch;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+  }
+</style>

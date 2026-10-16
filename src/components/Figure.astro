@@ -9,8 +9,10 @@ interface Props {
   alt?: string;
   caption?: string;
   ratio?: string;
+  /** Above the fold: load eagerly with high priority instead of lazily. */
+  priority?: boolean;
 }
-const { type = 'image', src, alt = '', caption, ratio = '16 / 9' } = Astro.props;
+const { type = 'image', src, alt = '', caption, ratio = '16 / 9', priority = false } = Astro.props;
 ---
 
 <figure class="fig">
@@ -20,7 +22,7 @@ const { type = 'image', src, alt = '', caption, ratio = '16 / 9' } = Astro.props
         type === 'video' ? (
           <video src={src} controls muted loop playsinline preload="metadata" aria-label={alt} />
         ) : (
-          <img src={src} alt={alt} loading="lazy" decoding="async" />
+          <img src={src} alt={alt} loading={priority ? "eager" : "lazy"} fetchpriority={priority ? "high" : "auto"} decoding="async" />
         )
       ) : (
         <span class="placeholder">[ {type} TODO{alt ? `: ${alt}` : ''} ]</span>

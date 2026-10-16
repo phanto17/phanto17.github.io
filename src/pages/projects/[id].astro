@@ -17,7 +17,7 @@ const gallery = d.media.slice(1);
 const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
 ---
 
-<Base title={d.title} description={d.summary} image={hero?.type === 'image' ? hero.src : undefined}>
+<Base title={d.title} description={d.summary} image={`/media/og/${project.id}.jpg`}>
   <header class="phero">
     <Prism top="-120px" />
     <div class="wrap">
@@ -31,12 +31,12 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
             d.downloadUrl ? (
               <a class="btn primary" href={d.downloadUrl}>↓ Download (Windows)</a>
             ) : (
-              <span class="btn" aria-disabled="true">↓ Download <span class="todo">TODO: link</span></span>
+              <span class="btn" aria-disabled="true">↓ Download — not released yet</span>
             )
           ) : d.itchUrl ? (
             <a class="btn primary" href={d.itchUrl}>▶ Play on itch.io</a>
           ) : (
-            <span class="btn" aria-disabled="true">▶ Play on itch.io <span class="todo">TODO: link</span></span>
+            <span class="btn" aria-disabled="true">▶ Not on itch.io yet</span>
           )
         }
         {d.githubUrl && <a class="btn" href={d.githubUrl}>Source on GitHub</a>}
@@ -46,7 +46,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
 
   <div class="wrap layout">
     <article class="prose">
-      <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} />
+      <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} priority />
 
       <section>
         <h2>What I built</h2>
@@ -87,7 +87,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
                   <tr>
                     <td>{c.url ? <a href={c.url}>{c.asset}</a> : c.asset}</td>
                     <td>{c.author}</td>
-                    <td>{c.license ?? <span class="todo">TODO</span>}</td>
+                    <td>{c.license ?? <span class="muted">—</span>}</td>
                   </tr>
                 ))}
               </tbody>
@@ -108,16 +108,16 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
           <dd>
             {
               d.kind === 'tool' ? (
-                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="todo">TODO</span>
+                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="muted">Not released yet</span>
               ) : d.itchUrl ? (
                 <a href={d.itchUrl}>itch.io ↗</a>
               ) : (
-                <span class="todo">TODO</span>
+                <span class="muted">Not published yet</span>
               )
             }
           </dd>
           <dt>Source</dt>
-          <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="todo">TODO</span>}</dd>
+          <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="muted">Private repository</span>}</dd>
           <dt>Role</dt>
           <dd>{d.role}</dd>
           <dt>Period</dt>
@@ -184,7 +184,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
   }
   .gallery {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
   }
   .side {
@@ -218,7 +218,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
   }
   @media (max-width: 960px) {
     .layout {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .side {
       position: static;
@@ -229,7 +229,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
       padding: 64px 0 32px;
     }
     .gallery {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .side {
       position: static;
