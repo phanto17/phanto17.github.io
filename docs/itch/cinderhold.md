@@ -13,7 +13,7 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 
 ## Title / slug
 
-`Cinderhold` · `phanto-official.itch.io/cinderhold`
+`Cinderhold` · `phanto-official.itch.io/cinderhold` (live since 2026-10-16, build 0.1.1)
 
 ## Short description (tagline)
 

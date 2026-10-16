@@ -2,7 +2,8 @@
 title: Cinderhold
 summary: A 2D top-down dungeon crawler I'm rebuilding from scratch — data-driven weapons, enemy state machines, room-based floors and JSON saves.
 genre: 2D dungeon crawler / roguelite
-status: in-progress
+status: playable
+itchUrl: https://phanto-official.itch.io/cinderhold
 dates:
   start: "2026-10"   # rework start; the original tutorial-based prototype dates from Jun–Jul 2025
 role: Solo — design & programming
@@ -56,6 +57,5 @@ The first version of this project was a tutorial follow-along, and I'm not going
 4. **Rooms** — hand-made room templates stitched into a floor, doors, a locked door and key, an exit.
 5. **Progression & save** — XP and levels, coins, a weapon shop, JSON saves reusing the `ISaveSystemElement` pattern from Horde Hours. *Done.*
 6. **UI & feel** — HUD, death screen, floating text pool, screen shake, sound. *Done (sound is synthesised placeholder audio for now).*
-7. **Web build** — itch.io page, screenshots, credits. *Build and page copy done; itch upload pending.*
+7. **Web build** — itch.io page, screenshots, credits. *Done: [playable on itch.io](https://phanto-official.itch.io/cinderhold).*
 
-<span class="todo">TODO: itch.io link once the 0.1.1 build is uploaded.</span>
