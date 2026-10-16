@@ -14,6 +14,8 @@ interface Props {
 }
 const { title, description = site.description, image = '/media/og/default.jpg', noindex = false } = Astro.props;
 const ogImage = new URL(image, site.url).toString();
+const fontsHref =
+  'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,100,1;1,9..144,400..700,100,1&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap';
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString();
 ---
@@ -40,10 +42,10 @@ const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString()
     <meta name="twitter:image" content={ogImage} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,400..700,100,1;1,9..144,400..700,100,1&family=DM+Sans:ital,opsz,wght@0,9..40,400..600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <!-- Fonts load without blocking the first paint: fallback text shows at once, web fonts swap in. -->
+    <link rel="preload" as="style" href={fontsHref} />
+    <link rel="stylesheet" href={fontsHref} media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href={fontsHref} /></noscript>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

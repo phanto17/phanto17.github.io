@@ -9,7 +9,7 @@ export default {
     'editor.foreground': '#f3e6d3',
   },
   tokenColors: [
-    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#8a7a66', fontStyle: 'italic' } },
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#a79a88', fontStyle: 'italic' } },
     {
       scope: ['keyword', 'storage', 'storage.type', 'storage.modifier', 'keyword.control', 'keyword.operator.new'],
       settings: { foreground: '#f27c52' },

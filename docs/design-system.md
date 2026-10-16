@@ -28,7 +28,7 @@ headline, primary button, hover states. Everything else is matte.
 |---|---|---|---|
 | `--text` | `#f3e6d3` | bright means `#f9e7ca`, `#fce7ce` | headings, body |
 | `--text-2` | `#b9a68f` | darkened cream | secondary body, leads |
-| `--text-3` | `#8a7a66` | — | captions, disabled |
+| `--text-3` | `#a79a88` | — | captions, disabled (raised from `#8a7a66` on 2026-10-16 to pass WCAG AA: 6.5 / 5.2 / 4.6 on bg / surface / raised) |
 | `--steel` | `#979ca4` | 5.4 % cluster (cool grey in the blue band) | metadata, mono labels |
 
 ### Accents

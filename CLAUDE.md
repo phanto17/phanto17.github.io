@@ -141,7 +141,7 @@ Full spec with tokens, scale and rationale: `docs/design-system.md`. Reference m
   Editorial "field notes" structure: numbered projects, figures with captions, margin notes,
   pull quotes. Glow only on H1, primary button and hovers.
 - **Palette:** bg `#1a1713`, vignette `#0b070b`, surface `#2f291b`, raised `#3a3224`,
-  border `#5d412b`; text `#f3e6d3` / `#b9a68f` / `#8a7a66`, metadata `#979ca4`;
+  border `#5d412b`; text `#f3e6d3` / `#b9a68f` / `#a79a88` (third tone raised from `#8a7a66` for WCAG AA, 2026-10-16), metadata `#979ca4`;
   accent coral `#f27c52`, peach `#f2b180`, gold `#f6d370`, brick `#a95c3d`, teal `#4e6367`.
   Prism gradient: `#e95c3a → #f27c52 → #f6d370 → #9fd3a8 → #8fc3df → #cab5ce → #faa193`.
 - **Fonts:** Fraunces (display, `SOFT 100, WONK 1`), DM Sans (body), DM Mono (labels).

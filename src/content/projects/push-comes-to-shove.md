@@ -110,8 +110,8 @@ private static void PushUnit(Grid grid, RuntimeCellData cell, Vector2Int directi
 <title id="push-t">The four outcomes of a push</title>
 <desc id="push-d">A line attack hits an enemy and pushes it one tile. Into a free tile it slides. Into a wall or the map edge it stops and takes 1 collision damage. Into another unit both take 1 collision damage. Into a pit or water it is destroyed.</desc>
 <defs><marker id="push-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#f2b180"/></marker><marker id="hit-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#f6d370"/></marker><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="#5d412b"/><line x1="0" y1="0" x2="0" y2="8" stroke="#3a3224" stroke-width="3"/></pattern></defs>
-<text x="24" y="32" class="mono" font-size="11" fill="#8a7a66" letter-spacing="1.5">HIT, THEN PUSH</text>
-<text x="252" y="32" class="mono" font-size="11" fill="#8a7a66" letter-spacing="1.5">WHAT HAPPENS</text>
+<text x="24" y="32" class="mono" font-size="11" fill="#a79a88" letter-spacing="1.5">HIT, THEN PUSH</text>
+<text x="252" y="32" class="mono" font-size="11" fill="#a79a88" letter-spacing="1.5">WHAT HAPPENS</text>
 <g transform="translate(0,52)">
 <rect x="24" y="0" width="44" height="44" rx="8" fill="#f6d370" fill-opacity=".16" stroke="#f6d370"/><text x="46" y="28" text-anchor="middle" class="mono" font-size="15" fill="#f6d370">A</text>
 <line x1="70" y1="22" x2="92" y2="22" stroke="#f6d370" stroke-width="2" marker-end="url(#hit-ah)"/>

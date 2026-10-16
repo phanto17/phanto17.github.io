@@ -82,7 +82,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
           activities.map((a) => (
             <article>
               <time>{a.period}</time>
-              <h4>{a.title}</h4>
+              <h3 class="entry">{a.title}</h3>
               <p class="kind">{a.kind}</p>
               <p>{a.text}</p>
               {a.credits && <p class="credits">{a.credits}</p>}
@@ -102,7 +102,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
           experience.map((e) => (
             <article class="exp">
               <time class="meta">{e.period}</time>
-              <h4>{e.title}</h4>
+              <h3 class="entry">{e.title}</h3>
               <p class="muted">{e.text}</p>
             </article>
           ))
@@ -210,7 +210,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     color: var(--gold);
     letter-spacing: 0.06em;
   }
-  .tl h4 {
+  .tl h3 {
     margin: 6px 0 2px;
   }
   .tl .kind {
@@ -231,7 +231,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     color: var(--text-3);
     margin-top: 8px;
   }
-  .exp h4 {
+  .exp h3 {
     margin: 6px 0;
   }
   .cta {

@@ -11,7 +11,7 @@
   /* text */
   --text: #f3e6d3;
   --text-2: #b9a68f;
-  --text-3: #8a7a66;
+  --text-3: #a79a88; /* AA on bg 6.5, surface 5.2, raised 4.6 (was #8a7a66, 4.3 on bg) */
   --steel: #979ca4;
   /* accents */
   --coral: #f27c52;
@@ -93,6 +93,14 @@ a {
   text-decoration: none;
   transition: color 0.2s, text-shadow 0.2s;
 }
+p a,
+li a,
+td a,
+dd a {
+  text-decoration: underline;
+  text-decoration-color: rgba(242, 124, 82, 0.45);
+  text-underline-offset: 3px;
+}
 a:hover {
   color: var(--peach);
   text-shadow: 0 0 10px rgba(242, 124, 82, 0.5);
@@ -129,7 +137,8 @@ h2 {
 h3 {
   font-size: 30px;
 }
-h4 {
+h4,
+h3.entry {
   font-size: 22px;
 }
 p {
