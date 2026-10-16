@@ -8,7 +8,7 @@ Prerequisite for every Unity session: Unity Hub → 6000.6.3f1 → Add modules �
 
 ## Session 2 — Push Comes to Shove on itch.io (≈ 9 h)
 
-**Progress 2026-10-12:** 2.0 ✅ (site live) · 2.1 ✅ (baseline `443e37a`) · 2.2 ✅ (6000.6.3f1, packages stripped, 25/25 tests, commit `abe4464`) · 2.3 ✅ (fixed damage 4/3/1) · 2.4 ✅ (product name + shader renamed) · 2.5 ✅ web build verified in the browser (`Builds/PushComesToShove-web-0.1.0.zip`, 35 MB; Canvas Scaler fix `FixCanvasScalers.cs`; serve locally with `node tools/serve-web.mjs`) · 2.6 ✅ public at https://fanto1.itch.io/push-comes-to-shove (2026-10-14) · 2.7 ✅ site marks it playable. **Session 2 complete.** Added out of plan: Eternity Keeper project page (live).
+**Progress 2026-10-12:** 2.0 ✅ (site live) · 2.1 ✅ (baseline `443e37a`) · 2.2 ✅ (6000.6.3f1, packages stripped, 25/25 tests, commit `abe4464`) · 2.3 ✅ (fixed damage 4/3/1) · 2.4 ✅ (product name + shader renamed) · 2.5 ✅ web build verified in the browser (`Builds/PushComesToShove-web-0.1.0.zip`, 35 MB; Canvas Scaler fix `FixCanvasScalers.cs`; serve locally with `node tools/serve-web.mjs`) · 2.6 ✅ public at https://phanto-official.itch.io/push-comes-to-shove (2026-10-14; handle renamed from fanto1 on 2026-10-16) · 2.7 ✅ site marks it playable. **Session 2 complete.** Added out of plan: Eternity Keeper project page (live).
 
 | # | Title | Description | Objective | Hours |
 |---|---|---|---|---|
@@ -23,7 +23,7 @@ Prerequisite for every Unity session: Unity Hub → 6000.6.3f1 → Add modules �
 
 ## Session 3 — Horde Hours on itch.io (≈ 16.5 h, may split in two)
 
-**Progress 2026-10-15:** 3.1 ✅ baseline `8a41e19` · 3.2 ✅ 6000.6.3f1, PPv2 + VFX Graph removed, demo folders dropped · 3.3 ✅ menu scene built from code (`HordeHoursSetup.BuildMenuScene`) · 3.4 ✅ Static Field as a particle ring · 3.5 ✅ bug pass (magnet, timer, save, cursor, GetEntityId) · 3.6 ✅ Vorbis audio, 1024 px web textures, unused report in `Logs/asset-usage-report.txt` · 3.7 ✅ `Builds/HordeHours-web-0.1.0.zip` (27 MB), verified in the browser, no console errors · credits resolved and the two restricted fonts replaced (2026-10-15, zip refreshed) · 3.8 **waiting on you**: itch upload (copy in `docs/itch/horde-hours.md`, cover in `docs/itch/assets/`), then `itchUrl` on the site.
+**Progress 2026-10-15:** 3.1 ✅ baseline `8a41e19` · 3.2 ✅ 6000.6.3f1, PPv2 + VFX Graph removed, demo folders dropped · 3.3 ✅ menu scene built from code (`HordeHoursSetup.BuildMenuScene`) · 3.4 ✅ Static Field as a particle ring · 3.5 ✅ bug pass (magnet, timer, save, cursor, GetEntityId) · 3.6 ✅ Vorbis audio, 1024 px web textures, unused report in `Logs/asset-usage-report.txt` · 3.7 ✅ `Builds/HordeHours-web-0.1.0.zip` (27 MB), verified in the browser, no console errors · credits resolved and the two restricted fonts replaced (2026-10-15, zip refreshed) · 3.8 ✅ public at https://phanto-official.itch.io/horde-hours (2026-10-16), site marks it playable. **Session 3 complete** — two of three projects playable. Open: rat modeller credit, 1280×720 media recapture.
 
 | # | Title | Description | Objective | Hours |
 |---|---|---|---|---|

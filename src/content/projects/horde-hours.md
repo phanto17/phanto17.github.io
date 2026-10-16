@@ -2,7 +2,7 @@
 title: Horde Hours
 summary: A 3D survivors-like. Auto-firing abilities, pooled enemies and VFX, timed waves on a NavMesh, level-up cards, passives and a JSON save system.
 genre: Survivors-like / action roguelite
-status: in-progress
+status: playable
 dates:
   start: "2025-11"   # TODO: confirm start month
   end: "2026-02"
@@ -35,7 +35,7 @@ media:
   - { type: image, src: /media/horde-hours/fireball.webp, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 1 — a run in the web build (800 px capture — TODO recapture at 1280)" }
   - { type: image, src: /media/horde-hours/arena.webp, alt: "Four slimes closing in on the player across the arena", caption: "Fig. 2 — the first wave arrives" }
   - { type: image, src: /media/horde-hours/menu.webp, alt: "Horde Hours main menu with Play and Credits buttons", caption: "Fig. 3 — the menu built for the web release" }
-# itchUrl: TODO after the WebGL build is published
+itchUrl: https://phanto-official.itch.io/horde-hours
 credits:
   - { asset: "Character Pack: Free Sample", author: "Supercyan", url: "https://assetstore.unity.com/packages/3d/characters/humanoids/character-pack-free-sample-79870", license: "Asset Store EULA" }
   - { asset: "Character Pack: Zombie Sample", author: "Supercyan", url: "https://assetstore.unity.com/packages/3d/characters/humanoids/fantasy/character-pack-zombie-sample-131604", license: "Asset Store EULA" }

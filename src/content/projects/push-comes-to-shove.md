@@ -35,7 +35,7 @@ media:
   - { type: image, src: /media/push-comes-to-shove/enemy-turn.webp, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 1 — enemy turn: one enemy's intent at a time (web build, 800 px capture — TODO recapture at 1280)" }
   - { type: image, src: /media/push-comes-to-shove/deploy.webp, alt: "Deployment phase with the blue player zone and four placed units", caption: "Fig. 2 — deploying the squad in the player's zone" }
   - { type: image, src: /media/push-comes-to-shove/move-range.webp, alt: "A selected soldier with its reachable tiles highlighted in green", caption: "Fig. 3 — path-aware move range of the selected unit" }
-itchUrl: https://fanto1.itch.io/push-comes-to-shove
+itchUrl: https://phanto-official.itch.io/push-comes-to-shove
 credits:
   - { asset: "Isometric Sandbox tile sheet", author: "Kenney", url: "https://kenney.nl", license: "CC0" }
   - { asset: "Humans — Top Down Pixel Art Character Assets", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io/humans-top-down-pixel-art-character-assets", license: "Purchased; commercial use allowed, no resale" }
