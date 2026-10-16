@@ -3,13 +3,13 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.1.0.zip`
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.1.1.zip` (0.1.0 shipped without wall collision; do not use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.1.0:** placeholder synthesised sound, no music, two floors only, a death
-  restarts at the last checkpoint with the floor's enemies back.
+- **Known rough edges in 0.1.1:** placeholder synthesised sound, no music, two floors only, a death
+  restarts at the last checkpoint with the floor's enemies back, UI font is not pixel-styled yet.
 
 ## Title / slug
 
