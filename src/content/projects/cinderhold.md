@@ -10,13 +10,14 @@ engine: Unity 6 · URP 2D
 order: 3
 highlights:
   - Data-driven melee + tested health model
-  - Enemy state machines (next)
+  - Enemy state machines, boss as data
   - Original systems end to end
 myContribution:
   - "Foundation (October 2026): a fresh Unity 6 project started from the empty Universal 2D template, so every later commit is diffable against a known-empty start. Assembly definitions for runtime and editor code, an Input System actions asset (move, attack, interact, pause; keyboard and gamepad), the Kenney Tiny Dungeon sheet sliced into 132 sprites with Tile assets and a palette, a playground room on Tilemaps with a merged composite wall collider, a pixel-perfect camera (320×180 reference, 16 px per unit) and a Rigidbody2D-driven player mover."
   - "Reproducible setup: the whole foundation is created by one idempotent editor script that runs headlessly from the command line — no hand-edited scene or project YAML."
   - "Combat core: weapons are ScriptableObjects (damage, knockback, hit-stop, windup / active / recovery / cooldown, reach, hitbox, swing arc). A `MeleeAttacker` swings any of them: after the windup it checks an oriented overlap box every frame of the active window and hits each `IDamageable` once per swing. Health lives in a plain C# `HealthPool` (clamping, invulnerability frames, death exactly once) wrapped by a thin component, so the rules are unit-tested without Unity. Feedback without extra assets: 50 ms hit-stop on the unscaled clock, colour flash and squash, ease-out knockback that movement scripts yield to, and a weapon sprite sweeping the arc. Attack input is buffered for 150 ms."
-  - "Tests: an EditMode assembly covers the health pool, the cooldown timer and the hitbox geometry (21 tests); a PlayMode assembly instantiates the real Player and Slime prefabs and checks that a swing damages, pushes and eventually kills the slime, hits each target once per swing, releases the hit-stop and locks movement only while swinging (5 tests). Both run headlessly from the command line like the builds."
+  - "Enemy AI: each enemy type is an `EnemyDefinition` asset (look, health, speeds, sight, attack pattern, cowardice) applied to one generic prefab at spawn. Behaviour is a small state machine whose states — Idle, Patrol, Chase, Attack, Flee, Recover — are plain C# objects that only see an interface: senses (sight range with hysteresis, line of sight against walls, a short memory of the last seen position, an alert after being hit) and actuators (move, stop, swing). Attacks are telegraphed on the floor from the weapon's hitbox during the windup, followed by a pause that is the player's punish window. Cowards flee at low health, recover out of sight, and cannot flee again for a while so they end up fighting. The boss, Cinderclaw, is the same brain with a cycling attack pattern (slam, slam, sweep); no boss-specific code."
+  - "Tests: EditMode tests cover the health pool, cooldown, hitbox geometry, every state transition through a fake context, and the attack pattern (45 tests); PlayMode tests instantiate the real prefabs and data and check the sword kill loop, that a slime finds, chases and bites the player, and that a hurt bat runs and recovers (8 tests). Both suites run headlessly from the command line like the builds."
   - "The earlier prototype (June–July 2025) followed a beginner tutorial and is not presented as my work; it is kept only as a frozen reference. Each item of the plan below moves up here when it is built."
 tools:
   - Unity 6000.6 (URP 17, 2D renderer)
@@ -38,7 +39,7 @@ The first version of this project was a tutorial follow-along, and I'm not going
 
 1. **Foundation** — fresh Unity 6 project, Input System actions, assembly definitions, Kenney tileset, git with LFS. *Done.*
 2. **Combat core** — `IDamageable`, health with events, hit-stop and knockback, `WeaponData` ScriptableObjects (arc, damage, cooldown), overlap-box hitboxes. *Done.*
-3. **Enemy AI** — `EnemyDefinition` assets and a state machine (Idle / Patrol / Chase / Attack / Flee) with sight checks; two or three enemy types and one boss.
+3. **Enemy AI** — `EnemyDefinition` assets and a state machine (Idle / Patrol / Chase / Attack / Flee) with sight checks; three enemy types and one boss. *Done.*
 4. **Rooms** — hand-made room templates stitched into a floor, doors, a locked door and key, an exit.
 5. **Progression & save** — XP and levels, coins, a weapon shop, JSON saves reusing the `ISaveSystemElement` pattern from Horde Hours.
 6. **UI & feel** — HUD, death screen, floating text pool, screen shake, sound.
