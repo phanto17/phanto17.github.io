@@ -13,7 +13,9 @@ highlights:
   - Data-driven weapons & rooms
   - Original systems end to end
 myContribution:
-  - "TODO — the rework has not started. The current prototype (June–July 2025) follows a beginner tutorial and is not presented as my work. The list below is the plan; each item moves up here only when it is built."
+  - "Foundation (October 2026): a fresh Unity 6 project started from the empty Universal 2D template, so every later commit is diffable against a known-empty start. Assembly definitions for runtime and editor code, an Input System actions asset (move, attack, interact, pause; keyboard and gamepad), the Kenney Tiny Dungeon sheet sliced into 132 sprites with Tile assets and a palette, a playground room on Tilemaps with a merged composite wall collider, a pixel-perfect camera (320×180 reference, 16 px per unit) and a Rigidbody2D-driven player mover."
+  - "Reproducible setup: the whole foundation is created by one idempotent editor script that runs headlessly from the command line — no hand-edited scene or project YAML."
+  - "The earlier prototype (June–July 2025) followed a beginner tutorial and is not presented as my work; it is kept only as a frozen reference. Each item of the plan below moves up here when it is built."
 tools:
   - Unity 6000.6 (URP 17, 2D renderer)
   - C#
@@ -21,7 +23,7 @@ tools:
   - Input System
 media: []
 credits:
-  - { asset: "Tiles & characters (planned)", author: "Kenney", url: "https://kenney.nl", license: "CC0" }
+  - { asset: "Tiny Dungeon tileset and characters", author: "Kenney", url: "https://kenney.nl/assets/tiny-dungeon", license: "CC0" }
 ---
 
 ## The game
@@ -32,7 +34,7 @@ Cinderhold will be a short top-down dungeon crawler: fight through a handful of 
 
 The first version of this project was a tutorial follow-along, and I'm not going to pretend otherwise. The rework replaces every system with my own:
 
-1. **Foundation** — fresh Unity 6 project, Input System actions, assembly definition, Kenney tileset, git with LFS.
+1. **Foundation** — fresh Unity 6 project, Input System actions, assembly definitions, Kenney tileset, git with LFS. *Done.*
 2. **Combat core** — `IDamageable`, health with events, hit-stop and knockback, `WeaponData` ScriptableObjects (arc, damage, cooldown), overlap-box hitboxes.
 3. **Enemy AI** — `EnemyDefinition` assets and a state machine (Idle / Patrol / Chase / Attack / Flee) with sight checks; two or three enemy types and one boss.
 4. **Rooms** — hand-made room templates stitched into a floor, doors, a locked door and key, an exit.
