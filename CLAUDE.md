@@ -8,9 +8,7 @@ Live, public game-dev portfolio website. It is both a university course assignme
 - **Junior Gameplay Programmer (Unity / C#)** – this must match my CV exactly and be
   obvious to a visitor within a few seconds of landing on the home page.
 - BA Game Development student, Collegium Da Vinci, Poznań (2024 – present).
-- Links: GitHub `github.com/phanto17` (username changed from `tmtjsk` on 2026-10-11 – the CV PDF
-  still prints the old one and must be regenerated) · YouTube `youtube.com/@phanto.official` ·
-  email `tmtjsk@gmail.com`.
+- Links: GitHub `github.com/phanto17` (username changed from `tmtjsk` on 2026-10-11) · YouTube `youtube.com/@phanto.official` · itch.io `phanto-official.itch.io` · email `tmtjsk@gmail.com`.
 - Interests to reflect in "About me": gameplay systems and AI, tactics/roguelite design,
   the psychology of games (my YouTube channel "phanto").
 
@@ -61,7 +59,7 @@ reverted). Always use `git -C <absolute path>` and absolute file paths.
 
 | Project | Path | Facts |
 |---|---|---|
-| Mansion of Grief | `D:\UnityProjects\Mansion-of-grief` (repo `IvanLiaskovski/Mansion-of-grief`, MIT) | First-person horror, Unity 6000.0.51f1 / URP. Team of 4, Oct 2025 – Jul 2026. Mine: `BearAI` state machine (patrol/roar/chase, FOV + raycast, URP danger vignette, hurt/retreat, jumpscare), pause + main menu, inventory, shadow / keypad / pressure-plate / mirror-beam puzzles, `LevelStartManager`, `PlayerHealth`. **Not mine:** FPS controller, flashlight/battery (teammate). This is the "First-Person Survival Horror" on the CV, which wrongly says *personal project, Feb 2025* and claims the FPS controller and flashlight – CV must be corrected. |
+| Mansion of Grief | `D:\UnityProjects\Mansion-of-grief` (repo `IvanLiaskovski/Mansion-of-grief`, MIT) | First-person horror, Unity 6000.0.51f1 / URP. Team of 4, Oct 2025 – Jul 2026. Mine: `BearAI` state machine (patrol/roar/chase, FOV + raycast, URP danger vignette, hurt/retreat, jumpscare), pause + main menu, inventory, shadow / keypad / pressure-plate / mirror-beam puzzles, `LevelStartManager`, `PlayerHealth`. **Not mine:** FPS controller, flashlight/battery (teammate). On the CV since 2026-10-17 as "Mansion of Grief", team project Oct 2025 – Jul 2026, with only the git-verified claims (the old CV called it a personal "First-Person Survival Horror", Feb 2025, and claimed the FPS controller and flashlight). The old "I tracked my work in Jira" line was dropped: no Jira evidence in the repo. |
 | Garden Simulator VR | `D:\UnityProjects\GardenSimVR` (repo `IvanLiaskovski/GardenSimVR`, fork of lecturer template) | VR garden sim, Unity 2022.3.52f1, XR Interaction Toolkit. Mine (Jun 27 – Jul 5 2026): inventory / vendor / shop economy, crate deposit, collect-on-grab, pest infestation + bug swarm, mushroom spawner, fruit cluster. Not on the CV. VR-only → video, no playable link. |
 
 ### Activities (short entries, no playable requirement)
@@ -69,12 +67,11 @@ reverted). Always use `git -C <absolute path>` and absolute file paths.
 - **TagTheGame** – team project, Unity 6 / URP, 3D multiplayer "bomb tag" (Oct 2026 – present):
   bomb-fuse & explosion mechanic, host-authoritative multiplayer architecture design,
   team Git LFS / PR workflow. Networking not implemented yet.
-- **Animal Shelter** – team project, Unreal Engine 5.6, Blueprints / C++, **February 2026** (CV
-  wrongly says May 2026). Teammates: Andrzej "BappoEatTaco", Julia "Yuchan". **My part was small:
-  minor UI work plus ideas for mechanics and the dog species** – the site must say no more than
-  that, and the CV line ("designed and implemented gameplay mechanics… concept to working
-  prototype… coordinated the team's work through Git") overclaims and must be rewritten; the
-  project used Unity Version Control, not Git. Path `D:\AnimalShelter`. Top-down shelter
+- **Animal Shelter** – team project, Unreal Engine 5.6, Blueprints / C++, **February 2026** (CV corrected
+  2026-10-17; it used to say May 2026). Teammates: Andrzej "BappoEatTaco", Julia "Yuchan". **My part was small:
+  minor UI work plus ideas for mechanics and the dog species** – the site and the CV say no more than
+  that (the old CV line claiming mechanics, concept-to-prototype and Git coordination was replaced
+  2026-10-17); the project used Unity Version Control, not Git. Path `D:\AnimalShelter`. Top-down shelter
   management sim: animals (cat, dog, guinea pig, hamster) with hunger/hygiene/mental/training needs,
   cages, food bowls, office computer UI (animal & people lists, adoption matchmaker, finances), NPC
   behaviour tree + dialogue tables, day cycle, save system, drivable car + rescue map with objectives,
@@ -94,7 +91,9 @@ Team projects: ask me before publishing any team footage or code; credit teammat
 ### CV consistency
 
 The site and `public/CV_Tymoteusz_Jaskolski_EN.pdf` must agree on titles, dates and project
-names. If they diverge, tell me – don't silently change either.
+names. If they diverge, tell me – don't silently change either. Since 2026-10-17 the CV is generated
+from `docs/cv/cv-en.html` (A4, two pages, DejaVu Sans) with headless Chrome — the print command is in the
+file's header comment. Edit the HTML, reprint, never hand-edit the PDF.
 
 ## Tech & deployment
 

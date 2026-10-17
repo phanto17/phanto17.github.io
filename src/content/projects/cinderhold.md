@@ -1,6 +1,6 @@
 ---
 title: Cinderhold
-summary: A 2D top-down dungeon crawler I'm rebuilding from scratch — data-driven weapons, enemy state machines, room-based floors and JSON saves.
+summary: A 2D top-down dungeon crawler with telegraphed enemy attacks — data-driven weapons, enemy state machines, a weapon shop, JSON saves and two hand-made floors.
 genre: 2D dungeon crawler / roguelite
 status: playable
 itchUrl: https://phanto-official.itch.io/cinderhold
