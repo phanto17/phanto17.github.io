@@ -4,7 +4,7 @@ summary: A 3D survivors-like. Auto-firing abilities, pooled enemies and VFX, tim
 genre: Survivors-like / action roguelite
 status: playable
 dates:
-  start: "2025-11"   # TODO: confirm start month
+  start: "2026-01"
   end: "2026-02"
 role: Solo — design & programming
 engine: Unity 6 · URP
@@ -63,7 +63,7 @@ credits:
 
 Horde Hours is a top-down 3D survivors-like. You move; your weapons fire on their own at the nearest enemies. Enemies arrive in timed waves and chase you across a NavMesh arena, drop XP gems when they die, and every level-up pauses the game to offer three upgrade cards: a new weapon, a new passive, or a level for one you already have. The run ends when your health hits zero. There is no win state — the score is how long you lasted and how many you took down.
 
-<span class="todo">TODO: 2–3 sentences on the design intent (what feeling I was going for, what I learned).</span>
+My goal for this 3D survivors-like was to balance player power progression with time-based difficulty scaling by architecting a modular, data-driven ability system using Unity's ScriptableObjects. This project taught me how to tie independent mechanics into a cohesive core loop while scoping features to prioritize scalable functionality.
 
 ## Technical breakdown
 
