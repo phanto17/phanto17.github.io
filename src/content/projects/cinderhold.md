@@ -39,7 +39,8 @@ media:
   - { type: image, src: /media/cinderhold/floor2-boss.webp, alt: "Floor 2's guardian room: the large red Cinderclaw next to the sealed exit", caption: "Fig. 3 — Cinderclaw seals the last exit until it falls" }
 credits:
   - { asset: "Tiny Dungeon tileset and characters", author: "Kenney", url: "https://kenney.nl/assets/tiny-dungeon", license: "CC0" }
-  - { asset: "Liberation Sans (UI font, bundled with TextMesh Pro)", author: "Red Hat", url: "https://github.com/liberationfonts/liberation-fonts", license: "SIL Open Font License" }
+  - { asset: "Kenney Fonts: Kenney Mini and Kenney Mini Square (UI)", author: "Kenney", url: "https://kenney.nl/assets/kenney-fonts", license: "CC0" }
+  - { asset: "Liberation Sans (TextMesh Pro's bundled default font, shipped but not used for display)", author: "Red Hat", url: "https://github.com/liberationfonts/liberation-fonts", license: "SIL Open Font License" }
   - { asset: "Sound effects", author: "generated procedurally in code — no recorded audio", license: "n/a (own code)" }
 ---
 
@@ -155,4 +156,4 @@ The first recorded playtest showed the player walking straight through walls. Th
 
 ### What's next
 
-A pixel UI font to match the art, recorded sound in place of the synthesised placeholders, and a room generator that stitches hand-made rooms into floors.
+Recorded sound in place of the synthesised placeholders, and a room generator that stitches hand-made rooms into floors.

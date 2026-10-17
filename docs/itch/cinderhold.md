@@ -3,13 +3,13 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.1.1.zip` (0.1.0 shipped without wall collision; do not use it)
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.1.2.zip` (0.1.2 adds the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
 - **Known rough edges in 0.1.1:** placeholder synthesised sound, no music, two floors only, a death
-  restarts at the last checkpoint with the floor's enemies back, UI font is not pixel-styled yet.
+  restarts at the last checkpoint with the floor's enemies back.
 
 ## Title / slug
 
@@ -38,7 +38,7 @@ Feedback welcome in the comments — especially on readability of the attacks an
 ### Credits
 
 - Tiles, characters and items: [Tiny Dungeon](https://kenney.nl/assets/tiny-dungeon) by Kenney (CC0)
-- Font: Liberation Sans (SIL Open Font License), bundled with Unity's TextMesh Pro
+- Fonts: [Kenney Mini and Kenney Mini Square](https://kenney.nl/assets/kenney-fonts) by Kenney (CC0); Liberation Sans (SIL Open Font License) ships inside Unity's TextMesh Pro resources
 - Sound effects: generated procedurally in code (no recorded audio)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
 
