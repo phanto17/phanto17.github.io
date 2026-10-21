@@ -21,9 +21,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/Web",
-        "8802"
+        "8803"
       ],
-      "port": 8802
+      "port": 8803
     }
   ]
 }

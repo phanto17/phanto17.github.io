@@ -43,6 +43,8 @@ credits:
   - { asset: "Elf and Goblin — Top Down Pixel Art Characters", author: "Sanctum Pixel", url: "https://sanctumpixel.itch.io", license: "Purchased; commercial use allowed, no resale" }
   - { asset: "PixelBattleText (animated damage numbers, bundles the Alphapix font)", author: "Psychic Fur", url: "https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358", license: "Free, Unity Asset Store EULA" }
   - { asset: "Pixellari font (UI)", author: "Zacchary Dempsey-Plante", url: "https://www.dafont.com/pixellari.font", license: "100% free, credit requested" }
+  - { asset: "Impact Sounds, RPG Audio, Interface Sounds and Music Jingles (sound effects and stings)", author: "Kenney", url: "https://kenney.nl/assets", license: "CC0" }
+  - { asset: "Battle Theme A and Mysterious Ambience (music loops)", author: "cynicmusic", url: "https://pixelsphere.org", license: "CC0, credit requested" }
 ---
 
 ## The game
@@ -163,6 +165,10 @@ The enemy turn is a coroutine that iterates enemies in board order. For each act
 ### What changed in 0.2.0 (October 2026)
 
 Until 0.2.0 nothing in the game pushed. The melee and ranged attack data shipped with a push of 0, and the one pushing attack sat on no unit, so the pits could never be used and this page described a mechanic you could not trigger. I found that on 2026-10-21 while auditing all three games for an upgrade plan. Melee hits now shove one tile, Level 1 has four pits across the middle of the board, the aim preview and the enemy's revealed intent both mark in amber where a shoved unit lands, and seven new EditMode tests pin the rule and the data so it cannot silently vanish again.
+
+### What changed in 0.3.0 (October 2026)
+
+- **Sound, from nothing.** The game had no audio at all. Every action now has one: footsteps per tile, the swing and the hit, the arrow leaving and landing, the shove, the thud of a collision, the fall into a pit, a unit's death, placing and selecting units, button hover and click, end of turn, your turn, the enemy's turn, and a rising or falling sting for victory and defeat. A deployment loop crossfades into a battle loop when the fight starts and fades out when it ends. Gameplay code asks for a sound by meaning (`SfxId.Shove`), and an `AudioLibrary` asset maps each id to a few CC0 clips with a volume and a little pitch jitter, so swapping a sound is a data change. Master, music and SFX volumes persist in PlayerPrefs. The clips are Kenney's packs and two cynicmusic loops, all CC0.
 
 ### What's next
 

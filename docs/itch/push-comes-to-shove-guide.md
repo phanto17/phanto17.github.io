@@ -89,6 +89,8 @@ One level for now. Feedback welcome in the comments — especially on how readab
 - Characters (Humans, Orc, Elf, Goblin): [Sanctum Pixel](https://sanctumpixel.itch.io) — the *Top Down Pixel Art Characters* packs
 - Animated damage numbers and their Alphapix font: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
 - UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
+- Sound effects and stings: [Impact Sounds, RPG Audio, Interface Sounds, Music Jingles](https://kenney.nl/assets) by Kenney (CC0)
+- Music: [Battle Theme A](https://opengameart.org/content/battle-theme-a) and [Mysterious Ambience](https://opengameart.org/content/mysterious-ambience-song21) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski
 
 Inspired by *Into the Breach* and *King's Bounty*.
