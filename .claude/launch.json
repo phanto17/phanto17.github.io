@@ -20,10 +20,10 @@
       "runtimeExecutable": "node",
       "runtimeArgs": [
         "tools/serve-web.mjs",
-        "D:/UnityProjects/IntotheMewgenics/Builds/Web-fe",
-        "8805"
+        "D:/UnityProjects/IntotheMewgenics/Builds/Web",
+        "8806"
       ],
-      "port": 8805
+      "port": 8806
     }
   ]
 }

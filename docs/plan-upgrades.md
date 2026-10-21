@@ -118,7 +118,7 @@ Total: **16 h** (+6 optional).
 ## Progress
 
 - **2026-10-21 — P1 done.** Melee shoves one tile (`PushSetup.All`), four pits on Level 1, amber landing-cell preview for the player's aim and the enemy's intent, shoves glide instead of snapping, seven `ShoveTests`. Build 0.2.0 (35 MB) — itch re-upload pending. Site and itch copy rewritten to the shipped rule. Owner playtested 2026-10-22: the shove and the amber preview work.
-- **2026-10-22 — P3, P6, P2 done** (audio from CC0 packs, feel pass, front end); P7 next. All ship as build 0.3.0.
+- **2026-10-22 — P3, P6, P2 done** (audio from CC0 packs, feel pass, front end) and **P7** (36 → 24 MB). Build 0.3.0 made; itch re-upload pending.
 
 ## Suggested order
 

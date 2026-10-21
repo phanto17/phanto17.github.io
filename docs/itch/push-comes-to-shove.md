@@ -43,6 +43,10 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 
 Inspired by *Into the Breach* and *King's Bounty*.
 
+## Devlog post for 0.3.0 (2026-10-22)
+
+**0.3.0 — sound, feel, menus.** The game has audio now: footsteps, blows, arrows, shoves, collisions, pit falls, a deployment loop that turns into a battle theme, and a sting for the result. Hover an enemy in Attack mode and the card tells you the outcome in numbers: your damage, the shove result, the counter you would take. Shoves have weight, collisions shake the camera, kills punch in. A title screen, Esc pause, how-to-play and volume settings. And the download is a third smaller (24 MB).
+
 ## Devlog post for 0.2.0 (2026-10-21)
 
 **0.2.0 — the shove is real.** Until now no unit in the build had a pushing attack, so the pits were scenery and the title was a promise. Melee hits now shove the target one tile: into a wall for collision damage, into an ally so both get hurt, into a pit to remove it. A shoved unit can't strike back; a pinned one does. Level 1 has four pits down the middle, and amber tiles show where a shove lands, for you and for the enemy's revealed intent.
