@@ -8,7 +8,7 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.1.1:** placeholder synthesised sound, no music, two floors only, a death
+- **Known rough edges in 0.1.2:** placeholder synthesised sound, no music, two floors only, a death
   restarts at the last checkpoint with the floor's enemies back.
 
 ## Title / slug
