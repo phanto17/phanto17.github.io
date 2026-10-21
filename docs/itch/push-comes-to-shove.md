@@ -13,11 +13,13 @@ Read the board, push enemies into pits, and set up the perfect turn before they 
 
 **Push Comes to Shove** is a small turn-based tactics game on an isometric grid, made solo in Unity.
 
-Deploy your squad of four on your side of the board, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers strike adjacent enemies and get struck back; archers shoot in straight lines; some attacks push. Pushing is the point:
+Deploy your squad of four on your side of the board, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines. Pushing is the point:
 
 - shove an enemy into a wall for extra damage,
 - into an ally so both get hurt,
 - or into a pit to remove it outright.
+
+A shoved unit is out of reach and can't strike back; one pinned against a wall takes the collision and does. Amber tiles show where a shove lands before you commit.
 
 Damage is fixed, never rolled, so every outcome is yours to work out. Enemies don't telegraph before your turn — on their turn they reveal their intent one at a time, and then act. Clear the board to win.
 
@@ -38,3 +40,7 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 - Design and code: Tymoteusz Jaskólski
 
 Inspired by *Into the Breach* and *King's Bounty*.
+
+## Devlog post for 0.2.0 (2026-10-21)
+
+**0.2.0 — the shove is real.** Until now no unit in the build had a pushing attack, so the pits were scenery and the title was a promise. Melee hits now shove the target one tile: into a wall for collision damage, into an ally so both get hurt, into a pit to remove it. A shoved unit can't strike back; a pinned one does. Level 1 has four pits down the middle, and amber tiles show where a shove lands, for you and for the enemy's revealed intent.

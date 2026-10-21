@@ -115,6 +115,10 @@ Total: **16 h** (+6 optional).
 - itch pages: one in-browser screenshot with the HUD per game; AI-disclosure answers consistent across the three.
 - Site: short gameplay clips (owner records), and the Push Comes to Shove text corrected as part of P1.
 
+## Progress
+
+- **2026-10-21 — P1 done.** Melee shoves one tile (`PushSetup.All`), four pits on Level 1, amber landing-cell preview for the player's aim and the enemy's intent, shoves glide instead of snapping, seven `ShoveTests`. Build 0.2.0 (35 MB) — itch re-upload pending. Site and itch copy rewritten to the shipped rule.
+
 ## Suggested order
 
 1. **P1** — the copy must match the game before anything else is published.

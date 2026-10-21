@@ -21,7 +21,7 @@ myContribution:
   - "Enemy AI: attack if a clear shot exists, otherwise move to the best firing cell, otherwise advance; the whole enemy turn is a paced coroutine that reveals each enemy's intent (green route, red cells) just before it acts."
   - "Turn manager with deployment and battle phases, a two-action-per-unit economy, win/lose per level objective (clear the board or survive N turns), result overlay and restart."
   - "State-pattern interaction modes (place, move, attack) with phase-gated buttons; roster and enemy info cards built from code; frame-by-frame sprite animator; hit-flash via a custom sprite shader and MaterialPropertyBlock."
-  - "23 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses and the AI's friendly-fire check, using a test-only grid constructor."
+  - "32 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses and the AI's friendly-fire check, using a test-only grid constructor."
   - "Design docs: vision and pillars, mechanic comparison against Into the Breach, King's Bounty and Octopath Traveler, and a staged plan for the HD-2D look."
 tools:
   - Unity 6000.3 (URP 17, 2D renderer)
@@ -47,7 +47,7 @@ credits:
 
 ## The game
 
-Push Comes to Shove is a small turn-based tactics game on an isometric grid. You deploy a squad of four on your side of the board, then alternate turns with the enemy. Each unit has two actions a turn: move along a cardinal path, or attack. Melee units strike adjacent enemies and get struck back; archers shoot in straight lines; some attacks push. Pushing is the point: shove an enemy into a wall for extra damage, into an ally so both get hurt, or into a pit to remove it outright. Enemies don't telegraph before your turn — on their turn they reveal their intent one at a time, and then act. Clear the board (or survive the required number of turns) to win.
+Push Comes to Shove is a small turn-based tactics game on an isometric grid. You deploy a squad of four on your side of the board, then alternate turns with the enemy. Each unit has two actions a turn: move along a cardinal path, or attack. Melee hits shove the target one tile in the direction of the blow; archers shoot in straight lines. Pushing is the point: shove an enemy into a wall for collision damage, into an ally so both get hurt, or into a pit to remove it outright. A shoved unit is out of reach and can't strike back; one pinned against a wall takes the collision and does. Enemies don't telegraph before your turn — on their turn they reveal their intent one at a time, and then act. Clear the board (or survive the required number of turns) to win.
 
 The design pillar is one line: **read the board, set up the perfect turn.** Damage is fixed, not rolled, so every outcome is yours to compute.
 
@@ -160,6 +160,10 @@ Each attack type is a ScriptableObject with two questions: *can I aim at that ce
 
 The enemy turn is a coroutine that iterates enemies in board order. For each action it decides (attack if clear, else move to the best firing cell, else advance toward the nearest player), draws that intent on the board, waits a beat so you can read it, resolves it with the same animated attack path the player uses, and clears the indicator. Only one enemy's intent is ever on screen, so routes never overlap into a blob. The turn manager gates player input until the coroutine finishes.
 
+### What changed in 0.2.0 (October 2026)
+
+Until 0.2.0 nothing in the game pushed. The melee and ranged attack data shipped with a push of 0, and the one pushing attack sat on no unit, so the pits could never be used and this page described a mechanic you could not trigger. I found that on 2026-10-21 while auditing all three games for an upgrade plan. Melee hits now shove one tile, Level 1 has four pits across the middle of the board, the aim preview and the enemy's revealed intent both mark in amber where a shoved unit lands, and seven new EditMode tests pin the rule and the data so it cannot silently vanish again.
+
 ### What's next
 
-A second level and audio. The web build has been on itch.io since October 2026. The HD-2D look pass (post-processing, depth backdrop, grounding shadows, animated sprites) is done; lit sprite materials are still to come.
+Audio and a front end (menu, pause, settings), then more levels and unit types. The HD-2D look pass (post-processing, depth backdrop, grounding shadows, animated sprites) is done; the lit-sprite pass is dropped.

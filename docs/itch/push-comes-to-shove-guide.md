@@ -8,7 +8,7 @@ links, one prism band in the banner. Assets are in `docs/itch/assets/`.
 
 | Have ready | Where |
 |---|---|
-| The build | `D:\UnityProjects\IntotheMewgenics\Builds\PushComesToShove-web-0.1.0.zip` (35 MB; `index.html` at the zip root, as itch requires) |
+| The build | `D:\UnityProjects\IntotheMewgenics\Builds\PushComesToShove-web-0.2.0.zip` (35 MB; 0.2.0 = the shove; `index.html` at the zip root, as itch requires) |
 | Cover image 630×500 | `docs/itch/assets/cover-630x500.png` |
 | Banner 960×300 (theme header) | `docs/itch/assets/banner-960x300.png` |
 | Background 1920×1080 (optional) | `docs/itch/assets/background-1920x1080.jpg` |
@@ -63,11 +63,13 @@ rich-text mode; otherwise paste and set the headings by hand):
 ```markdown
 **Push Comes to Shove** is a small turn-based tactics game on an isometric grid, made solo in Unity.
 
-Deploy your squad of four on your side of the board, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers strike adjacent enemies and get struck back; archers shoot in straight lines; some attacks push. Pushing is the point:
+Deploy your squad of four on your side of the board, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines. Pushing is the point:
 
 - shove an enemy into a wall for extra damage,
 - into an ally so both get hurt,
 - or into a pit to remove it outright.
+
+A shoved unit is out of reach and can't strike back; one pinned against a wall takes the collision and does. Amber tiles show where a shove lands before you commit.
 
 Damage is fixed, never rolled, so every outcome is yours to work out. Enemies don't telegraph before your turn: on their turn they reveal their intent one at a time, and then act. Clear the board to win.
 

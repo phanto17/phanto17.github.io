@@ -4,8 +4,26 @@
     {
       "name": "astro-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev", "--", "--host", "127.0.0.1", "--port", "4321"],
+      "runtimeArgs": [
+        "run",
+        "dev",
+        "--",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "4321"
+      ],
       "port": 4321
+    },
+    {
+      "name": "pcts-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/serve-web.mjs",
+        "D:/UnityProjects/IntotheMewgenics/Builds/Web",
+        "8802"
+      ],
+      "port": 8802
     }
   ]
 }
