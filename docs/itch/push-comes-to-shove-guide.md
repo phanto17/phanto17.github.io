@@ -8,7 +8,7 @@ links, one prism band in the banner. Assets are in `docs/itch/assets/`.
 
 | Have ready | Where |
 |---|---|
-| The build | `D:\UnityProjects\IntotheMewgenics\Builds\PushComesToShove-web-0.2.0.zip` (35 MB; 0.2.0 = the shove; `index.html` at the zip root, as itch requires) |
+| The build | `D:\UnityProjects\IntotheMewgenics\Builds\PushComesToShove-web-0.3.0.zip` (24 MB; 0.3.0 = the shove, audio, feel, front end; `index.html` at the zip root, as itch requires) |
 | Cover image 630×500 | `docs/itch/assets/cover-630x500.png` |
 | Banner 960×300 (theme header) | `docs/itch/assets/banner-960x300.png` |
 | Background 1920×1080 (optional) | `docs/itch/assets/background-1920x1080.jpg` |
