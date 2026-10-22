@@ -119,7 +119,7 @@ Total: **16 h** (+6 optional).
 
 - **2026-10-21 — P1 done.** Melee shoves one tile (`PushSetup.All`), four pits on Level 1, amber landing-cell preview for the player's aim and the enemy's intent, shoves glide instead of snapping, seven `ShoveTests`. Build 0.2.0 (35 MB) — itch re-upload pending. Site and itch copy rewritten to the shipped rule. Owner playtested 2026-10-22: the shove and the amber preview work.
 - **2026-10-22 — P3, P6, P2 done** (audio from CC0 packs, feel pass, front end) and **P7** (36 → 24 MB). Build 0.3.0 made.
-- **2026-10-22 — review round** from the owner's recording: first-hit arrows, selection kept across modes, skinned buttons, readable menus with Polish letters, fixed sliders, animated result screen, deploy counter, selection and card blinks, audio swaps. Random board generation deferred (owner left it to me; playability first). Build 0.3.1; itch re-upload pending.
+- **2026-10-22 — review round** from the owner's recording: first-hit arrows, selection kept across modes, skinned buttons, readable menus with Polish letters, fixed sliders, animated result screen, deploy counter, selection and card blinks, audio swaps. Random board generation deferred (owner left it to me; playability first). Build 0.3.1 live on itch.io since 2026-10-22 (verified byte-identical).
 
 ## Suggested order
 

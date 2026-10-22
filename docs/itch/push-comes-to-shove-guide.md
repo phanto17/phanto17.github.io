@@ -30,7 +30,7 @@ Dashboard → **Create new project**.
 | Short description or tagline | `Read the board, push enemies into pits, and set up the perfect turn before they get theirs. A small deterministic tactics game.` |
 | Classification | Games |
 | Kind of project | **HTML** |
-| Release status | **In development** (it is a prototype with one level; "Released" over-promises) |
+| Release status | **In development** (one level; "Released" over-promises). 0.3.1 live since 2026-10-22. |
 | Pricing | **No payments** |
 
 ## 2. Uploads
