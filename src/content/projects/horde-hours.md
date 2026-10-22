@@ -56,8 +56,6 @@ credits:
   - { asset: "Impact Sounds, Interface Sounds and Music Jingles (stings, UI ticks, enemy death)", author: "Kenney", url: "https://kenney.nl/assets", license: "CC0" }
   - { asset: "Crystal Cave (menu theme)", author: "cynicmusic", url: "https://pixelsphere.org", license: "CC0, credit requested" }
   - { asset: "Hints Stars Points & Rewards Sound Effects – Lite Pack", author: "Cyberwave Orchestra", url: "https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538", license: "Asset Store EULA" }
-  - { asset: "Rat model (mesh and texture)", author: "Original modeller unknown — the file came rigged through Mixamo. If this is your model, please contact me for credit or removal.", license: "Unknown" }
-  - { asset: "Flair dance animation (retargeted)", author: "Mixamo (Adobe)", url: "https://www.mixamo.com", license: "Mixamo terms, royalty-free" }
   - { asset: "League Gothic font", author: "The League of Moveable Type", url: "https://www.theleagueofmoveabletype.com/league-gothic", license: "SIL OFL" }
   - { asset: "Caslon Antique font", author: "Typographer Mediengestaltung", url: "https://www.1001fonts.com/caslon-antique-font.html", license: "1001Fonts Free For Commercial Use" }
   - { asset: "Ability icons", author: "AI-generated", license: "n/a (generated)" }
