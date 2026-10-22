@@ -34,6 +34,16 @@
         "8814"
       ],
       "port": 8814
+    },
+    {
+      "name": "ch-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/serve-web.mjs",
+        "D:/UnityProjects/Cinderhold/Builds/Web",
+        "8821"
+      ],
+      "port": 8821
     }
   ]
 }

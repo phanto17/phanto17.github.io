@@ -3,12 +3,12 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.1.2.zip` (0.1.2 adds the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.2.0.zip` (0.2.0 adds recorded audio and music; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.1.2:** placeholder synthesised sound, no music, two floors only, a death
+- **Known rough edges in 0.2.0:** no settings screen yet (volumes are stored but have no UI), two floors only, a death
   restarts at the last checkpoint with the floor's enemies back.
 
 ## Title / slug
@@ -39,11 +39,16 @@ Feedback welcome in the comments — especially on readability of the attacks an
 
 - Tiles, characters and items: [Tiny Dungeon](https://kenney.nl/assets/tiny-dungeon) by Kenney (CC0)
 - Fonts: [Kenney Mini and Kenney Mini Square](https://kenney.nl/assets/kenney-fonts) by Kenney (CC0); Liberation Sans (SIL Open Font License) ships inside Unity's TextMesh Pro resources
-- Sound effects: generated procedurally in code (no recorded audio)
+- Sound effects: [Impact Sounds](https://kenney.nl/assets/impact-sounds), [RPG Audio](https://kenney.nl/assets/rpg-audio), [Interface Sounds](https://kenney.nl/assets/interface-sounds) and [Music Jingles](https://kenney.nl/assets/music-jingles) by Kenney (CC0)
+- Music: [Dark Forest Theme](https://opengameart.org/content/dark-forest-theme) and [Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
+
+### Devlog — 0.2.0: sound
+
+Cinderhold now has recorded sound and music. Every effect is a CC0 clip from Kenney's packs (swings, hits, an armour clank when you are hit, bell tolls for deaths, coins, XP, the smith, the portal, pause). Two loops by cynicmusic: a dark guitar theme on the floors and a drums-and-violin track that takes over when Cinderclaw notices you and fades out when it falls. Volume settings come in the next update.
 
 ### Tags
 
 `Dungeon Crawler`, `Action`, `2D`, `Pixel Art`, `Singleplayer`, `Unity`, `Short`, `Top-Down`, `Roguelite`
 
-Genre: Action. AI disclosure: graphics no (Kenney assets), audio no (procedural), **code yes** (AI-assisted) — answer truthfully in the itch form.
+Genre: Action. AI disclosure: graphics no (Kenney assets), audio no (Kenney and cynicmusic, CC0), **code yes** (AI-assisted) — answer truthfully in the itch form.
