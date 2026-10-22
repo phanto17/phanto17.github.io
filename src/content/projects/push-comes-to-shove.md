@@ -21,7 +21,8 @@ myContribution:
   - "Enemy AI: attack if a clear shot exists, otherwise move to the best firing cell, otherwise advance; the whole enemy turn is a paced coroutine that reveals each enemy's intent (green route, red cells) just before it acts."
   - "Turn manager with deployment and battle phases, a two-action-per-unit economy, win/lose per level objective (clear the board or survive N turns), result overlay and restart."
   - "State-pattern interaction modes (place, move, attack) with phase-gated buttons; roster and enemy info cards built from code; frame-by-frame sprite animator; hit-flash via a custom sprite shader and MaterialPropertyBlock."
-  - "32 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses and the AI's friendly-fire check, using a test-only grid constructor."
+  - "49 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses, first-hit arrows, the attack preview, the AI's friendly-fire check and the shipped data, using a test-only grid constructor."
+  - "Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing. The October 2026 upgrade (the shove, audio, feel, front end, review round) was done that way from a plan I approved step by step."
   - "Design docs: vision and pillars, mechanic comparison against Into the Breach, King's Bounty and Octopath Traveler, and a staged plan for the HD-2D look."
 tools:
   - Unity 6000.3 (URP 17, 2D renderer)
@@ -30,6 +31,7 @@ tools:
   - Input System
   - Unity Test Framework (NUnit)
   - TextMesh Pro
+  - Claude Code
   - Shader Graph / HLSL
 media:
   - { type: image, src: /media/push-comes-to-shove/enemy-turn.webp, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 1 — enemy turn: one enemy's intent at a time (web build)" }

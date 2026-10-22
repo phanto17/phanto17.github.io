@@ -91,7 +91,7 @@ One level for now. Feedback welcome in the comments — especially on how readab
 - UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
 - Sound effects and stings: [Impact Sounds, RPG Audio, Interface Sounds, Music Jingles](https://kenney.nl/assets) by Kenney (CC0)
 - Music: [Battle Theme A](https://opengameart.org/content/battle-theme-a) and [Mysterious Ambience](https://opengameart.org/content/mysterious-ambience-song21) by cynicmusic — pixelsphere.org (CC0)
-- Design and code: Tymoteusz Jaskólski
+- Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
 
 Inspired by *Into the Breach* and *King's Bounty*.
 ```
