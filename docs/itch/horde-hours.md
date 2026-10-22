@@ -3,10 +3,10 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.1.zip` (28 MB; 0.2.0 = the spawn director and the 10-minute run)
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.2.zip` (28 MB; 0.2.0 = the spawn director and the 10-minute run)
 - **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
 - **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
-- **Known rough edges in 0.2.1:** no results screen beyond the headline, rat modeller still unknown
+- **Known rough edges in 0.2.2:** no results screen beyond the headline, rat modeller still unknown
 
 ## Title / slug
 
@@ -45,7 +45,7 @@ Feedback welcome in the comments — especially on weapon feel and difficulty.
 - Environment: [Stylized Grass Texture](https://assetstore.unity.com/packages/2d/textures-materials/glass/stylized-grass-texture-153153) by LowlyPoly · rat model (original modeller unknown) with the Flair animation retargeted on [Mixamo](https://www.mixamo.com) (Adobe)
 - Audio: "Happy Harmony" from [Free – Casual & Relaxing Game Music Pack](https://assetstore.unity.com/packages/audio/music/free-casual-relaxing-game-music-pack-262740) by SLD Audio · [Hints Stars Points & Rewards – Lite Pack](https://assetstore.unity.com/packages/audio/sound-fx/hints-stars-points-rewards-sound-effects-lite-pack-295538) by Cyberwave Orchestra
 - Stings and UI ticks: Impact Sounds, Interface Sounds and Music Jingles by [Kenney](https://kenney.nl/assets) (CC0)
-- Menu theme: [Mysterious Ambience](https://opengameart.org/content/mysterious-ambience-song21) by cynicmusic — pixelsphere.org (CC0)
+- Menu theme: [Crystal Cave](https://opengameart.org/content/crystal-cave-song18) by cynicmusic — pixelsphere.org (CC0)
 - Fonts: [League Gothic](https://www.theleagueofmoveabletype.com/league-gothic) by The League of Moveable Type (OFL) · [Caslon Antique](https://www.1001fonts.com/caslon-antique-font.html) by Typographer Mediengestaltung (1001Fonts FFC)
 - Ability icons: AI-generated
 - Design and code: Tymoteusz Jaskólski
