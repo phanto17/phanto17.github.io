@@ -41,9 +41,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/Cinderhold/Builds/Web",
-        "8821"
+        "8822"
       ],
-      "port": 8821
+      "port": 8822
     }
   ]
 }
