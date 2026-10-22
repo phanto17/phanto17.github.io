@@ -121,6 +121,8 @@ Total: **16 h** (+6 optional).
 - **2026-10-22 — P3, P6, P2 done** (audio from CC0 packs, feel pass, front end) and **P7** (36 → 24 MB). Build 0.3.0 made.
 - **2026-10-22 — review round** from the owner's recording: first-hit arrows, selection kept across modes, skinned buttons, readable menus with Polish letters, fixed sliders, animated result screen, deploy counter, selection and card blinks, audio swaps. Random board generation deferred (owner left it to me; playability first). Build 0.3.1 live on itch.io since 2026-10-22 (verified byte-identical).
 
+- **2026-10-22 — H1 done.** `SpawnDirectorModel` (pure C#, own asmdef) + `SpawnSchedule` asset + `SpawnDirector` in Game1 (WaveManager disabled), per-spawn health/damage scaling via `EnemyScaling`, YOU SURVIVED at 10:00, HUD timer shows the goal. 7 EditMode tests (the project had none). Build 0.2.0 (28 MB); itch re-upload pending. Also found: the pause menu has Save and Load buttons wired in the scene, so the save is not write-only — H7 becomes a menu Continue only.
+
 ## Suggested order
 
 1. **P1** — the copy must match the game before anything else is published.

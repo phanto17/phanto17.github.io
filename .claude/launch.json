@@ -24,6 +24,16 @@
         "8808"
       ],
       "port": 8808
+    },
+    {
+      "name": "hh-web",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/serve-web.mjs",
+        "D:/UnityProjects/SurvivorLike 4/SurvivorLike/Builds/Web",
+        "8810"
+      ],
+      "port": 8810
     }
   ]
 }

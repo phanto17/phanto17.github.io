@@ -1,6 +1,6 @@
 ---
 title: Horde Hours
-summary: A 3D survivors-like. Auto-firing abilities, pooled enemies and VFX, timed waves on a NavMesh, level-up cards, passives and a JSON save system.
+summary: A 3D survivors-like. Auto-firing abilities, pooled enemies and VFX, a ten-minute spawn director on a NavMesh, level-up cards, passives and a JSON save system.
 genre: Survivors-like / action roguelite
 status: playable
 dates:
@@ -18,7 +18,7 @@ myContribution:
   - "Projectile behaviour (`MoveTo`): homing, piercing, bouncing with smart re-targeting to the nearest living enemy, and explosive variants with radial knockback."
   - "Passive items that additively modify the runtime stat sheet (damage, cooldown, range, speed, knockback, magnet range, extra bounces) and level up like weapons."
   - "Object pooling on top of `UnityEngine.Pool.ObjectPool`, keyed by prefab name, shared by enemies, projectiles, VFX, damage popups and XP gems; every pooled object resets itself in `OnEnable`."
-  - "Wave spawner that places enemies on the NavMesh around the player on a timeline of waves."
+  - "Spawn director (0.2.0): a pure-C# model that turns the run clock into spawns — an interval that shrinks over ten minutes, a live cap that grows, per-minute health and damage multipliers applied on spawn, a type mix per phase and a burst of one type every minute — driven by a ScriptableObject schedule and covered by 7 EditMode tests. Written with Claude Code under my direction, from my plan."
   - "Enemy behaviour: NavMeshAgent chase, contact damage with interval, physics knockback that hands control back to the agent, hit-flash and dissolve-death via a Shader Graph material."
   - "Level-up flow: XP gems with a recoil-then-fly pickup animation, XP curve, a three-card upgrade screen that only offers valid options (free slots, level caps), controller/keyboard selection."
   - "Save system: `ISaveSystemElement` discovery, JSON save and load of level, XP, kills, position, abilities and passives, optional XOR obfuscation."
@@ -30,6 +30,8 @@ tools:
   - Input System
   - AI Navigation (NavMesh)
   - Shader Graph
+  - Unity Test Framework (NUnit)
+  - Claude Code
   - TextMesh Pro
 media:
   - { type: image, src: /media/horde-hours/fireball.webp, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 1 — a run in the web build" }
@@ -61,7 +63,7 @@ credits:
 
 ## The game
 
-Horde Hours is a top-down 3D survivors-like. You move; your weapons fire on their own at the nearest enemies. Enemies arrive in timed waves and chase you across a NavMesh arena, drop XP gems when they die, and every level-up pauses the game to offer three upgrade cards: a new weapon, a new passive, or a level for one you already have. The run ends when your health hits zero. There is no win state — the score is how long you lasted and how many you took down.
+Horde Hours is a top-down 3D survivors-like. You move; your weapons fire on their own at the nearest enemies. Enemies come in a trickle that never stops and thickens over ten minutes, with a crowd of one type every minute, and chase you across a NavMesh arena; they drop XP gems when they die, and every level-up pauses the game to offer three upgrade cards: a new weapon, a new passive, or a level for one you already have. Survive to 10:00 and you win; lose your health before that and the run ends with how long you lasted and how many you took down.
 
 My goal for this 3D survivors-like was to balance player power progression with time-based difficulty scaling by architecting a modular, data-driven ability system using Unity's ScriptableObjects. This project taught me how to tie independent mechanics into a cohesive core loop while scoping features to prioritize scalable functionality.
 
@@ -153,6 +155,10 @@ Enemies, projectiles, hit VFX, damage popups and gems all go through one `Object
 ### 3. Level-up offers and saves
 
 `LevelUpManager` turns every enemy kill into XP, drives the XP curve, and builds the three-card offer from the ability and passive databases: owned items appear as "level N+1" only below their cap, unowned ones only while a slot is free. The screen pauses time, unlocks the cursor and preselects the first card for controller play. The save system finds every `ISaveSystemElement` in the scene, lets each write into one `SaveData` object, serialises it to JSON in the persistent data path and restores abilities by name from the database on load.
+
+### What changed in 0.2.0 (October 2026)
+
+The web build had a hole I only saw when auditing the three games: four fixed waves, 134 enemies, and the last one spawned at 1:38. After that the arena was empty and the timer kept counting, with no win state. 0.2.0 replaces the wave list with a spawn director. A plain C# model takes the run clock and returns names to spawn: the interval between spawns shrinks from 1.1 s to 0.22 s over ten minutes, the live cap grows from 60 to 200, enemies get +15 % health and +8 % damage per minute (applied on spawn, since pooled enemies are reused), the type mix changes by phase (slimes first, bats from 1:00, skeletons from 2:30, zombies from 4:30), and every minute a crowd of one type pours in on top of the trickle. The curve lives in a `SpawnSchedule` asset. Survive to 10:00 and the game-over panel says YOU SURVIVED; the HUD timer now counts toward that goal. The model has no Unity dependency, so it is tested by simulating whole runs: spawns still arrive in the last minute, the last minute is far busier than the first, the cap holds, the mix shifts, the burst lands.
 
 ### What changed for the web build (October 2026)
 
