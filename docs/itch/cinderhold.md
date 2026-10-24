@@ -3,13 +3,13 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.2.0.zip` (0.2.0 adds recorded audio and music; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.2.1.zip` (0.2.1 adds settings and the controls card on top of 0.2.0's recorded audio and music; upload 0.2.1, skip 0.2.0; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.2.0:** no settings screen yet (volumes are stored but have no UI), two floors only, a death
-  restarts at the last checkpoint with the floor's enemies back.
+- **Known rough edges in 0.2.1:** two floors only, a death restarts at the last checkpoint with the floor's enemies back
+  (the death screen says so now).
 
 ## Title / slug
 
@@ -27,7 +27,7 @@ Every enemy shows where it will hit before it swings: a red mark on the floor is
 
 ### Controls
 
-**WASD** or arrow keys to move. **Space / J** or left mouse to attack. **E** to interact (smith, exits). **Esc** pauses. Gamepad: left stick, X to attack, A to interact, Start to pause. Progress saves automatically when you level up, buy a weapon or reach a new floor; a death restarts from the last checkpoint.
+**WASD** or arrow keys to move. **Space / J** or left mouse to attack. **E** to interact (smith, exits). **Esc** pauses; the pause panel has volume and screen-shake settings (arrows or stick to change) and a controls card. Gamepad: left stick, X to attack, A to interact, Start to pause. Progress saves automatically when you level up, buy a weapon or reach a new floor; a death restarts from the last checkpoint.
 
 ### What this is
 
@@ -43,9 +43,9 @@ Feedback welcome in the comments — especially on readability of the attacks an
 - Music: [Dark Forest Theme](https://opengameart.org/content/dark-forest-theme) and [Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
 
-### Devlog — 0.2.0: sound
+### Devlog — 0.2.1: sound and settings
 
-Cinderhold now has recorded sound and music. Every effect is a CC0 clip from Kenney's packs (swings, hits, an armour clank when you are hit, bell tolls for deaths, coins, XP, the smith, the portal, pause). Two loops by cynicmusic: a dark guitar theme on the floors and a drums-and-violin track that takes over when Cinderclaw notices you and fades out when it falls. Volume settings come in the next update.
+Cinderhold now has recorded sound and music. Every effect is a CC0 clip from Kenney's packs (swings, hits, an armour clank when you are hit, bell tolls for deaths, coins, XP, the smith, the portal, pause). Two loops by cynicmusic: a dark guitar theme on the floors and a drums-and-violin track that takes over when Cinderclaw notices you and fades out when it falls. Esc now opens settings (master, music, effects, screen shake; arrows or the stick to change) and a controls card, and the death screen explains what a retry does.
 
 ### Tags
 
