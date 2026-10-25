@@ -3,7 +3,7 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.5.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds; 0.2.5 = results panel, settings, mix pass; 0.2.4 live since 2026-10-22)
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.5.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds; 0.2.5 = results panel, settings, mix pass; 0.2.5 live since 2026-10-25)
 - **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
 - **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
 - **Known rough edges in 0.2.5:** no boss or elite enemies yet, all four enemies chase the same way
