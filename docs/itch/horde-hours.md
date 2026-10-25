@@ -3,10 +3,10 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.6.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds; 0.2.5 = results panel, settings, mix pass; 0.2.6 = Continue; 0.2.6 live since 2026-10-25)
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.3.0.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds, results, settings, Continue; 0.3.0 = enemy roles, elites, boss; 0.2.6 live since 2026-10-25)
 - **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
 - **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
-- **Known rough edges in 0.2.5:** no boss or elite enemies yet, all four enemies chase the same way
+- **Known rough edges in 0.3.0:** the boss is a large zombie rather than a model of its own; the balance of the new roles has not had a long playtest
 
 ## Title / slug
 
@@ -20,7 +20,7 @@ Survive the night against an endless horde. Your weapons fire on their own; you 
 
 **Horde Hours** is a small 3D survivors-like made solo in Unity.
 
-Move, and your weapons fire at the nearest enemies by themselves. Enemies come in a trickle that never stops and thickens for ten minutes, with a crowd of one type every minute, and chase you across the arena; every kill drops experience, and every level-up stops time to offer three cards: a new weapon, a new passive, or a level for one you already have. Survive to 10:00 and you win; lose your health before that and the run ends with how long you lasted and how many you took down.
+Move, and your weapons fire at the nearest enemies by themselves. Enemies come in a trickle that never stops and thickens for ten minutes, with a crowd of one type every minute: slimes swarm, bats circle and dive, skeletons keep their distance and throw bones, zombies push through. Elites join at five minutes and a boss at nine; every kill drops experience, and every level-up stops time to offer three cards: a new weapon, a new passive, or a level for one you already have. Survive to 10:00 and you win; lose your health before that and the run ends with how long you lasted and how many you took down.
 
 ### Controls
 
@@ -35,6 +35,10 @@ Axe, Fireball, Lightning Strike, Galactic Aura, Static Field, Whip — each with
 A gameplay-programming prototype: a ScriptableObject ability framework, a single object pool for enemies, projectiles, VFX and pickups, a wave spawner on NavMesh, a level-up offer system and a JSON save system. Technical write-up: https://phanto17.github.io/projects/horde-hours/
 
 Feedback welcome in the comments — especially on weapon feel and difficulty.
+
+### Devlog — 0.3.0: roles, elites and a boss
+
+Every enemy has a job now. Slimes rush in numbers, bats circle and dive, skeletons stand off and throw bones, zombies are slow walls that ignore knockback. From five minutes some arrive as gold elites with four times the health and extra gems. At nine minutes the Horde Lord walks in: watch for the red glow, then step out of its charge. Survive to ten minutes as before.
 
 ### Devlog — 0.2.6: Continue
 
