@@ -31,9 +31,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/SurvivorLike 4/SurvivorLike/Builds/Web",
-        "8815"
+        "8816"
       ],
-      "port": 8815
+      "port": 8816
     },
     {
       "name": "ch-web",
