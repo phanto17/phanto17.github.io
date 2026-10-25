@@ -18,6 +18,7 @@ myContribution:
   - "Projectile behaviour (`MoveTo`): homing, piercing, bouncing with smart re-targeting to the nearest living enemy, and explosive variants with radial knockback."
   - "Passive items that additively modify the runtime stat sheet (damage, cooldown, range, speed, knockback, magnet range, extra bounces) and level up like weapons."
   - "Object pooling on top of `UnityEngine.Pool.ObjectPool`, keyed by prefab name, shared by enemies, projectiles, VFX, damage popups and XP gems; every pooled object resets itself in `OnEnable`."
+  - "Continue (0.2.6): the save system, until now reachable only from the pause menu, is a real feature. Quitting to the menu writes a save; the menu shows Continue while one exists; choosing it loads the arena and restores position, health, level, XP, kills, the build and the clock a frame after the scene starts. The spawn director skips its own clock to the saved time without spawning the minutes in between (a pure method with a test), so a run continued at 4:52 faces 4:52 enemies and still ends at 10:00. A death or the escape deletes the save. Written with Claude Code under my direction."
   - "Results and settings (0.2.5): the end-of-run panel now shows how long the run lasted against the ten-minute goal, the level reached, the kills and the build (every weapon and passive as an icon with its level), the wording from a pure class with its own tests. Master, music and effects sliders in the pause menu and in a new Settings screen on the main menu, stored in PlayerPrefs and read by the audio manager and the menu music, plus a controls card for keyboard and gamepad. A mix pass: effects a notch under the music, XP gems (the most frequent sound) quieter than hits, the hit-sound cooldown kept, and the music ducks under the level-up cards and the results. Four music files that nothing played and no licence covered were deleted. Written with Claude Code under my direction."
   - "Spawn director (0.2.0): a pure-C# model that turns the run clock into spawns — an interval that shrinks over ten minutes, a live cap that grows, per-minute health and damage multipliers applied on spawn, a type mix per phase and a burst of one type every minute — driven by a ScriptableObject schedule and covered by 7 EditMode tests. Written with Claude Code under my direction, from my plan."
   - "Enemy behaviour: NavMeshAgent chase, contact damage with interval, physics knockback that hands control back to the agent, hit-flash and dissolve-death via a Shader Graph material."
@@ -168,6 +169,10 @@ A review round from my own recording. The lightning strike rendered as a magenta
 ### What changed in 0.2.5 (October 2026)
 
 The run ends with numbers instead of a headline: survived time against the goal, level, kills, and the build as icons with levels. Volume sliders (master, music, effects) live in the pause menu and in a Settings screen on the main menu; they persist, and the menu music follows them too. A controls card sits next to them. The mix got a pass: effects below the music, gems quieter than hits, music ducked under the level-up cards and the results panel. The unreferenced music files left over from early prototyping are gone, so every clip that ships is credited. 18 EditMode tests pin the scenes, the prefab and the wording.
+
+### What changed in 0.2.6 (October 2026)
+
+Continue on the main menu, shown while a save exists. Quit from the pause menu saves; Continue restores the run, including the spawn director's clock, so the pressure matches the minute you left at; a death or the escape deletes the save. The menu buttons sit in a layout column now, so a hidden Continue (or Quit, on the web) leaves no gap. 21 EditMode tests.
 
 ### What changed for the web build (October 2026)
 

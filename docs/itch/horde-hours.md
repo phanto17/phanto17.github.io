@@ -3,7 +3,7 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.5.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds; 0.2.5 = results panel, settings, mix pass; 0.2.5 live since 2026-10-25)
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.2.6.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds; 0.2.5 = results panel, settings, mix pass; 0.2.6 = Continue; 0.2.5 live since 2026-10-25)
 - **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
 - **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
 - **Known rough edges in 0.2.5:** no boss or elite enemies yet, all four enemies chase the same way
@@ -24,7 +24,7 @@ Move, and your weapons fire at the nearest enemies by themselves. Enemies come i
 
 ### Controls
 
-**WASD** or arrow keys to move, mouse to turn the camera. Weapons fire automatically. **Esc** pauses: volume sliders, a controls card, save and load are in the pause menu. Mouse for the menus and the level-up cards; a gamepad works for moving, the camera and picking cards.
+**WASD** or arrow keys to move, mouse to turn the camera. Weapons fire automatically. **Esc** pauses: volume sliders, a controls card, save and load are in the pause menu; Quit saves, and the main menu offers Continue while a save exists. Mouse for the menus and the level-up cards; a gamepad works for moving, the camera and picking cards.
 
 ### Weapons and passives
 
@@ -35,6 +35,10 @@ Axe, Fireball, Lightning Strike, Galactic Aura, Static Field, Whip — each with
 A gameplay-programming prototype: a ScriptableObject ability framework, a single object pool for enemies, projectiles, VFX and pickups, a wave spawner on NavMesh, a level-up offer system and a JSON save system. Technical write-up: https://phanto17.github.io/projects/horde-hours/
 
 Feedback welcome in the comments — especially on weapon feel and difficulty.
+
+### Devlog — 0.2.6: Continue
+
+Quit to the menu mid-run and Continue picks it up where you left it: position, health, level, build and the clock, with the enemy pressure of that minute. A death or surviving the night clears the save.
 
 ### Devlog — 0.2.5: results and settings
 
