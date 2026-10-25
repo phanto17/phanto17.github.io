@@ -13,7 +13,7 @@ Read the board, push enemies into pits, and set up the perfect turn before they 
 
 **Push Comes to Shove** is a small turn-based tactics game on an isometric grid, made solo in Unity.
 
-Deploy your squad of four on your side of the board, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines. Pushing is the point:
+Five levels. On each board, deploy your squad on your side, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines. Pushing is the point:
 
 - shove an enemy into a wall for extra damage,
 - into an ally so both get hurt,
@@ -21,7 +21,7 @@ Deploy your squad of four on your side of the board, then take turns with the en
 
 A shoved unit is out of reach and can't strike back; one pinned against a wall takes the collision and does. Amber tiles show where a shove lands before you commit.
 
-Damage is fixed, never rolled, so every outcome is yours to work out. Enemies don't telegraph before your turn — on their turn they reveal their intent one at a time, and then act. Clear the board to win.
+Damage is fixed, never rolled, so every outcome is yours to work out. Enemies don't telegraph before your turn — on their turn they reveal their intent one at a time, and then act. Clear the board to win, or on one level hold out for five turns. Grey rocks block movement, arrows and shoves.
 
 ### Controls
 
@@ -42,6 +42,10 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
 
 Inspired by *Into the Breach* and *King's Bounty*.
+
+## Devlog post for 0.4.0 (2026-10-25)
+
+**0.4.0 — five levels.** One board became a short campaign: First Shove teaches the push with a squad of two, The Crossing is the old board, Drowned Fields floods most of the ground, Hold the Line asks you to survive five turns behind a rock ridge, and The Warband is the finale. Each level opens with a briefing, a win unlocks the next one, and the Levels screen lets you replay any you have reached. Rocks are new: they stop movement, arrows and shoves, and the enemies now walk round them instead of waiting behind them.
 
 ## Devlog post for 0.3.0 (2026-10-22)
 

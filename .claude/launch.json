@@ -21,9 +21,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/Web",
-        "8808"
+        "8833"
       ],
-      "port": 8808
+      "port": 8833
     },
     {
       "name": "hh-web",
@@ -54,6 +54,16 @@
         "8830"
       ],
       "port": 8830
+    },
+    {
+      "name": "pcts-preview",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/serve-web.mjs",
+        "D:/UnityProjects/IntotheMewgenics/Builds/WebPreview",
+        "8834"
+      ],
+      "port": 8834
     }
   ]
 }
