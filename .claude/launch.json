@@ -31,9 +31,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/SurvivorLike 4/SurvivorLike/Builds/Web",
-        "8820"
+        "8822"
       ],
-      "port": 8820
+      "port": 8822
     },
     {
       "name": "ch-web",
@@ -64,6 +64,16 @@
         "8834"
       ],
       "port": 8834
+    },
+    {
+      "name": "hh-bench",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "tools/serve-web.mjs",
+        "D:/UnityProjects/SurvivorLike 4/SurvivorLike/Builds/WebBench",
+        "8837"
+      ],
+      "port": 8837
     }
   ]
 }
