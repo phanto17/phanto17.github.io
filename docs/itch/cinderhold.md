@@ -13,7 +13,7 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 
 ## Title / slug
 
-`Cinderhold` · `phanto-official.itch.io/cinderhold` (live since 2026-10-16; build 0.2.1 since 2026-10-25 — the page's Credits block must be replaced with the one below, it still lists procedural sound)
+`Cinderhold` · `phanto-official.itch.io/cinderhold` (live since 2026-10-16; build 0.3.0 since 2026-10-26; the Credits block below is on the page — the description and controls still need the 0.3.0 text below)
 
 ## Short description (tagline)
 
