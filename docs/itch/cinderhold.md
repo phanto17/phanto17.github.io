@@ -3,12 +3,12 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.3.0.zip` (0.3.0 = the dodge, 2D lighting, the boss entrance, death bursts, floor fades; 0.2.1 added settings and the controls card on top of 0.2.0's recorded audio and music; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.4.0.zip` (0.4.0 = a new Floor 2 with keys, locked doors, a checkpoint and armoured slimes; Cinderclaw's floor is now Floor 3; 0.3.0 = the dodge, 2D lighting, the boss entrance, death bursts, floor fades; 0.2.1 added settings and the controls card on top of 0.2.0's recorded audio and music; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
-  `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
+  `floor2-locks.png`, `floor2-exit.png`, `floor3-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.3.0:** two floors only, a death restarts at the last checkpoint with the floor's enemies back
+- **Known rough edges in 0.4.0:** three short floors; a death restarts at the last checkpoint with the floor's enemies back
   (the death screen says so now).
 
 ## Title / slug
@@ -17,13 +17,13 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 
 ## Short description (tagline)
 
-A short top-down dungeon crawler. Read the telegraph, dodge, strike. Two floors, a smith, and a guardian at the bottom.
+A short top-down dungeon crawler. Read the telegraph, dodge, strike. Three floors, locked doors, a smith, and a guardian at the bottom.
 
 ## Description
 
 **Cinderhold** is a small 2D dungeon crawler made solo in Unity.
 
-Every enemy shows where it will hit before it swings: a red mark on the floor is your cue to dodge through it and punish. Kill slimes, bats and rats for XP and coins, level up for more health, spend coins at the smith for a bigger weapon, and find the way down. The guardian on the second floor seals the exit until it falls.
+Every enemy shows where it will hit before it swings: a red mark on the floor is your cue to dodge through it and punish. Kill slimes, bats and rats for XP and coins, level up for more health, spend coins at the smith for a bigger weapon, and find the way down. The second floor is locked: find the keys its monsters guard. The guardian on the third floor seals the exit until it falls.
 
 ### Controls
 
@@ -42,6 +42,10 @@ Feedback welcome in the comments — especially on readability of the attacks an
 - Sound effects: [Impact Sounds](https://kenney.nl/assets/impact-sounds), [RPG Audio](https://kenney.nl/assets/rpg-audio), [Interface Sounds](https://kenney.nl/assets/interface-sounds) and [Music Jingles](https://kenney.nl/assets/music-jingles) by Kenney (CC0)
 - Music: [Dark Forest Theme](https://opengameart.org/content/dark-forest-theme) and [Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
+
+### Devlog — 0.4.0: keys and a third floor
+
+There is a new second floor between the first one and Cinderclaw's, who now waits on the third. Its doors are locked: two keys lie in side rooms, guarded by armoured slimes (tougher, and they barely budge when hit). Halfway through, a waystone lights up when you pass it and saves your run, so a death past it restarts there with the doors you opened still open.
 
 ### Devlog — 0.3.0: dodge and light
 
