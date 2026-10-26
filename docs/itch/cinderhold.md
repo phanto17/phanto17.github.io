@@ -3,12 +3,12 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, **1280 × 720**, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.2.1.zip` (0.2.1 adds settings and the controls card on top of 0.2.0's recorded audio and music; upload 0.2.1, skip 0.2.0; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
+- **Build:** `D:\UnityProjects\Cinderhold\Builds\Cinderhold-web-0.3.0.zip` (0.3.0 = the dodge, 2D lighting, the boss entrance, death bursts, floor fades; 0.2.1 added settings and the controls card on top of 0.2.0's recorded audio and music; 0.1.2 added the Kenney pixel UI font; 0.1.0 shipped without wall collision, never use it)
 - **Cover:** `docs/itch/assets/cinderhold-cover-630x500.png`
 - **Screenshots:** `D:\UnityProjects\Cinderhold\Builds\Shots\floor1-spawn.png`, `floor1-exit.png`,
   `floor2-boss.png` (1280 × 720, captured from the scenes without the HUD); add one in-browser shot
   with the HUD if you can.
-- **Known rough edges in 0.2.1:** two floors only, a death restarts at the last checkpoint with the floor's enemies back
+- **Known rough edges in 0.3.0:** two floors only, a death restarts at the last checkpoint with the floor's enemies back
   (the death screen says so now).
 
 ## Title / slug
@@ -23,11 +23,11 @@ A short top-down dungeon crawler. Read the telegraph, dodge, strike. Two floors,
 
 **Cinderhold** is a small 2D dungeon crawler made solo in Unity.
 
-Every enemy shows where it will hit before it swings: a red mark on the floor is your cue to step aside and punish. Kill slimes, bats and rats for XP and coins, level up for more health, spend coins at the smith for a bigger weapon, and find the way down. The guardian on the second floor seals the exit until it falls.
+Every enemy shows where it will hit before it swings: a red mark on the floor is your cue to dodge through it and punish. Kill slimes, bats and rats for XP and coins, level up for more health, spend coins at the smith for a bigger weapon, and find the way down. The guardian on the second floor seals the exit until it falls.
 
 ### Controls
 
-**WASD** or arrow keys to move. **Space / J** or left mouse to attack. **E** to interact (smith, exits). **Esc** pauses; the pause panel has volume and screen-shake settings (arrows or stick to change) and a controls card. Gamepad: left stick, X to attack, A to interact, Start to pause. Progress saves automatically when you level up, buy a weapon or reach a new floor; a death restarts from the last checkpoint.
+**WASD** or arrow keys to move. **Space / J** or left mouse to attack. **Shift / K** or right mouse to dodge. **E** to interact (smith, exits). **Esc** pauses; the pause panel has volume and screen-shake settings (arrows or stick to change) and a controls card. Gamepad: left stick, X to attack, B or RB to dodge, A to interact, Start to pause. Progress saves automatically when you level up, buy a weapon or reach a new floor; a death restarts from the last checkpoint.
 
 ### What this is
 
@@ -42,6 +42,10 @@ Feedback welcome in the comments — especially on readability of the attacks an
 - Sound effects: [Impact Sounds](https://kenney.nl/assets/impact-sounds), [RPG Audio](https://kenney.nl/assets/rpg-audio), [Interface Sounds](https://kenney.nl/assets/interface-sounds) and [Music Jingles](https://kenney.nl/assets/music-jingles) by Kenney (CC0)
 - Music: [Dark Forest Theme](https://opengameart.org/content/dark-forest-theme) and [Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
+
+### Devlog — 0.3.0: dodge and light
+
+You can dodge now (Shift, K, right mouse, or B / RB): a quick dash through enemies with a moment of invulnerability, on a short cooldown shown by the weapon icon. Enemy attacks are a little faster and wider to match, so the red mark is something to dodge, not to walk away from. The floors are dark and lit by flickering sconces, a light you carry and the portal's glow. Cinderclaw gets an entrance, with its name, a shake and a health bar, and its room turns red when the fight starts. Enemies burst apart in their own colours, and floors fade into each other.
 
 ### Devlog — 0.2.1: sound and settings
 

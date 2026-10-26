@@ -20,11 +20,13 @@ myContribution:
   - "Enemy AI: each enemy type is an `EnemyDefinition` asset (look, health, speeds, sight, attack pattern, cowardice) applied to one generic prefab at spawn. Behaviour is a small state machine whose states — Idle, Patrol, Chase, Attack, Flee, Recover — are plain C# objects that only see an interface: senses (sight range with hysteresis, line of sight against walls, a short memory of the last seen position, an alert after being hit) and actuators (move, stop, swing). Attacks are telegraphed on the floor from the weapon's hitbox during the windup, followed by a pause that is the player's punish window. Cowards flee at low health, recover out of sight, and cannot flee again for a while so they end up fighting. The boss, Cinderclaw, is the same brain with a cycling attack pattern (slam, slam, sweep); no boss-specific code."
   - "Progression and persistence: enemies carry XP and coin rewards as data and drop pickups that fly to the player; a plain C# progress model handles levels (each level adds max health and refills), XP carry-over and coins; a smith's station in the room sells better weapons through a small interaction layer (nearest usable object in range, one Interact action). Saving is a version plus a list of named JSON blobs — every component with state worth keeping writes its own small record — behind a swappable store: PlayerPrefs in the browser build, memory in tests. One session object decides when to load and autosave, so gameplay code never writes files."
   - "Interface and feel: a screen-space HUD (health pips, XP bar and level, coins, equipped weapon, interaction prompt) driven by the same events the gameplay raises, a death screen that restarts from the last autosave, pause on a single game clock that also owns hit-stop so the two can never cancel each other, pooled floating damage numbers, camera shake scaled by what happened, and sound effects that were at first synthesised from square, saw, sine and noise waves at start — no audio files, no licences to track, and one class to swap when recorded sounds arrived. None of the effects are known to the gameplay code; they subscribe to global events."
-  - "Tests: EditMode tests cover the health pool, cooldown, hitbox geometry, every AI state transition through a fake context, the attack pattern, the level curve and progress model, the shop rules, the save format, the game clock, the sound synthesis, the audio library and the settings list (85 tests); PlayMode tests instantiate the real prefabs and data and check the sword kill loop, enemy chasing and biting, the bat's flee-and-recover, loot collection after a kill, level-up healing, shop purchases, a full save/load round trip, and the HUD, death screen, pause and damage popups against the real prefabs (29 tests). Both suites run headlessly from the command line like the builds."
+  - "Tests: EditMode tests cover the health pool, cooldown, hitbox geometry, every AI state transition through a fake context, the attack pattern, the level curve and progress model, the shop rules, the save format, the game clock, the sound synthesis, the audio library, the settings list, the dodge and its invulnerability window (93 tests); PlayMode tests instantiate the real prefabs and data and check the sword kill loop, enemy chasing and biting, the bat's flee-and-recover, loot collection after a kill, level-up healing, shop purchases, a full save/load round trip, the HUD, death screen, pause and damage popups against the real prefabs, and the dodge, the lights and the boss encounter on the real floors (34 tests). Both suites run headlessly from the command line like the builds."
   - "Floors and the run: two hand-made floors authored as text maps and built into scenes by the same editor script, a smith on each, an exit sealed by the guardian on the second floor, a win screen, and checkpoints on arrival so the build can boot into the floor a save belongs to."
   - "First playtest (a recorded run with commentary) drove a revision pass: the walls had no collision in the web build because a composite collider built by script produced no geometry at runtime, which a scene-level test now guards; mouse attacks aim at the cursor; damage numbers moved from world space to the HUD so they are legible at the pixel scale; enemies got health bars; health, enemy pacing and heart drops were tuned after a 36-second first death; a short controls hint appears on each floor."
   - "Recorded audio (0.2.0): every sound is now a CC0 clip from Kenney's Impact, RPG, Interface and Music Jingles packs, chosen so that none of them is a sound of my other two games (swings are cloth whooshes, the player's hurt is a plate-armour clank, deaths are tolls on a bell pitched down, the boss roars with a slowed door creak). A library asset in Resources maps each sound id to its clips, level, pitch and jitter; the synthesised versions stay behind it as a fallback, so an id without a recording still sounds. Two cynicmusic loops (CC0): a brooding guitar theme on the floors and a drums-and-violin track that crossfades in when Cinderclaw notices you and out again when it dies; the floor loop carries through portals because the music player survives scene loads. New sounds for the portal, the escape, pausing and the boss, and three persisted volumes (master, music, effects) for the settings screen to come."
   - "Settings (0.2.1): the pause panel holds master, music and effects volume and a screen-shake toggle, driven by the Move action so keyboard and gamepad work without a mouse or an EventSystem; the list is a plain C# model (select, adjust, clamp, wrap) with the drawing kept apart, values persist in PlayerPrefs, and the same panel carries a controls card for both input schemes. The death screen now says what a retry does: the floor restarts from the last checkpoint, enemies return, your level, coins and weapon stay."
+  - "Dodge (0.3.0): Shift, K, right mouse, or B / RB on a pad dashes about two and a half tiles through enemies with hits ignored for a quarter of a second, on a cooldown shown as a gauge by the weapon icon. The rhythm (dash, window, cooldown) is a plain C# model with tests, and the window is a new rule on the health pool: grant invulnerability for at least this long, never shortening a longer one. A hit the window swallows says \"Dodged\". Walls still stop the dash, which a PlayMode test checks on the real floor. Enemy windups were shortened and their hit boxes widened, so the red mark is answered by dodging rather than by walking away."
+  - "Light and feel (0.3.0): the floors went dark (a dim, cool global 2D light) and are lit by flickering sconces placed from the text maps, a warm light the player carries, a portal that glows brighter once it opens and a red light in the boss room that swells when Cinderclaw notices you. The boss gets an entrance: its name across the screen, a camera shake and a health bar that stays until it falls, all driven by one encounter component the bar, the light and the music cue listen to. Enemies burst into chips in their own colour from a single particle system, and moving between floors fades through black."
   - "Most of the code was written with an AI assistant (Claude Code) under my direction: I set the scope and the order of the systems, decided the design rules (telegraphed attacks, data over code, one clock), reviewed every change and its tests, and chose what to cut. The commits say so."
   - "The earlier prototype (June–July 2025) followed a beginner tutorial and is not presented as my work; it is kept only as a frozen reference."
 tools:
@@ -136,23 +138,23 @@ The boss is the same brain with a longer weapon list (slam, slam, sweep). There 
 
 ### 2. Floors written as text
 
-Both floors are text maps inside an editor script, built into scenes from the command line: walls, doorways, props, the spawn, the smith, the exit and every enemy. Changing a floor means editing a few characters and re-running one build step.
+Both floors are text maps inside an editor script, built into scenes from the command line: walls, lit sconces, doorways, props, the spawn, the smith, the exit and every enemy. Changing a floor means editing a few characters and re-running one build step.
 
 ```text
-####################
+####t#########t#####
 #.........#........#
 #..S......#...B....#
 #.........D........#
 #....P....#........#
 #.........#....S...#
-#######D########...#
+###t###D####t###...#
 #.........$........#
 #..B...............#
 #........x...S....E#
 #........b.........#
 ####################
 ```
-<p class="excerpt-caption">Floor 1 as authored. # wall · D doorway · P spawn · $ smith · E exit · S slime · B bat · x crate · b barrel.</p>
+<p class="excerpt-caption">Floor 1 as authored. # wall · t wall with a lit sconce · D doorway · P spawn · $ smith · E exit · S slime · B bat · x crate · b barrel.</p>
 
 ### 3. A playtest that became a test
 
@@ -160,4 +162,4 @@ The first recorded playtest showed the player walking straight through walls. Th
 
 ### What's next
 
-Recorded sound in place of the synthesised placeholders, and a room generator that stitches hand-made rooms into floors.
+A third floor with locked doors and keys, and a room generator that stitches hand-made rooms into floors.
