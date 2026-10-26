@@ -13,7 +13,7 @@ Read the board, push enemies into pits, and set up the perfect turn before they 
 
 **Push Comes to Shove** is a small turn-based tactics game on an isometric grid, made solo in Unity.
 
-Five levels. On each board, deploy your squad on your side, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines. Pushing is the point:
+Five levels. On each board, deploy your squad on your side, then take turns with the enemy. Every unit gets two actions a turn: move along a path, or attack. Soldiers' hits shove the target one tile; archers shoot in straight lines; rangers fire a piercing shot that hits and shoves every enemy in a row. Watch for red brutes, whose blows shove two tiles. Pushing is the point:
 
 - shove an enemy into a wall for extra damage,
 - into an ally so both get hurt,
@@ -34,7 +34,7 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 ### Credits
 
 - Isometric Sandbox tiles: [Kenney](https://kenney.nl), CC0
-- Characters (Humans, Orc, Elf, Goblin): [Sanctum Pixel](https://sanctumpixel.itch.io) — the *Top Down Pixel Art Characters* packs
+- Characters (Humans, Orc, Elf, Goblin): [Sanctum Pixel](https://sanctumpixel.itch.io) — the *Top Down Pixel Art Characters* packs (the brute, harrier and ranger use the packs' own alternative palettes)
 - Animated damage numbers and their Alphapix font: [PixelBattleText](https://assetstore.unity.com/packages/2d/gui/pixelbattletext-189358) by Psychic Fur
 - UI font: [Pixellari](https://www.dafont.com/pixellari.font) by Zacchary Dempsey-Plante
 - Sound effects and stings: [Impact Sounds, RPG Audio, Interface Sounds, Music Jingles](https://kenney.nl/assets) by Kenney (CC0)
@@ -42,6 +42,10 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
 
 Inspired by *Into the Breach* and *King's Bounty*.
+
+## Devlog post for 0.5.0 (2026-10-27)
+
+**0.5.0 — new units.** Your squad can now include a ranger, whose piercing shot hits every enemy in a row and shoves each of them a tile. The raiders bring two new types: red brutes, slow and tough, whose blows shove you two tiles, and blue harriers with the same piercing shot. Brutes are weak to piercing shots. The attack card now shows two-tile shoves and line pushes correctly. You'll meet them from Drowned Fields on.
 
 ## Devlog post for 0.4.0 (2026-10-25)
 

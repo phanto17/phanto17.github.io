@@ -21,9 +21,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/Web",
-        "8833"
+        "8839"
       ],
-      "port": 8833
+      "port": 8839
     },
     {
       "name": "hh-web",
@@ -61,9 +61,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/WebPreview",
-        "8834"
+        "8840"
       ],
-      "port": 8834
+      "port": 8840
     },
     {
       "name": "hh-bench",
