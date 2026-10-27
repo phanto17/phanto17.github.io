@@ -43,6 +43,8 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 
 Inspired by *Into the Breach* and *King's Bounty*.
 
+Published devlog posts on 2026-10-27: 0.2.0 and 0.3.0 only (0.4.0–0.6.0 not public yet).
+
 ## Devlog post for 0.6.0 (2026-10-27)
 
 **0.6.0 — see the whole outcome.** Hovering an attack now puts a tag over every unit it would touch: how much each loses, KO if it dies, PIT if it goes in the water. Enemies' tags are amber, your units' red, and that includes the counter-blow you would take and where it would shove you. When an enemy reveals its move, your squad gets the same tags. The counter also works the same everywhere now: it always carries its weakness bonus and its shove.
