@@ -7,7 +7,9 @@ grid, puzzle, pixel-art, singleplayer, unity. Pricing: free (no payments).
 
 ## Short description (tagline)
 
-Read the board, push enemies into pits, and set up the perfect turn before they get theirs. A small deterministic tactics game.
+itch.io limits the tagline to 120 characters; keep it under that.
+
+Shove enemies into pits and walls; set up the perfect turn before they take theirs. A small deterministic tactics game.
 
 ## Description
 
@@ -43,7 +45,7 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 
 Inspired by *Into the Breach* and *King's Bounty*.
 
-Published devlog posts on 2026-10-27: 0.2.0 and 0.3.0 only (0.4.0–0.6.0 not public yet).
+Devlog posts are skipped on itch from here on (owner, 2026-10-27): each game's further development gets its own project. Public: 0.2.0 and 0.3.0; the drafts below are kept for reference.
 
 ## Devlog post for 0.6.0 (2026-10-27)
 

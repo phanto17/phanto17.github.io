@@ -13,11 +13,13 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 
 ## Title / slug
 
-`Cinderhold` · `phanto-official.itch.io/cinderhold` (live since 2026-10-16; build 0.5.0 since 2026-10-27; description, controls, credits and devlogs up to 0.5.0 pasted 2026-10-27; the page tagline is the first two sentences only)
+`Cinderhold` · `phanto-official.itch.io/cinderhold` (live since 2026-10-16; build 0.5.0 since 2026-10-27; description, controls and credits pasted 2026-10-27; the full tagline did not fit itch's 120-character limit, shortened below)
 
 ## Short description (tagline)
 
-A short top-down dungeon crawler. Read the telegraph, dodge, strike. Three floors, locked doors, a smith, and a guardian at the bottom.
+itch.io limits the tagline to 120 characters; keep it under that.
+
+A top-down dungeon crawler: read the telegraph, dodge, strike. Three floors, locked doors, a guardian at the bottom.
 
 ## Description
 
@@ -42,6 +44,8 @@ Feedback welcome in the comments — especially on readability of the attacks an
 - Sound effects: [Impact Sounds](https://kenney.nl/assets/impact-sounds), [RPG Audio](https://kenney.nl/assets/rpg-audio), [Interface Sounds](https://kenney.nl/assets/interface-sounds) and [Music Jingles](https://kenney.nl/assets/music-jingles) by Kenney (CC0)
 - Music: [Dark Forest Theme](https://opengameart.org/content/dark-forest-theme) and [Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) by cynicmusic — pixelsphere.org (CC0)
 - Design and code: Tymoteusz Jaskólski. Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing.
+
+Devlog posts are skipped on itch (owner, 2026-10-27): each game's further development gets its own project. The drafts below are kept for reference.
 
 ### Devlog — 0.5.0: new floors every run
 

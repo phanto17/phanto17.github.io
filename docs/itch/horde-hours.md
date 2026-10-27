@@ -14,7 +14,9 @@ autostart off, SharedArrayBuffer off, theme colours from the Prism system). Diff
 
 ## Short description (tagline)
 
-Survive the night against an endless horde. Your weapons fire on their own; you move, dodge, and choose what to level up.
+itch.io limits the tagline to 120 characters; keep it under that.
+
+Survive the night against an endless horde. Your weapons fire on their own; you move, dodge and pick upgrades.
 
 ## Description
 
@@ -35,6 +37,8 @@ Axe, Fireball, Lightning Strike, Galactic Aura, Static Field, Whip — each with
 A gameplay-programming prototype: a ScriptableObject ability framework, a single object pool for enemies, projectiles, VFX and pickups, a wave spawner on NavMesh, a level-up offer system and a JSON save system. Technical write-up: https://phanto17.github.io/projects/horde-hours/
 
 Feedback welcome in the comments — especially on weapon feel and difficulty.
+
+Devlog posts are skipped on itch (owner, 2026-10-27): each game's further development gets its own project. The drafts below are kept for reference.
 
 ### Devlog — 0.4.0: feel
 

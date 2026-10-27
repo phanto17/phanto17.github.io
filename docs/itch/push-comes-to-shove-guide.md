@@ -27,7 +27,7 @@ Dashboard → **Create new project**.
 |---|---|
 | Title | `Push Comes to Shove` |
 | Project URL | `phanto17.itch.io/push-comes-to-shove` (edit the slug if itch suggests something else) |
-| Short description or tagline | `Read the board, push enemies into pits, and set up the perfect turn before they get theirs. A small deterministic tactics game.` |
+| Short description or tagline | `Shove enemies into pits and walls; set up the perfect turn before they take theirs. A small deterministic tactics game.` (itch.io limit: 120 characters) |
 | Classification | Games |
 | Kind of project | **HTML** |
 | Release status | **In development** (one level; "Released" over-promises). 0.3.1 live since 2026-10-22. |
