@@ -3,7 +3,7 @@
 Same procedure as `push-comes-to-shove-guide.md` (HTML project, 1280 × 720, fullscreen on,
 autostart off, SharedArrayBuffer off, theme colours from the Prism system). Differences below.
 
-- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.3.1.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds, results, settings, Continue; 0.3.0 = enemy roles, elites, boss; 0.3.1 = performance pass; 0.3.1 live since 2026-10-26)
+- **Build:** `D:\UnityProjects\SurvivorLike 4\SurvivorLike\Builds\HordeHours-web-0.4.0.zip` (0.2.x = the spawn director, the 10-minute run, night, menu, sounds, results, settings, Continue; 0.3.0 = enemy roles, elites, boss; 0.3.1 = performance pass, live since 2026-10-26; 0.4.0 = game feel and the Screen effects switch, a damage-roll fix)
 - **Cover:** `docs/itch/assets/horde-hours-cover-630x500.png`; a banner in the same style can be generated on request
 - **Screenshots:** take 3–5 at 1280×720 as described in the guide (§7); the level-up card screen and a crowded wave are the best shots
 - **Known rough edges in 0.3.0:** the boss is a large zombie rather than a model of its own; the balance of the new roles has not had a long playtest
@@ -24,7 +24,7 @@ Move, and your weapons fire at the nearest enemies by themselves. Enemies come i
 
 ### Controls
 
-**WASD** or arrow keys to move, mouse to turn the camera. Weapons fire automatically. **Esc** pauses: volume sliders, a controls card, save and load are in the pause menu; Quit saves, and the main menu offers Continue while a save exists. Mouse for the menus and the level-up cards; a gamepad works for moving, the camera and picking cards.
+**WASD** or arrow keys to move, mouse to turn the camera. Weapons fire automatically. **Esc** pauses: volume sliders, a Screen effects switch (shake, red vignette, bar pulse, streak callouts), a controls card, save and load are in the pause menu; Quit saves, and the main menu offers Continue while a save exists. Mouse for the menus and the level-up cards; a gamepad works for moving, the camera and picking cards.
 
 ### Weapons and passives
 
@@ -35,6 +35,10 @@ Axe, Fireball, Lightning Strike, Galactic Aura, Static Field, Whip — each with
 A gameplay-programming prototype: a ScriptableObject ability framework, a single object pool for enemies, projectiles, VFX and pickups, a wave spawner on NavMesh, a level-up offer system and a JSON save system. Technical write-up: https://phanto17.github.io/projects/horde-hours/
 
 Feedback welcome in the comments — especially on weapon feel and difficulty.
+
+### Devlog — 0.4.0: feel
+
+Low health now turns the screen edges red to a heartbeat. The XP bar swells when you level up, kill streaks are called out at 25, 50 and 100, damage numbers on one enemy add up instead of stacking into a column, gems speed up as they fly to you, and explosions shake the camera. All the visual ones can be switched off under Screen effects in the settings. Also fixed: weapons could never hit for their top damage.
 
 ### Devlog — 0.3.1: smoother crowds
 

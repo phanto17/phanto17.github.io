@@ -43,6 +43,10 @@ A gameplay-programming prototype: a deterministic grid engine with BFS pathing a
 
 Inspired by *Into the Breach* and *King's Bounty*.
 
+## Devlog post for 0.6.0 (2026-10-27)
+
+**0.6.0 — see the whole outcome.** Hovering an attack now puts a tag over every unit it would touch: how much each loses, KO if it dies, PIT if it goes in the water. Enemies' tags are amber, your units' red, and that includes the counter-blow you would take and where it would shove you. When an enemy reveals its move, your squad gets the same tags. The counter also works the same everywhere now: it always carries its weakness bonus and its shove.
+
 ## Devlog post for 0.5.0 (2026-10-27)
 
 **0.5.0 — new units.** Your squad can now include a ranger, whose piercing shot hits every enemy in a row and shoves each of them a tile. The raiders bring two new types: red brutes, slow and tough, whose blows shove you two tiles, and blue harriers with the same piercing shot. Brutes are weak to piercing shots. The attack card now shows two-tile shoves and line pushes correctly. You'll meet them from Drowned Fields on.

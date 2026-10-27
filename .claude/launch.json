@@ -21,9 +21,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/Web",
-        "8839"
+        "8841"
       ],
-      "port": 8839
+      "port": 8841
     },
     {
       "name": "hh-web",
@@ -31,9 +31,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/SurvivorLike 4/SurvivorLike/Builds/Web",
-        "8822"
+        "8843"
       ],
-      "port": 8822
+      "port": 8843
     },
     {
       "name": "ch-web",
@@ -41,9 +41,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/Cinderhold/Builds/Web",
-        "8825"
+        "8844"
       ],
-      "port": 8825
+      "port": 8844
     },
     {
       "name": "hh-preview",
@@ -61,9 +61,9 @@
       "runtimeArgs": [
         "tools/serve-web.mjs",
         "D:/UnityProjects/IntotheMewgenics/Builds/WebPreview",
-        "8840"
+        "8842"
       ],
-      "port": 8840
+      "port": 8842
     },
     {
       "name": "hh-bench",
