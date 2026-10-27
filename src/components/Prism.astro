@@ -1,7 +1,7 @@
 ---
 /**
- * The blurred rainbow light band from the reference images. Purely decorative.
- * One per hero; at most one more per page, with `small`. Never behind body text at full opacity.
+ * Organic morphing liquid-light blobs + blurred rainbow prism band.
+ * Purely decorative (aria-hidden="true"). Automatically static under prefers-reduced-motion.
  */
 interface Props {
   small?: boolean;
@@ -11,19 +11,30 @@ interface Props {
 const { small = false, top = '-40px', class: cls = '' } = Astro.props;
 ---
 
-<div class:list={['prism', { small }, cls]} style={`top:${top}`} aria-hidden="true"></div>
+<div class:list={['prism-wrap', { small }, cls]} style={`top:${top}`} aria-hidden="true">
+  <div class="prism"></div>
+  <div class="organic-orb orb-a"></div>
+  <div class="organic-orb orb-b"></div>
+</div>
 
 <style>
-  .prism {
+  .prism-wrap {
     position: absolute;
     left: -10%;
     right: -10%;
-    height: 420px;
+    height: 440px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .prism-wrap.small {
+    height: 240px;
+  }
+  .prism {
+    position: absolute;
+    inset: 0;
     transform: rotate(-8deg);
     filter: blur(28px);
     opacity: 0.75;
-    pointer-events: none;
-    z-index: 0;
     background: linear-gradient(
       180deg,
       transparent 0%,
@@ -37,9 +48,72 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
       transparent 100%
     );
   }
-  .prism.small {
-    height: 200px;
+  .prism-wrap.small .prism {
     opacity: 0.35;
     filter: blur(40px);
+  }
+  .organic-orb {
+    position: absolute;
+    width: 340px;
+    height: 340px;
+    border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%;
+    filter: blur(42px);
+    opacity: 0.32;
+    mix-blend-mode: screen;
+  }
+  .orb-a {
+    top: 10%;
+    left: 16%;
+    background: radial-gradient(circle at 35% 35%, #f27c52, #f6d370 55%, transparent 75%);
+  }
+  .orb-b {
+    top: 18%;
+    right: 14%;
+    width: 290px;
+    height: 290px;
+    background: radial-gradient(circle at 60% 40%, #8fc3df, #cab5ce 55%, transparent 75%);
+  }
+  .prism-wrap.small .organic-orb {
+    width: 210px;
+    height: 210px;
+    opacity: 0.22;
+  }
+  @keyframes prism-drift {
+    0%,
+    100% {
+      transform: rotate(-8deg) translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: rotate(-5.5deg) translate3d(2%, 14px, 0) scale(1.03);
+    }
+  }
+  @keyframes orb-morph {
+    0%,
+    100% {
+      border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%;
+      transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+    }
+    33% {
+      border-radius: 42% 58% 64% 36% / 48% 62% 38% 52%;
+      transform: translate3d(28px, -18px, 0) rotate(12deg) scale(1.08);
+    }
+    66% {
+      border-radius: 55% 45% 35% 65% / 40% 55% 45% 60%;
+      transform: translate3d(-22px, 16px, 0) rotate(-8deg) scale(0.95);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .prism {
+      animation: prism-drift 28s ease-in-out infinite;
+      will-change: transform;
+    }
+    .orb-a {
+      animation: orb-morph 18s ease-in-out infinite;
+      will-change: transform, border-radius;
+    }
+    .orb-b {
+      animation: orb-morph 23s ease-in-out infinite reverse;
+      will-change: transform, border-radius;
+    }
   }
 </style>

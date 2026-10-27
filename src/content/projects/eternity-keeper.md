@@ -13,6 +13,10 @@ highlights:
   - Save-format reverse engineering
   - 708 JUnit tests + scripted UI suites
   - Installer + CI/CD release pipeline
+metrics:
+  - 708 JUnit + 29 UI suites
+  - 25 save-safety invariants
+  - ~44k LoC across 90 commits
 myContribution:
   - "Took over a dormant community fork (Kim Mantas 2015–16, ktully 2020, aybrkaknc Feb 2026) and shipped 1.0.0-beta and 1.0.1-beta: 90 commits since July 2026, about 44,000 lines added across Java, JavaScript and Python, including tests."
   - "Reverse-engineered how the game treats its saves: which objects it re-creates on load, how companion death patches a .NET BinaryFormatter quest-tracker blob, how item and store state lives in the area files. Documented it in `docs/save-format.md`, `invariants.md` and `features.md` for the next maintainer."
@@ -34,10 +38,10 @@ tools:
   - GitHub Actions
   - Claude Code
 media:
-  - { type: image, src: /media/eternity-keeper/inventory.webp, alt: "Inventory tab: equipment around the portrait, quick items and weapon sets, every party member's pack", caption: "Fig. 1 — the Inventory tab, laid out like the game's own screen" }
-  - { type: image, src: /media/eternity-keeper/character.webp, alt: "Character tab with attributes, skills, identity and portrait", caption: "Fig. 2 — character sheet: identity choices show what they are worth" }
-  - { type: image, src: /media/eternity-keeper/abilities.webp, alt: "Abilities and talents tab", caption: "Fig. 3 — abilities and talents, filtered by what the class and race can learn" }
-  - { type: image, src: /media/eternity-keeper/stronghold.webp, alt: "Stronghold tab with upgrades, hirelings and prisoners", caption: "Fig. 4 — stronghold upgrades with the game's Prestige and Security arithmetic" }
+  - { type: image, src: /media/eternity-keeper/inventory.avif, alt: "Inventory tab: equipment around the portrait, quick items and weapon sets, every party member's pack", caption: "Fig. 1 — the Inventory tab, laid out like the game's own screen" }
+  - { type: image, src: /media/eternity-keeper/character.avif, alt: "Character tab with attributes, skills, identity and portrait", caption: "Fig. 2 — character sheet: identity choices show what they are worth" }
+  - { type: image, src: /media/eternity-keeper/abilities.avif, alt: "Abilities and talents tab", caption: "Fig. 3 — abilities and talents, filtered by what the class and race can learn" }
+  - { type: image, src: /media/eternity-keeper/stronghold.avif, alt: "Stronghold tab with upgrades, hirelings and prisoners", caption: "Fig. 4 — stronghold upgrades with the game's Prestige and Security arithmetic" }
 downloadUrl: https://github.com/phanto17/eternity-keeper/releases
 githubUrl: https://github.com/phanto17/eternity-keeper
 credits:

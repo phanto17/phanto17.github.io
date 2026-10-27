@@ -5,29 +5,198 @@ import { site, nav } from '../data/site';
 <nav class="nav" aria-label="Main">
   <div class="wrap bar">
     <a class="brand" href="/">{site.name} <em>— field notes</em></a>
-    <ul>
-      {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+    <ul id="nav-links" class="nav-list">
+      {nav.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
     </ul>
-    <a class="btn cv" href={site.cv} download><span class="long">Download CV</span><span class="short">CV</span></a>
+    <div class="nav-actions">
+      <button
+        type="button"
+        id="theme-switcher"
+        class="btn util-btn"
+        aria-label="Cycle visual theme (Prism Darkroom, Daylight Paper, CRT Terminal)"
+        title="Switch Theme: Prism / Paper / CRT"
+      >
+        <span class="util-dot" aria-hidden="true">◐</span>
+        <span id="theme-label">Prism</span>
+      </button>
+      <button
+        type="button"
+        id="motion-switcher"
+        class="btn util-btn"
+        aria-pressed="true"
+        aria-label="Toggle kinetic animations and motion effects"
+        title="Toggle Motion (Full / Reduced)"
+      >
+        <span id="motion-label">Motion: ON</span>
+      </button>
+      <button
+        type="button"
+        class="btn menu-toggle"
+        aria-expanded="false"
+        aria-controls="nav-links"
+        aria-label="Toggle navigation menu"
+      >
+        <span class="menu-icon" aria-hidden="true">☰</span>
+        <span class="menu-text">Menu</span>
+      </button>
+      <a class="btn cv" href={site.cv} download data-track="download-cv" data-track-meta="nav">
+        <span class="long">Download CV</span><span class="short">CV</span>
+      </a>
+    </div>
   </div>
 </nav>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
+  const list = document.querySelector<HTMLUListElement>('#nav-links');
+  const navEl = document.querySelector<HTMLElement>('.nav');
+  const themeBtn = document.querySelector<HTMLButtonElement>('#theme-switcher');
+  const themeLabel = document.querySelector<HTMLElement>('#theme-label');
+  const motionBtn = document.querySelector<HTMLButtonElement>('#motion-switcher');
+  const motionLabel = document.querySelector<HTMLElement>('#motion-label');
+
+  // 1. Dynamic Theme Switcher (Prism Dark -> Daylight Paper -> CRT Phosphor)
+  const themes = ['prism', 'paper', 'crt'] as const;
+  const themeNames: Record<(typeof themes)[number], string> = {
+    prism: 'Prism',
+    paper: 'Paper',
+    crt: 'CRT',
+  };
+
+  const getCurrentTheme = (): (typeof themes)[number] => {
+    const attr = document.documentElement.getAttribute('data-theme');
+    if (attr === 'paper' || attr === 'crt' || attr === 'prism') return attr;
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'prism';
+  };
+
+  const syncThemeUi = () => {
+    const cur = getCurrentTheme();
+    if (themeLabel) themeLabel.textContent = themeNames[cur];
+  };
+  syncThemeUi();
+
+  themeBtn?.addEventListener('click', () => {
+    const cur = getCurrentTheme();
+    const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+    document.documentElement.setAttribute('data-theme', next);
+    try {
+      localStorage.setItem('portfolio-theme', next);
+    } catch {
+      /* storage unavailable */
+    }
+    syncThemeUi();
+  });
+
+  // 2. Accessibility Motion Switcher (Full vs Reduced)
+  const syncMotionUi = () => {
+    const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
+    motionBtn?.setAttribute('aria-pressed', String(!isReduced));
+    if (motionLabel) motionLabel.textContent = isReduced ? 'Motion: OFF' : 'Motion: ON';
+  };
+  syncMotionUi();
+
+  motionBtn?.addEventListener('click', () => {
+    const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
+    if (isReduced) {
+      document.documentElement.removeAttribute('data-motion');
+      document.documentElement.classList.add('js-motion');
+      document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
+      try {
+        localStorage.setItem('portfolio-motion', 'full');
+      } catch {
+        /* ignore */
+      }
+    } else {
+      document.documentElement.setAttribute('data-motion', 'reduced');
+      document.documentElement.classList.remove('js-motion');
+      try {
+        localStorage.setItem('portfolio-motion', 'reduced');
+      } catch {
+        /* ignore */
+      }
+    }
+    syncMotionUi();
+  });
+
+  // 3. Mobile Drawer
+  if (toggle && list) {
+    const setOpen = (open: boolean) => {
+      toggle.setAttribute('aria-expanded', String(open));
+      list.classList.toggle('open', open);
+      const icon = toggle.querySelector('.menu-icon');
+      if (icon) icon.textContent = open ? '✕' : '☰';
+    };
+
+    toggle.addEventListener('click', () => {
+      const expanded = toggle.getAttribute('aria-expanded') === 'true';
+      setOpen(!expanded);
+    });
+
+    list.querySelectorAll('a').forEach((link) => {
+      link.addEventListener('click', () => setOpen(false));
+    });
+
+    document.addEventListener('click', (e) => {
+      if (toggle.getAttribute('aria-expanded') === 'true' && navEl && !navEl.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+  }
+
+  // 4. Active section scroll-spy on home page
+  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
+    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+    const sections = links
+      .map((l) => {
+        const hash = l.getAttribute('href')?.replace(/^\//, '');
+        return hash ? document.querySelector<HTMLElement>(hash) : null;
+      })
+      .filter((s): s is HTMLElement => Boolean(s));
+
+    if ('IntersectionObserver' in window && sections.length > 0) {
+      const obs = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const activeHref = `/#${entry.target.id}`;
+            links.forEach((l) => {
+              const match = l.getAttribute('href') === activeHref;
+              l.classList.toggle('active', match);
+              if (match) l.setAttribute('aria-current', 'location');
+              else l.removeAttribute('aria-current');
+            });
+          });
+        },
+        { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
+      );
+      sections.forEach((s) => obs.observe(s));
+    }
+  }
+</script>
 
 <style>
   .nav {
     position: sticky;
     top: 0;
     z-index: 20;
-    background: rgba(26, 23, 19, 0.78);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(93, 65, 43, 0.6);
+    background: var(--nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 2px solid var(--umber);
   }
   .bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    height: 64px;
-    gap: 16px;
+    height: 68px;
+    gap: 12px;
   }
   .brand {
     font-family: var(--display);
@@ -46,29 +215,94 @@ import { site, nav } from '../data/site';
     font-weight: 400;
     color: var(--text-2);
   }
-  ul {
+  .nav-list {
     list-style: none;
     display: flex;
-    gap: 28px;
+    gap: 22px;
     margin: 0;
     padding: 0;
     font-size: 15px;
   }
-  ul a {
+  .nav-list a {
     color: var(--text-2);
+    padding: 4px 2px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
   }
-  ul a:hover {
+  .nav-list a:hover,
+  .nav-list a.active {
     color: var(--text);
+  }
+  .nav-list a.active {
+    border-bottom-color: var(--coral);
+    color: var(--gold);
+  }
+  .nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .util-btn {
+    padding: 7px 11px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    gap: 5px;
+  }
+  .util-dot {
+    color: var(--coral);
+    font-size: 12px;
+  }
+  .menu-toggle {
+    display: none;
+    padding: 7px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    gap: 6px;
   }
   .cv {
     white-space: nowrap;
+    padding: 8px 14px;
+    font-size: 13px;
   }
   .cv .short {
     display: none;
   }
-  @media (max-width: 860px) {
-    ul {
+  @media (max-width: 980px) {
+    #motion-switcher {
       display: none;
+    }
+  }
+  @media (max-width: 860px) {
+    .menu-toggle {
+      display: inline-flex;
+    }
+    .nav-list {
+      display: none;
+      position: absolute;
+      top: 68px;
+      left: 0;
+      right: 0;
+      flex-direction: column;
+      gap: 0;
+      background: var(--surface);
+      border-bottom: 2px solid var(--umber);
+      padding: 8px 20px 16px;
+      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65);
+    }
+    .nav-list.open {
+      display: flex;
+    }
+    .nav-list li {
+      margin: 0;
+    }
+    .nav-list li a {
+      display: block;
+      padding: 12px 4px;
+      border-bottom: var(--line);
+    }
+    .nav-list li:last-child a {
+      border-bottom: none;
     }
     .brand em {
       display: none;

@@ -17,50 +17,166 @@ const statusLabel = {
   planned: 'rework planned',
 }[d.status];
 const liveUrl = d.status === 'playable' ? d.itchUrl : d.status === 'released' ? d.downloadUrl : undefined;
+const numStr = String(index + 1).padStart(2, '0');
 ---
 
-<article class="proj">
-  <div class="num">{String(index + 1).padStart(2, '0')}</div>
-  <div class="body">
-    <h3><a href={href}>{d.title}</a></h3>
-    <p class="muted">{d.summary}</p>
-    {d.highlights.length > 0 && <p class="meta"><b>{d.highlights.join(' · ')}</b></p>}
-    <p class="meta">{d.engine} · {d.role} · {d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</p>
-    <div>
+<article
+  class="proj"
+  data-reveal
+  data-tilt
+  data-tilt-max="2.5"
+  style={`--reveal-delay:${index}`}
+>
+  <div class="crt-win-bar" aria-hidden="true">
+    <span>[■] CH_{numStr} // {project.id.toUpperCase()}.{d.kind === 'tool' ? 'JAR' : 'WASM'}</span>
+    <span class="win-status">● {d.status.toUpperCase()}</span>
+  </div>
+  <div class="proj-inner">
+    <div class="num-col">
+      <div class="num" aria-hidden="true">{numStr}</div>
+      <span class="kind-tag">{d.kind === 'tool' ? 'TOOL' : 'GAME'}</span>
+    </div>
+    <div class="body">
+      <div class="proj-top-meta">
+        <span class="genre-badge">{d.genre}</span>
+        <span class="date-badge">{d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</span>
+      </div>
+      <h3><a href={href}>{d.title}</a></h3>
+      <p class="muted">{d.summary}</p>
+      {d.highlights.length > 0 && <p class="meta"><b>{d.highlights.join(' · ')}</b></p>}
       {
-        liveUrl ? (
-          <a class="pill play" href={liveUrl}>{statusLabel}</a>
-        ) : (
-          <span class="pill wip">{statusLabel}</span>
+        d.metrics.length > 0 && (
+          <div class="stat-chips" aria-label="Verified engineering metrics">
+            {d.metrics.map((m) => (
+              <span class="stat-chip">{m}</span>
+            ))}
+          </div>
         )
       }
-      <a class="pill" href={href}>write-up →</a>
+      <p class="meta">{d.engine} · {d.role}</p>
+      <div class="proj-actions">
+        {
+          liveUrl ? (
+            <a
+              class="pill play"
+              href={liveUrl}
+              data-track={d.kind === 'tool' ? 'download-release' : 'play-itch'}
+              data-track-meta={project.id}
+            >
+              {statusLabel}
+            </a>
+          ) : (
+            <span class="pill wip">{statusLabel}</span>
+          )
+        }
+        <a class="pill" href={href} data-track="open-writeup" data-track-meta={project.id}>
+          write-up →
+        </a>
+        {
+          d.githubUrl && (
+            <a class="pill" href={d.githubUrl} data-track="open-source" data-track-meta={project.id}>
+              source ↗
+            </a>
+          )
+        }
+      </div>
     </div>
+    <a class="cover" href={href} aria-label={`${d.title} write-up`}>
+      <Figure
+        type={cover?.type}
+        src={cover?.src}
+        alt={cover?.alt ?? `${d.title} screenshot`}
+        caption={cover?.caption ?? `Fig. ${index + 1} — ${d.title}`}
+        ratio="4 / 3"
+      />
+    </a>
   </div>
-  <a class="cover" href={href} aria-label={`${d.title} write-up`}>
-    <Figure type={cover?.type} src={cover?.src} alt={cover?.alt ?? `${d.title} screenshot`} caption={cover?.caption ?? `Fig. ${index + 1} — ${d.title}`} ratio="4 / 3" />
-  </a>
 </article>
 
 <style>
   .proj {
+    margin-bottom: 28px;
+    background: rgba(47, 41, 27, 0.56);
+    border: 1.5px solid var(--umber);
+    border-radius: var(--r-md);
+    box-shadow: var(--card-depth);
+    overflow: hidden;
+  }
+  .proj:hover {
+    border-color: var(--coral);
+    box-shadow: var(--card-depth-hover);
+    background: rgba(58, 50, 36, 0.72);
+  }
+  .crt-win-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 18px;
+    background: rgba(11, 7, 11, 0.55);
+    border-bottom: 1px solid var(--umber);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--steel);
+  }
+  .win-status {
+    color: var(--mint);
+  }
+  .proj-inner {
     display: grid;
-    grid-template-columns: 64px 1fr 300px;
+    grid-template-columns: 72px 1fr 310px;
     gap: 28px;
-    padding: 32px 0;
-    border-bottom: var(--line);
+    padding: 24px 28px 28px;
     align-items: start;
   }
-  .proj:last-child {
-    border-bottom: none;
+  .num-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
   .num {
     font-family: var(--display);
-    font-size: 40px;
-    line-height: 1;
-    color: var(--brick); /* large text: 3.6:1 on bg passes AA (umber was 1.9) */
-    font-weight: 600;
-    font-variation-settings: var(--soft);
+    font-size: 54px;
+    line-height: 0.92;
+    color: var(--brick);
+    font-weight: 700;
+    font-variation-settings: 'SOFT' 100, 'WONK' 1;
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      color 0.35s ease,
+      font-variation-settings 0.35s ease;
+  }
+  .proj:hover .num {
+    color: var(--coral);
+    transform: translateY(-3px) scale(1.06);
+    font-variation-settings: 'SOFT' 20, 'WONK' 0;
+  }
+  .kind-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    padding: 2px 6px;
+    border: 1px solid var(--umber);
+    color: var(--gold);
+    background: var(--bg);
+  }
+  .proj-top-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .genre-badge {
+    color: var(--gold);
+  }
+  .date-badge {
+    color: var(--steel);
   }
   h3 {
     margin-bottom: 8px;
@@ -79,16 +195,22 @@ const liveUrl = d.status === 'playable' ? d.itchUrl : d.status === 'released' ? 
     display: block;
   }
   .cover:hover :global(.frame) {
-    transform: translateY(-3px);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.18);
+    transform: translateY(-4px) scale(1.015);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
   }
-  @media (max-width: 860px) {
-    .proj {
+  @media (max-width: 900px) {
+    .proj-inner {
       grid-template-columns: 1fr;
       gap: 16px;
+      padding: 20px;
+    }
+    .num-col {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
     }
     .num {
-      display: none;
+      font-size: 36px;
     }
   }
 </style>

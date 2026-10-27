@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /404
+Disallow: /style-guide/
+
+Sitemap: https://phanto17.github.io/sitemap.xml

@@ -12,19 +12,24 @@ highlights:
   - BFS pathing & push resolution (unit-tested)
   - Attacks as ScriptableObject strategies
   - Paced enemy AI with intent reveal
+metrics:
+  - 72 EditMode tests
+  - 5 ASCII-authored levels
+  - Board-copy outcome forecast
 myContribution:
   - "Grid model built from a Tilemap: `RuntimeCellData` per cell with walkable / hazard flags from `CellData` ScriptableObjects, 0-based indexing independent of the tilemap origin."
   - "Cardinal breadth-first reachability and shortest-path routing that treats walls, hazards and occupied cells as blockers — units walk around obstacles tile by tile instead of teleporting."
   - "Push resolution: pushes resolve farthest-first and can carry a unit more than one tile; hitting a wall or the map edge deals collision damage, hitting another unit damages both, and a unit shoved onto a hazard tile is destroyed."
   - "`Attack` as a ScriptableObject strategy (Melee, Ranged, Line): each decides what it can target and which cells it hits, so the player's attack mode and the enemy AI share one rule set. Instant `Execute` for tests, animated coroutine for play (swing → projectile → hit → counter-attack)."
+  - "Enemy AI: attack if a clear shot exists, otherwise move to the best firing cell, otherwise advance by walking distance (a breadth-first distance field from the squad, so enemies go round rocks and pits instead of pressing against them); the whole enemy turn is a paced coroutine that reveals each enemy's intent (green route, red cells) just before it acts."
+  - "72 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses, first-hit arrows, the piercing shot, the brute's two-tile shove, the attack preview and the full outcome forecast (every unit an attack touches, the counter and the counter's own shove), the AI's friendly-fire check and route round walls, the unlock rules, every level being winnable on paper (room for the squad, every enemy able to walk to it) the counter web (every enemy in the levels has a counter in the squad, and the other way round) and the shipped data, using a test-only grid constructor."
+  - "Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing. The October 2026 upgrade (the shove, audio, feel, front end, review round, the level set, the roster, the outcome forecast) was done that way from a plan I approved step by step."
+changelog:
   - "Melee retaliation, no friendly fire, and typed weaknesses that add +50% damage: blades, arrows and (since 0.5.0) piercing shots, with every unit type countered by one on the other side."
   - "Roster and counters (0.5.0): three new units from the purchased character sheets, recoloured with the palettes the sheets ship as swatches. The red orc Brute is slow and tough and its heavy blow shoves two tiles. The blue goblin Harrier and, on the player's side, the purple elf Ranger fire the piercing shot, the line attack that had sat unused since the prototype: it hits every foe in a row until a rock, passes allies and shoves each foe one tile. A third damage kind, pierce, is the brute's weakness. To keep the previews honest with two-tile shoves and several units pushed at once, the attack now plays its shoves on a copy of the board (damage first, far units first, collisions and pits) and both the amber landing tiles and the outcome numbers read that simulation."
-  - "Enemy AI: attack if a clear shot exists, otherwise move to the best firing cell, otherwise advance by walking distance (a breadth-first distance field from the squad, so enemies go round rocks and pits instead of pressing against them); the whole enemy turn is a paced coroutine that reveals each enemy's intent (green route, red cells) just before it acts."
   - "Turn manager with deployment and battle phases, a two-action-per-unit economy, win/lose per level objective (clear the board or survive N turns), result overlay and restart."
   - "Five levels (0.4.0): boards written as ASCII maps and turned into tilemap prefabs by an editor script, with hand-placed deployment tiles, enemies and squad size, rocks that block movement, arrows and shoves, a level catalog, unlocks saved in PlayerPrefs, a briefing card per level, a level select and Next Level on the result screen."
   - "State-pattern interaction modes (place, move, attack) with phase-gated buttons; roster and enemy info cards built from code; frame-by-frame sprite animator; hit-flash via a custom sprite shader and MaterialPropertyBlock."
-  - "72 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses, first-hit arrows, the piercing shot, the brute's two-tile shove, the attack preview and the full outcome forecast (every unit an attack touches, the counter and the counter's own shove), the AI's friendly-fire check and route round walls, the unlock rules, every level being winnable on paper (room for the squad, every enemy able to walk to it) the counter web (every enemy in the levels has a counter in the squad, and the other way round) and the shipped data, using a test-only grid constructor."
-  - "Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing. The October 2026 upgrade (the shove, audio, feel, front end, review round, the level set, the roster, the outcome forecast) was done that way from a plan I approved step by step."
   - "Design docs: vision and pillars, mechanic comparison against Into the Breach, King's Bounty and Octopath Traveler, and a staged plan for the HD-2D look."
 tools:
   - Unity 6000.3 (URP 17, 2D renderer)
@@ -36,9 +41,12 @@ tools:
   - Claude Code
   - Shader Graph / HLSL
 media:
-  - { type: image, src: /media/push-comes-to-shove/enemy-turn.webp, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 1 — enemy turn: one enemy's intent at a time (web build)" }
-  - { type: image, src: /media/push-comes-to-shove/deploy.webp, alt: "Deployment phase with the blue player zone and four placed units", caption: "Fig. 2 — deploying the squad in the player's zone" }
-  - { type: image, src: /media/push-comes-to-shove/move-range.webp, alt: "A selected soldier with its reachable tiles highlighted in green", caption: "Fig. 3 — path-aware move range of the selected unit" }
+  - { type: image, src: /media/push-comes-to-shove/cover.avif, alt: "Push Comes to Shove pixel-art key art: human soldiers, archer and purple elf ranger shoving goblins into water and into an orc brute", caption: "Fig. 1 — Push Comes to Shove key art" }
+  - { type: image, src: /media/push-comes-to-shove/enemy-turn.avif, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 2 — enemy turn: one enemy's intent at a time (web build)" }
+  - { type: image, src: /media/push-comes-to-shove/deploy.avif, alt: "Deployment phase with the blue player zone and four placed units", caption: "Fig. 3 — deploying the squad in the player's zone" }
+  - { type: image, src: /media/push-comes-to-shove/move-range.avif, alt: "A selected soldier with its reachable tiles highlighted in green", caption: "Fig. 4 — path-aware move range of the selected unit" }
+  - { type: image, src: /media/push-comes-to-shove/levels-grid.avif, alt: "All five isometric boards side by side showing pits, rock ridges and enemy formations", caption: "Fig. 5 — all five ASCII-authored isometric boards (0.4.0+)" }
+  - { type: image, src: /media/push-comes-to-shove/menu.avif, alt: "Push Comes to Shove 0.6.0 main menu overlay with riveted metal-and-wood buttons", caption: "Fig. 6 — 0.6.0 main menu with riveted UI skin (Play, Levels, How to Play, Settings, Credits)" }
 itchUrl: https://phanto-official.itch.io/push-comes-to-shove
 credits:
   - { asset: "Isometric Sandbox tile sheet", author: "Kenney", url: "https://kenney.nl", license: "CC0" }

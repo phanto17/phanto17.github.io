@@ -15,83 +15,138 @@ const { Content } = await render(project);
 const hero = d.media[0];
 const gallery = d.media.slice(1);
 const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
+
+const projectSchema = {
+  '@context': 'https://schema.org',
+  '@type': d.kind === 'tool' ? 'SoftwareApplication' : 'VideoGame',
+  name: d.title,
+  description: d.summary,
+  genre: d.genre,
+  applicationCategory: d.kind === 'tool' ? 'DeveloperApplication' : 'Game',
+  operatingSystem: d.kind === 'tool' ? 'Windows' : 'Web Browser (WebGL)',
+  url: `https://phanto17.github.io/projects/${project.id}/`,
+  author: {
+    '@type': 'Person',
+    name: 'Tymoteusz Jaskólski',
+    url: 'https://phanto17.github.io',
+  },
+  ...(d.itchUrl ? { sameAs: d.itchUrl } : {}),
+  ...(d.githubUrl ? { codeRepository: d.githubUrl } : {}),
+};
 ---
 
-<Base title={d.title} description={d.summary} image={`/media/og/${project.id}.jpg`}>
+<Base title={d.title} description={d.summary} image={`/media/og/${project.id}.jpg`} schema={projectSchema}>
   <header class="phero">
     <Prism top="-120px" />
     <div class="wrap">
-      <p class="kicker"><a href="/#projects">← Projects</a> · {d.genre}</p>
-      <h1>{d.title}</h1>
-      <p class="lead">{d.summary}</p>
-      <p class="meta">{d.engine} · {d.role} · {period}</p>
+      <p class="kicker" data-reveal style="--reveal-delay:0"><a href="/#projects">← Projects</a> · {d.genre}</p>
+      <h1><span class="kinetic-word" style="--word-idx:0">{d.title}</span></h1>
+      <p class="lead" data-reveal style="--reveal-delay:1">{d.summary}</p>
+      <p class="meta" data-reveal style="--reveal-delay:1">{d.engine} · {d.role} · {period}</p>
+      {
+        d.metrics.length > 0 && (
+          <div class="stat-chips" aria-label="Verified engineering metrics">
+            {d.metrics.map((m) => (
+              <span class="stat-chip">{m}</span>
+            ))}
+          </div>
+        )
+      }
       <div class="actions">
         {
           d.kind === 'tool' ? (
             d.downloadUrl ? (
-              <a class="btn primary" href={d.downloadUrl}>↓ Download (Windows)</a>
+              <a class="btn primary" href={d.downloadUrl} data-track="download-release" data-track-meta={project.id}>
+                ↓ Download (Windows)
+              </a>
             ) : (
               <span class="btn" aria-disabled="true">↓ Download — not released yet</span>
             )
           ) : d.itchUrl ? (
-            <a class="btn primary" href={d.itchUrl}>▶ Play on itch.io</a>
+            <a class="btn primary" href={d.itchUrl} data-track="play-itch" data-track-meta={project.id}>
+              ▶ Play on itch.io
+            </a>
           ) : (
             <span class="btn" aria-disabled="true">▶ Not on itch.io yet</span>
           )
         }
-        {d.githubUrl && <a class="btn" href={d.githubUrl}>Source on GitHub</a>}
+        {
+          d.githubUrl && (
+            <a class="btn" href={d.githubUrl} data-track="open-source" data-track-meta={project.id}>
+              Source on GitHub
+            </a>
+          )
+        }
       </div>
     </div>
   </header>
 
   <div class="wrap layout">
     <article class="prose">
-      <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} priority />
+      <div data-reveal data-tilt data-tilt-max="2.5">
+        <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} priority />
+      </div>
 
-      <section>
+      <section data-reveal>
         <h2>What I built</h2>
-        <p class="sub-h">my contribution — nothing here is third-party work</p>
+        <p class="sub-h">core architecture &amp; ownership — nothing here is third-party work</p>
         <ul>
           {d.myContribution.map((item) => <li>{item}</li>)}
         </ul>
+        {
+          d.changelog.length > 0 && (
+            <details class="changelog">
+              <summary>Iteration &amp; playtest history ({d.changelog.length} updates)</summary>
+              <ul>
+                {d.changelog.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </details>
+          )
+        }
       </section>
 
-      <section class="content">
+      <section class="content" data-reveal>
         <Content />
       </section>
 
       {
         gallery.length > 0 && (
-          <section>
+          <section data-reveal>
             <h2>Gallery</h2>
             <div class="gallery">
               {gallery.map((m, i) => (
-                <Figure type={m.type} src={m.src} alt={m.alt} caption={m.caption ?? `Fig. ${i + 2}`} />
+                <div data-tilt data-tilt-max="3">
+                  <Figure type={m.type} src={m.src} alt={m.alt} caption={m.caption ?? `Fig. ${i + 2}`} />
+                </div>
               ))}
             </div>
           </section>
         )
       }
 
-      <section>
+      <section data-reveal>
         <h2>Credits</h2>
         <p class="sub-h">third-party assets used — with thanks</p>
         {
           d.credits.length > 0 ? (
-            <table>
-              <thead>
-                <tr><th>Asset</th><th>Author</th><th>Licence</th></tr>
-              </thead>
-              <tbody>
-                {d.credits.map((c) => (
-                  <tr>
-                    <td>{c.url ? <a href={c.url}>{c.asset}</a> : c.asset}</td>
-                    <td>{c.author}</td>
-                    <td>{c.license ?? <span class="muted">—</span>}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div class="table-wrap" role="region" aria-label="Third-party asset credits" tabindex="0">
+              <table>
+                <thead>
+                  <tr><th>Asset</th><th>Author</th><th>Licence</th></tr>
+                </thead>
+                <tbody>
+                  {d.credits.map((c) => (
+                    <tr>
+                      <td>{c.url ? <a href={c.url}>{c.asset}</a> : c.asset}</td>
+                      <td>{c.author}</td>
+                      <td>{c.license ?? <span class="muted">—</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p class="muted">No third-party assets.</p>
           )
@@ -100,7 +155,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
     </article>
 
     <aside class="side">
-      <div class="box">
+      <div class="box" data-reveal data-tilt data-tilt-max="3">
         <dl>
           <dt>Status</dt>
           <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
@@ -124,10 +179,71 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
           <dd>{period}</dd>
           <dt>Tools</dt>
           <dd>{d.tools.join(', ')}</dd>
+          <dt>Viewport</dt>
+          <dd>
+            <button type="button" id="crt-toggle" class="crt-toggle-btn" aria-pressed="true">
+              CRT Scanlines: ON
+            </button>
+          </dd>
         </dl>
       </div>
     </aside>
   </div>
+
+  <script>
+    // 1. Copy button on code blocks
+    document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
+      if (pre.parentElement?.classList.contains('code-block-wrap')) return;
+      const wrap = document.createElement('div');
+      wrap.className = 'code-block-wrap';
+      pre.parentNode?.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-code-btn';
+      btn.textContent = 'Copy';
+      btn.setAttribute('aria-label', 'Copy code snippet to clipboard');
+      btn.addEventListener('click', async () => {
+        const code = pre.querySelector('code')?.innerText ?? pre.innerText;
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.textContent = 'Copied ✓';
+          setTimeout(() => {
+            btn.textContent = 'Copy';
+          }, 1600);
+        } catch {
+          btn.textContent = 'Failed';
+        }
+      });
+      wrap.appendChild(btn);
+    });
+
+    // 2. CRT scanline viewport toggle
+    const crtBtn = document.querySelector<HTMLButtonElement>('#crt-toggle');
+    if (crtBtn) {
+      const saved = sessionStorage.getItem('portfolio-crt');
+      if (saved === 'off') {
+        document.documentElement.setAttribute('data-crt', 'off');
+        crtBtn.setAttribute('aria-pressed', 'false');
+        crtBtn.textContent = 'CRT Scanlines: OFF';
+      }
+      crtBtn.addEventListener('click', () => {
+        const isOff = document.documentElement.getAttribute('data-crt') === 'off';
+        if (isOff) {
+          document.documentElement.removeAttribute('data-crt');
+          sessionStorage.setItem('portfolio-crt', 'on');
+          crtBtn.setAttribute('aria-pressed', 'true');
+          crtBtn.textContent = 'CRT Scanlines: ON';
+        } else {
+          document.documentElement.setAttribute('data-crt', 'off');
+          sessionStorage.setItem('portfolio-crt', 'off');
+          crtBtn.setAttribute('aria-pressed', 'false');
+          crtBtn.textContent = 'CRT Scanlines: OFF';
+        }
+      });
+    }
+  </script>
 </Base>
 
 <style>
@@ -215,6 +331,21 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
   }
   .box dd {
     margin: 3px 0 0;
+  }
+  .crt-toggle-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: var(--r-xs);
+    border: 1px solid var(--umber);
+    background: var(--bg);
+    color: var(--gold);
+    cursor: pointer;
+    margin-top: 2px;
+  }
+  .crt-toggle-btn:hover {
+    border-color: var(--coral);
+    color: var(--peach);
   }
   @media (max-width: 960px) {
     .layout {

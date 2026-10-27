@@ -3,10 +3,18 @@ import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import Prism from '../components/Prism.astro';
 import ProjectRow from '../components/ProjectRow.astro';
+import TelegraphMiniGame from '../components/TelegraphMiniGame.astro';
 import { site } from '../data/site';
 import { activities, experience, education } from '../data/activities';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+const systemSpecs = [
+  { label: 'RUNTIME', val: 'Unity 6 (URP) & C#' },
+  { label: 'VERIFIED SUITES', val: '276 NUnit + 708 JUnit Tests' },
+  { label: 'SHIPPED TARGETS', val: '3 WebGL Games · 1 Desktop Tool' },
+  { label: 'FOCUS', val: 'Gameplay Systems, AI & Game Psychology' },
+];
 ---
 
 <Base>
@@ -14,73 +22,135 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     <Prism />
     <div class="wrap grid">
       <div>
-        <p class="kicker">{site.location} · Game Development student · open to junior roles</p>
-        <h1>Junior Gameplay Programmer<br /><em>(Unity / C#)</em></h1>
-        <p class="lead">{site.tagline}</p>
-        <div class="actions">
-          <a class="btn primary" href="#projects">See the projects</a>
-          <a class="btn" href={site.cv} download>CV (PDF)</a>
-          <a class="btn" href={site.github}>GitHub</a>
+        <div class="coord-stamp" data-reveal style="--reveal-delay:0">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>CRT_TERM // 52.4064° N, 16.9252° E · {site.location} · Open to Junior Roles</span>
+        </div>
+        <h1>
+          <span class="kinetic-word" style="--word-idx:0">Junior</span>{' '}
+          <span class="kinetic-word" style="--word-idx:1">Gameplay</span>{' '}
+          <span class="kinetic-word" style="--word-idx:2">Programmer</span>
+          <br />
+          <em class="kinetic-word" style="--word-idx:3">(Unity / C#)</em>
+        </h1>
+        <p class="lead" data-reveal style="--reveal-delay:1">{site.tagline}</p>
+        <div class="actions" data-reveal style="--reveal-delay:2">
+          <a class="btn primary" href="#projects" data-track="hero-cta" data-track-meta="projects">▶ See the projects</a>
+          <a class="btn" href="#lab" data-track="hero-cta" data-track-meta="lab">Play Mini-Game</a>
+          <a class="btn" href={site.cv} download data-track="download-cv" data-track-meta="hero">CV (PDF)</a>
+          <a class="btn" href={site.github} data-track="outbound-github" data-track-meta="hero">GitHub</a>
         </div>
       </div>
-      <aside class="note">
-        "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how I approach systems work.
-        <small>note in the margin</small>
-      </aside>
+
+      <div class="hero-stage" data-reveal style="--reveal-delay:2">
+        <div class="holo-card crt-frame" data-tilt data-tilt-max="4">
+          <div class="holo-bar">
+            <span>[■] CRT_MONITOR // TACTICAL_VECTORS</span>
+            <span class="holo-live">● 60Hz SYNC</span>
+          </div>
+          <canvas
+            id="tactical-polyhedron"
+            width="300"
+            height="200"
+            aria-label="Interactive 3D wireframe tactical octahedron over a perspective grid"
+          ></canvas>
+          <aside class="note">
+            "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how
+            I approach systems work.
+            <small>field note · move cursor to inspect 3D mesh</small>
+          </aside>
+        </div>
+      </div>
+    </div>
+
+    <!-- Static CRT Hardware Readout Bar (replaces any moving slider below the title) -->
+    <div class="wrap">
+      <dl class="crt-spec-grid" aria-label="System and portfolio summary">
+        {
+          systemSpecs.map((s) => (
+            <div class="crt-spec-cell">
+              <dt>{s.label}</dt>
+              <dd>{s.val}</dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </header>
 
   <section id="about" class="section">
-    <div class="wrap two">
-      <div>
-        <h2>About me</h2>
-        <p class="sub-h">who · specialisation · interests · goals</p>
-        <p>
-          I'm a BA Game Development student at Collegium Da Vinci in Poznań (2024 – present), specialising in gameplay
-          programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a
-          data-driven ability system, a deterministic grid-tactics engine, and a 2D dungeon crawler I'm rebuilding from
-          the ground up. Since July 2026 I've also been shipping Eternity Keeper, an open-source save editor for Pillars
-          of Eternity — reverse-engineering a real RPG's save format and verifying every edit in the game.
-        </p>
-        <p>
-          I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore that on
-          my YouTube channel <a href={site.youtube}>phanto</a>, and it feeds back into how I design mechanics.
-        </p>
-        <p>
-          I'm looking to start out as a Junior Gameplay Programmer at a studio that makes systemic games—things like tactics, roguelites, RPGs or action titles where emergent systems, smart enemy behavior and reactive environments really drive the experience. Down the line, I'd love to grow into a systems and AI role where I'm not just coding those mechanics, but actively helping design them.
-        </p>
+    <div class="wrap">
+      <div class="section-head-bar" data-reveal>
+        <div>
+          <h2>About me</h2>
+          <p class="sub-h">who · specialisation · interests · goals</p>
+        </div>
+        <span class="section-index-tag" aria-hidden="true">01</span>
       </div>
-      <dl class="dl">
-        <div><dt>Engine</dt><dd>Unity 6 (URP) · Unreal Engine 5 (Blueprints / C++)</dd></div>
-        <div><dt>Language</dt><dd>C#</dd></div>
-        <div><dt>Gameplay</dt><dd>AI &amp; NavMesh, ScriptableObject-driven design, Input System, Cinemachine, UI Toolkit</dd></div>
-        <div><dt>Multiplayer</dt><dd>Netcode for GameObjects (architecture)</dd></div>
-        <div><dt>Workflow</dt><dd>Git / GitHub (LFS, pull requests), Jira, Azure DevOps</dd></div>
-        <div><dt>Also</dt><dd>DaVinci Resolve, Photoshop</dd></div>
-        <div><dt>Interests</dt><dd>Gameplay systems &amp; AI, tactics / roguelite design, game psychology</dd></div>
-        <div><dt>Education</dt><dd>{education.title} ({education.period})</dd></div>
-        <div><dt>Languages</dt><dd>Polish (native), English (C1)</dd></div>
-      </dl>
+      <div class="two">
+        <div data-reveal style="--reveal-delay:1">
+          <p>
+            I'm a BA Game Development student at Collegium Da Vinci in Poznań (2024 – present), specialising in gameplay
+            programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a
+            data-driven ability system, a deterministic grid-tactics engine, and a 2D dungeon crawler I'm rebuilding
+            from the ground up. Since July 2026 I've also been shipping Eternity Keeper, an open-source save editor for
+            Pillars of Eternity — reverse-engineering a real RPG's save format and verifying every edit in the game.
+          </p>
+          <p>
+            I care about the psychology of games — telegraphing, tension, the feeling of a "perfect turn". I explore
+            that on my YouTube channel <a href={site.youtube}>phanto</a>, and it feeds back into how I design mechanics.
+          </p>
+          <p>
+            I'm looking to start out as a Junior Gameplay Programmer at a studio that makes systemic games—things like
+            tactics, roguelites, RPGs or action titles where emergent systems, smart enemy behavior and reactive
+            environments really drive the experience. Down the line, I'd love to grow into a systems and AI role where
+            I'm not just coding those mechanics, but actively helping design them.
+          </p>
+        </div>
+        <dl class="dl" data-reveal style="--reveal-delay:2">
+          <div><dt>Engine</dt><dd>Unity 6 (URP) · Unreal Engine 5 (Blueprints / C++)</dd></div>
+          <div><dt>Language</dt><dd>C#</dd></div>
+          <div><dt>Gameplay</dt><dd>AI &amp; NavMesh, ScriptableObject-driven design, Input System, Cinemachine, UI Toolkit</dd></div>
+          <div><dt>Multiplayer</dt><dd>Netcode for GameObjects (architecture)</dd></div>
+          <div><dt>Workflow</dt><dd>Git / GitHub (LFS, pull requests), Jira, Azure DevOps</dd></div>
+          <div><dt>Also</dt><dd>DaVinci Resolve, Photoshop</dd></div>
+          <div><dt>Interests</dt><dd>Gameplay systems &amp; AI, tactics / roguelite design, game psychology</dd></div>
+          <div><dt>Education</dt><dd>{education.title} ({education.period})</dd></div>
+          <div><dt>Languages</dt><dd>Polish (native), English (C1)</dd></div>
+        </dl>
+      </div>
     </div>
   </section>
 
   <section id="projects" class="section">
-    <Prism small top="55%" />
+    <Prism small top="45%" />
     <div class="wrap">
-      <h2>Projects</h2>
-      <p class="sub-h">personal — games playable on itch.io, tools released on GitHub — each has its own write-up</p>
+      <div class="section-head-bar" data-reveal>
+        <div>
+          <h2>Projects</h2>
+          <p class="sub-h">personal — games playable on itch.io, tools released on GitHub — each has its own write-up</p>
+        </div>
+        <span class="section-index-tag" aria-hidden="true">02</span>
+      </div>
       {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
     </div>
   </section>
 
+  <TelegraphMiniGame />
+
   <section id="activities" class="section">
     <div class="wrap">
-      <h2>Activities</h2>
-      <p class="sub-h">team projects, channel, community</p>
+      <div class="section-head-bar" data-reveal>
+        <div>
+          <h2>Activities</h2>
+          <p class="sub-h">team projects, channel, community</p>
+        </div>
+        <span class="section-index-tag" aria-hidden="true">04</span>
+      </div>
       <div class="tl">
         {
-          activities.map((a) => (
-            <article>
+          activities.map((a, idx) => (
+            <article data-reveal data-tilt data-tilt-max="3" style={`--reveal-delay:${idx % 3}`}>
               <time>{a.period}</time>
               <h3 class="entry">{a.title}</h3>
               <p class="kind">{a.kind}</p>
@@ -94,61 +164,194 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
   </section>
 
   <section id="experience" class="section">
-    <div class="wrap two">
-      <div>
-        <h2>Experience</h2>
-        <p class="sub-h">outside games — what transfers</p>
-        {
-          experience.map((e) => (
-            <article class="exp">
-              <time class="meta">{e.period}</time>
-              <h3 class="entry">{e.title}</h3>
-              <p class="muted">{e.text}</p>
-            </article>
-          ))
-        }
+    <div class="wrap">
+      <div class="section-head-bar" data-reveal>
+        <div>
+          <h2>Experience</h2>
+          <p class="sub-h">outside games — what transfers</p>
+        </div>
+        <span class="section-index-tag" aria-hidden="true">05</span>
       </div>
-      <aside class="note">
-        I don't have game-industry employment yet. The projects above are where I've done my real gameplay work.
-        <small>honest note</small>
-      </aside>
+      <div class="two">
+        <div data-reveal style="--reveal-delay:1">
+          {
+            experience.map((e) => (
+              <article class="exp brutal-panel" data-tilt data-tilt-max="2.5">
+                <time class="meta">{e.period}</time>
+                <h3 class="entry">{e.title}</h3>
+                <p class="muted">{e.text}</p>
+              </article>
+            ))
+          }
+        </div>
+        <aside class="note brutal-note" data-reveal style="--reveal-delay:2">
+          I don't have game-industry employment yet. The projects above are where I've done my real gameplay work.
+          <small>honest note</small>
+        </aside>
+      </div>
     </div>
   </section>
 
   <section id="contact" class="section">
-    <div class="wrap two">
-      <div>
-        <h2>Contact</h2>
-        <p class="sub-h">email · github · youtube · cv</p>
-        <dl class="dl">
-          <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
-          <div><dt>GitHub</dt><dd><a href={site.github}>github.com/{site.githubHandle}</a></dd></div>
-          <div><dt>YouTube</dt><dd><a href={site.youtube}>{site.youtubeHandle}</a></dd></div>
-          <div><dt>CV</dt><dd><a href={site.cv} download>CV_Tymoteusz_Jaskolski_EN.pdf</a></dd></div>
-        </dl>
+    <div class="wrap">
+      <div class="section-head-bar" data-reveal>
+        <div>
+          <h2>Contact</h2>
+          <p class="sub-h">email · github · youtube · cv</p>
+        </div>
+        <span class="section-index-tag" aria-hidden="true">06</span>
       </div>
-      <div class="cta">
-        <p class="lead">Looking for a junior gameplay programmer or an intern? I'd love to talk.</p>
-        <a class="btn primary" href={`mailto:${site.email}`}>Write to me</a>
+      <div class="two">
+        <div data-reveal style="--reveal-delay:1">
+          <dl class="dl">
+            <div><dt>Email</dt><dd><a href={`mailto:${site.email}`}>{site.email}</a></dd></div>
+            <div><dt>GitHub</dt><dd><a href={site.github}>github.com/{site.githubHandle}</a></dd></div>
+            <div><dt>YouTube</dt><dd><a href={site.youtube}>{site.youtubeHandle}</a></dd></div>
+            <div><dt>CV</dt><dd><a href={site.cv} download>CV_Tymoteusz_Jaskolski_EN.pdf</a></dd></div>
+          </dl>
+        </div>
+        <div class="cta brutal-panel" data-reveal data-tilt data-tilt-max="3" style="--reveal-delay:2">
+          <p class="lead">Looking for a junior gameplay programmer or an intern? I'd love to talk.</p>
+          <a class="btn primary" href={`mailto:${site.email}`} data-track="contact-email" data-track-meta="cta">
+            ✉ Write to me
+          </a>
+        </div>
       </div>
     </div>
   </section>
+
+  <script>
+    // Zero-dependency 3D Isometric Tactical Grid + Rotating Wireframe Octahedron in Hero
+    const canvas = document.getElementById('tactical-polyhedron') as HTMLCanvasElement | null;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      let angleY = 0.5;
+      let angleX = 0.35;
+      let targetVelY = 0.012;
+      let targetAngleX = 0.35;
+      let pulse = 0;
+
+      // Octahedron + inner core vertices in 3D space
+      const verts: [number, number, number][] = [
+        [0, 1.15, 0],
+        [0, -1.15, 0],
+        [1.0, 0, 0],
+        [-1.0, 0, 0],
+        [0, 0, 1.0],
+        [0, 0, -1.0],
+      ];
+      const edges: [number, number][] = [
+        [0, 2], [0, 3], [0, 4], [0, 5],
+        [1, 2], [1, 3], [1, 4], [1, 5],
+        [2, 4], [4, 3], [3, 5], [5, 2],
+      ];
+
+      canvas.parentElement?.addEventListener('pointermove', (e) => {
+        const r = canvas.getBoundingClientRect();
+        const nx = (e.clientX - r.left) / r.width - 0.5;
+        const ny = (e.clientY - r.top) / r.height - 0.5;
+        targetVelY = nx * 0.06;
+        targetAngleX = 0.35 + ny * 0.8;
+      });
+      canvas.parentElement?.addEventListener('pointerleave', () => {
+        targetVelY = 0.012;
+        targetAngleX = 0.35;
+      });
+
+      const project = (x: number, y: number, z: number, cx: number, cy: number, scale: number) => {
+        const cosY = Math.cos(angleY);
+        const sinY = Math.sin(angleY);
+        const cosX = Math.cos(angleX);
+        const sinX = Math.sin(angleX);
+        const rx = x * cosY - z * sinY;
+        const rz = x * sinY + z * cosY;
+        const ry = y * cosX - rz * sinX;
+        const fz = y * sinX + rz * cosX;
+        const fov = 3.4 / (3.4 + fz * 0.45);
+        return { sx: cx + rx * scale * fov, sy: cy - ry * scale * fov, z: fz };
+      };
+
+      const drawFrame = () => {
+        if (!ctx) return;
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Draw perspective tactical floor grid
+        ctx.strokeStyle = 'rgba(242, 124, 82, 0.2)';
+        ctx.lineWidth = 1;
+        const gridY = -1.1;
+        for (let i = -3; i <= 3; i++) {
+          const p1 = project(i * 0.55, gridY, -1.65, w / 2, h * 0.52, 54);
+          const p2 = project(i * 0.55, gridY, 1.65, w / 2, h * 0.52, 54);
+          ctx.beginPath();
+          ctx.moveTo(p1.sx, p1.sy);
+          ctx.lineTo(p2.sx, p2.sy);
+          ctx.stroke();
+
+          const q1 = project(-1.65, gridY, i * 0.55, w / 2, h * 0.52, 54);
+          const q2 = project(1.65, gridY, i * 0.55, w / 2, h * 0.52, 54);
+          ctx.beginPath();
+          ctx.moveTo(q1.sx, q1.sy);
+          ctx.lineTo(q2.sx, q2.sy);
+          ctx.stroke();
+        }
+
+        // Project octahedron vertices
+        const bob = Math.sin(pulse) * 0.08;
+        const pts = verts.map(([vx, vy, vz]) => project(vx, vy + bob, vz, w / 2, h * 0.46, 56));
+
+        // Draw edges
+        edges.forEach(([a, b], idx) => {
+          const pa = pts[a];
+          const pb = pts[b];
+          const depthAlpha = Math.max(0.25, Math.min(0.95, 0.65 - (pa.z + pb.z) * 0.15));
+          ctx.strokeStyle = idx < 4 ? `rgba(242, 124, 82, ${depthAlpha})` : `rgba(246, 211, 112, ${depthAlpha})`;
+          ctx.lineWidth = idx < 4 ? 1.8 : 1.3;
+          ctx.beginPath();
+          ctx.moveTo(pa.sx, pa.sy);
+          ctx.lineTo(pb.sx, pb.sy);
+          ctx.stroke();
+        });
+
+        // Draw glowing vertex nodes
+        pts.forEach((p, idx) => {
+          ctx.fillStyle = idx === 0 ? '#9fd3a8' : '#f6d370';
+          ctx.beginPath();
+          ctx.arc(p.sx, p.sy, idx === 0 ? 3.5 : 2.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        const reduced =
+          document.documentElement.getAttribute('data-motion') === 'reduced' ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!reduced) {
+          angleY += targetVelY;
+          angleX += (targetAngleX - angleX) * 0.08;
+          pulse += 0.04;
+          requestAnimationFrame(drawFrame);
+        }
+      };
+
+      drawFrame();
+    }
+  </script>
 </Base>
 
 <style>
   .hero {
     position: relative;
-    padding: 112px 0 80px;
+    padding: 96px 0 72px;
     overflow: hidden;
   }
   .hero .grid {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 300px;
-    gap: 48px;
-    align-items: end;
+    grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+    gap: 44px;
+    align-items: center;
   }
   h1 {
-    margin: 16px 0 20px;
+    margin: 18px 0 20px;
   }
   h1 em {
     font-style: italic;
@@ -163,13 +366,42 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     gap: 12px;
     flex-wrap: wrap;
   }
+  .holo-card {
+    background: rgba(47, 41, 27, 0.72);
+    border: 1.5px solid var(--umber);
+    border-radius: var(--r-md);
+    padding: 16px;
+    box-shadow: var(--card-depth);
+  }
+  .holo-bar {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--steel);
+    border-bottom: var(--line);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+  .holo-live {
+    color: var(--mint);
+  }
+  #tactical-polyhedron {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-bottom: 12px;
+    border-radius: var(--r-sm);
+    background: radial-gradient(circle at 50% 50%, rgba(242, 124, 82, 0.08), rgba(11, 7, 11, 0.45));
+  }
   .note {
     font-family: var(--display);
     font-style: italic;
-    font-size: 17px;
+    font-size: 16px;
     color: var(--lavender);
     border-left: 2px solid var(--coral);
-    padding-left: 18px;
+    padding-left: 16px;
     line-height: 1.5;
     font-variation-settings: 'SOFT' 60;
   }
@@ -177,27 +409,51 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
     display: block;
     font-family: var(--mono);
     font-style: normal;
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--coral);
-    margin-top: 12px;
+    margin-top: 10px;
+  }
+  .brutal-note {
+    background: rgba(47, 41, 27, 0.45);
+    border: 1.5px solid var(--umber);
+    border-left: 4px solid var(--coral);
+    border-radius: var(--r-sm);
+    padding: 20px;
+    box-shadow: var(--card-depth);
+    align-self: start;
+  }
+  .brutal-panel {
+    background: rgba(47, 41, 27, 0.5);
+    border: 1.5px solid var(--umber);
+    border-radius: var(--r-md);
+    padding: 22px;
+    box-shadow: var(--card-depth);
   }
   .tl {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px 40px;
+    gap: 24px 32px;
   }
   .tl article {
-    padding: 20px 0 20px 22px;
-    border-left: 1px solid var(--umber);
+    padding: 20px 22px 20px 26px;
+    background: rgba(47, 41, 27, 0.42);
+    border: 1px solid var(--umber);
+    border-left: 3px solid var(--coral);
+    border-radius: var(--r-sm);
+    box-shadow: var(--card-depth);
     position: relative;
+  }
+  .tl article:hover {
+    border-color: var(--peach);
+    box-shadow: var(--card-depth-hover);
   }
   .tl article::before {
     content: '';
     position: absolute;
-    left: -5px;
-    top: 26px;
+    left: -6px;
+    top: 24px;
     width: 9px;
     height: 9px;
     border-radius: 50%;
@@ -237,13 +493,50 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
   .cta {
     align-self: center;
   }
+  .crt-spec-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1px;
+    margin: 44px 0 0;
+    background: var(--umber);
+    border: 1.5px solid var(--umber);
+    border-radius: var(--r-sm);
+    overflow: hidden;
+    box-shadow: var(--card-depth);
+  }
+  .crt-spec-cell {
+    background: var(--surface);
+    padding: 14px 16px;
+  }
+  .crt-spec-cell dt {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 4px;
+  }
+  .crt-spec-cell dd {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    margin: 0;
+  }
   @media (max-width: 860px) {
     .hero {
-      padding: 80px 0 56px;
+      padding: 64px 0 48px;
     }
     .hero .grid,
     .tl {
       grid-template-columns: minmax(0, 1fr);
+    }
+    .crt-spec-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 520px) {
+    .crt-spec-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>

@@ -6,23 +6,46 @@
 interface Props {
   type?: 'image' | 'video' | 'gif';
   src?: string;
+  poster?: string;
   alt?: string;
   caption?: string;
   ratio?: string;
   /** Above the fold: load eagerly with high priority instead of lazily. */
   priority?: boolean;
+  /** Disable CRT scanlines on this specific frame if needed. */
+  noCrt?: boolean;
 }
-const { type = 'image', src, alt = '', caption, ratio = '16 / 9', priority = false } = Astro.props;
+const {
+  type = 'image',
+  src,
+  poster,
+  alt = '',
+  caption,
+  ratio = '16 / 9',
+  priority = false,
+  noCrt = false,
+} = Astro.props;
+const isFourThree = ratio.replace(/\s+/g, '') === '4/3';
+const imgWidth = isFourThree ? 800 : 960;
+const imgHeight = isFourThree ? 600 : 540;
 ---
 
 <figure class="fig">
-  <div class="frame" style={`aspect-ratio:${ratio}`}>
+  <div class:list={['frame', 'crt-frame', { 'crt-off': noCrt }]} style={`aspect-ratio:${ratio}`}>
     {
       src ? (
         type === 'video' ? (
-          <video src={src} controls muted loop playsinline preload="metadata" aria-label={alt} />
+          <video src={src} poster={poster} controls muted loop playsinline preload="metadata" aria-label={alt} />
         ) : (
-          <img src={src} alt={alt} loading={priority ? "eager" : "lazy"} fetchpriority={priority ? "high" : "auto"} decoding="async" />
+          <img
+            src={src}
+            alt={alt}
+            width={imgWidth}
+            height={imgHeight}
+            loading={priority ? 'eager' : 'lazy'}
+            fetchpriority={priority ? 'high' : 'auto'}
+            decoding="async"
+          />
         )
       ) : (
         <span class="placeholder">[ {type} TODO{alt ? `: ${alt}` : ''} ]</span>

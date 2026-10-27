@@ -7,11 +7,13 @@ const year = new Date().getFullYear();
   <div class="wrap">
     <span>© {year} {site.name}</span>
     <span class="sep">·</span>
-    <a href={site.github}>GitHub</a>
+    <a href={site.github} data-track="outbound-github" data-track-meta="footer">GitHub</a>
     <span class="sep">·</span>
-    <a href={site.youtube}>YouTube</a>
+    <a href={site.youtube} data-track="outbound-youtube" data-track-meta="footer">YouTube</a>
     <span class="sep">·</span>
-    <a href={`mailto:${site.email}`}>{site.email}</a>
+    <a href={`mailto:${site.email}`} data-track="contact-email" data-track-meta="footer">{site.email}</a>
+    <span class="sep">·</span>
+    <a href="/style-guide/">Style Guide</a>
     <span class="sep">·</span>
     <span>built with Astro, hosted on GitHub Pages</span>
   </div>

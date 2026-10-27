@@ -18,10 +18,10 @@ STOPS = [(233, 92, 58), (242, 124, 82), (246, 211, 112), (159, 211, 168), (143, 
 
 PROJECTS = [
     ("default", "Tymoteusz Jaskólski", "Junior Gameplay Programmer · Unity / C#", "PORTFOLIO · PHANTO17.GITHUB.IO", None),
-    ("push-comes-to-shove", "Push Comes to Shove", "Deterministic grid tactics · playable in the browser", "PROJECT · TACTICS", "push-comes-to-shove/enemy-turn.webp"),
-    ("horde-hours", "Horde Hours", "3D survivors-like · playable in the browser", "PROJECT · SURVIVORS-LIKE", "horde-hours/fireball.webp"),
-    ("cinderhold", "Cinderhold", "2D dungeon crawler · playable in the browser", "PROJECT · DUNGEON CRAWLER", "cinderhold/floor1-spawn.webp"),
-    ("eternity-keeper", "Eternity Keeper", "Open-source save editor for Pillars of Eternity", "PROJECT · TOOL", "eternity-keeper/inventory.webp"),
+    ("push-comes-to-shove", "Push Comes to Shove", "Deterministic grid tactics · playable in the browser", "PROJECT · TACTICS", "push-comes-to-shove/cover.avif"),
+    ("horde-hours", "Horde Hours", "3D survivors-like · playable in the browser", "PROJECT · SURVIVORS-LIKE", "horde-hours/cover.avif"),
+    ("cinderhold", "Cinderhold", "2D dungeon crawler · playable in the browser", "PROJECT · DUNGEON CRAWLER", "cinderhold/cover.avif"),
+    ("eternity-keeper", "Eternity Keeper", "Open-source save editor for Pillars of Eternity", "PROJECT · TOOL", "eternity-keeper/inventory.avif"),
 ]
 
 

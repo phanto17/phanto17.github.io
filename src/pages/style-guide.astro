@@ -1,0 +1,233 @@
+---
+import Base from '../layouts/Base.astro';
+import Prism from '../components/Prism.astro';
+import Figure from '../components/Figure.astro';
+
+const backgrounds = [
+  { token: '--bg-0', hex: '#0b070b', use: 'Page vignette, deepest shadow' },
+  { token: '--bg', hex: '#1a1713', use: 'Primary darkroom background' },
+  { token: '--surface', hex: '#2f291b', use: 'Cards, panels, code blocks, CRT bezel' },
+  { token: '--surface-2', hex: '#3a3224', use: 'Raised / hover surfaces' },
+  { token: '--umber', hex: '#5d412b', use: '1px structural borders & card backplates' },
+];
+
+const textTokens = [
+  { token: '--text', hex: '#f3e6d3', ratio: '14.5:1 (AAA)', use: 'Headings & primary body copy' },
+  { token: '--text-2', hex: '#b9a68f', ratio: '8.0:1 (AAA)', use: 'Secondary body & lead paragraphs' },
+  { token: '--text-3', hex: '#a79a88', ratio: '6.5:1 on bg / 4.6:1 on raised (AA)', use: 'Captions & footnotes' },
+  { token: '--steel', hex: '#979ca4', ratio: '6.3:1 (AA)', use: 'Metadata & mono field-note labels' },
+];
+
+const accents = [
+  { token: '--coral', hex: '#f27c52', ratio: '6.4:1 (AA)', use: 'Primary CTA, links, attack telegraphs' },
+  { token: '--peach', hex: '#f2b180', ratio: '9.8:1 (AAA)', use: 'Link hover & italic display emphasis' },
+  { token: '--gold', hex: '#f6d370', ratio: '12.8:1 (AAA)', use: 'Eyebrows, dates, focus rings, telemetry' },
+  { token: '--mint', hex: '#9fd3a8', ratio: '10.9:1 (AAA)', use: 'Resolved / safe tactical state' },
+  { token: '--lavender', hex: '#cab5ce', ratio: '9.6:1 (AAA)', use: 'Pull quotes & margin notes' },
+  { token: '--brick', hex: '#a95c3d', ratio: '3.6:1 (AA Large)', use: 'Large display project numerals' },
+];
+---
+
+<Base
+  noindex
+  title="Style Guide — Prism & Retro CRT"
+  description="Living design system and component reference for Tymoteusz Jaskólski's game-dev portfolio."
+>
+  <header class="sg-hero">
+    <Prism />
+    <div class="wrap">
+      <p class="kicker"><a href="/">← Portfolio Home</a> · Living Design Document</p>
+      <h1>Prism <em>Style Guide</em></h1>
+      <p class="lead">
+        Warm darkroom grain, Cooper/Windsor-inspired variable serif display type, tactile 80s/90s CRT viewport frames,
+        and WCAG 2.1 AA verified tokens.
+      </p>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="wrap">
+      <h2>01 · Colour Palette &amp; Contrast</h2>
+      <p class="sub-h">extracted from analog film references · verified against #1a1713 and #2f291b</p>
+
+      <h3>Backgrounds &amp; Borders</h3>
+      <div class="swatches">
+        {
+          backgrounds.map((s) => (
+            <div class="swatch-card">
+              <div class="swatch-chip" style={`background:${s.hex}`} />
+              <div class="swatch-meta">
+                <code>{s.token}</code>
+                <span class="hex">{s.hex}</span>
+                <p>{s.use}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <h3 style="margin-top:36px">Text &amp; Accent Tokens</h3>
+      <div class="swatches">
+        {
+          [...textTokens, ...accents].map((s) => (
+            <div class="swatch-card">
+              <div class="swatch-chip" style={`background:${s.hex}`} />
+              <div class="swatch-meta">
+                <code>{s.token}</code>
+                <span class="hex">{s.hex} · {s.ratio}</span>
+                <p>{s.use}</p>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div>
+        <h2>02 · Typography</h2>
+        <p class="sub-h">self-hosted variable woff2 · latin + latin-ext · cls 0.00</p>
+        <div class="type-specimens">
+          <div>
+            <span class="meta">H1 · Fraunces 600 (SOFT 100, WONK 1) · clamp(44px, 6.6vw, 80px)</span>
+            <p class="spec-h1">Read the board.</p>
+          </div>
+          <div>
+            <span class="meta">H2 · Fraunces 600 · 36px / 30px mobile</span>
+            <p class="spec-h2">Deterministic Grid Tactics</p>
+          </div>
+          <div>
+            <span class="meta">Body · DM Sans 400 · 17px (line-height 1.6)</span>
+            <p>
+              Every weapon is a ScriptableObject asset derived from <code>Ability</code>. Adding a weapon means adding
+              an asset, not touching the controller. Polish diacritics test: Tymoteusz Jaskólski, Poznań.
+            </p>
+          </div>
+          <div>
+            <span class="meta">Eyebrow &amp; Telemetry · DM Mono 400/500 · 11–12px</span>
+            <p class="kicker" style="margin-top:6px">UNITY 6000.6 · URP 2D · 105 EDITMODE + 41 PLAYMODE TESTS</p>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <h2>03 · Interactive Elements</h2>
+        <p class="sub-h">buttons · pills · telemetry chips · changelog drawer</p>
+
+        <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px">
+          <a class="btn primary" href="#main">▶ Primary CTA</a>
+          <a class="btn" href="#main">Secondary Action</a>
+        </div>
+
+        <div style="margin-bottom:24px">
+          <span class="pill play">▶ play on itch.io</span>
+          <span class="pill wip">build in progress</span>
+          <span class="pill">write-up →</span>
+        </div>
+
+        <div class="stat-chips" style="margin-bottom:24px">
+          <span class="stat-chip">72 EditMode tests</span>
+          <span class="stat-chip">300-seed fairness check</span>
+          <span class="stat-chip">25 save invariants</span>
+        </div>
+
+        <details class="changelog" open>
+          <summary>Iteration &amp; playtest history (specimen)</summary>
+          <ul>
+            <li>Collapsible release history keeps core architectural contributions scannable above the fold.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div>
+        <h2>04 · Retro CRT Frame</h2>
+        <p class="sub-h">.crt-frame scanline overlay + boxed-manual shadow</p>
+        <p class="muted">
+          Game screenshots and the interactive mini-game sit inside <code>.crt-frame</code> containers featuring a
+          subtle 3px scanline gradient, radial barrel vignette, and <code>4px 4px 0</code> umber backplate.
+        </p>
+      </div>
+      <div>
+        <Figure
+          type="image"
+          src="/media/push-comes-to-shove/cover.avif"
+          alt="Push Comes to Shove key art inside a CRT scanline frame"
+          caption="Fig. 1 — .crt-frame specimen with AVIF cover art & scanline overlay"
+          ratio="16 / 9"
+        />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .sg-hero {
+    position: relative;
+    padding: 96px 0 56px;
+    overflow: hidden;
+  }
+  .sg-hero h1 em {
+    font-style: italic;
+    font-weight: 400;
+    color: var(--peach);
+  }
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .swatch-card {
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-md);
+    overflow: hidden;
+    box-shadow: var(--card-depth);
+  }
+  .swatch-chip {
+    height: 64px;
+    border-bottom: 1px solid var(--umber);
+  }
+  .swatch-meta {
+    padding: 12px 14px;
+  }
+  .swatch-meta .hex {
+    display: block;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    margin: 4px 0 6px;
+  }
+  .swatch-meta p {
+    font-size: 13px;
+    color: var(--text-2);
+    margin: 0;
+  }
+  .type-specimens > div {
+    padding: 16px 0;
+    border-bottom: var(--line);
+  }
+  .spec-h1 {
+    font-family: var(--display);
+    font-size: 48px;
+    font-weight: 600;
+    font-variation-settings: var(--soft);
+    text-shadow: var(--glow);
+    margin: 6px 0 0;
+    line-height: 1;
+  }
+  .spec-h2 {
+    font-family: var(--display);
+    font-size: 30px;
+    font-weight: 600;
+    font-variation-settings: var(--soft);
+    text-shadow: var(--glow-soft);
+    margin: 6px 0 0;
+  }
+</style>

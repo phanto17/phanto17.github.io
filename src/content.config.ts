@@ -1,5 +1,6 @@
-import { defineCollection, z } from 'astro:content';
+import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
+import { z } from 'astro/zod';
 
 /**
  * One Markdown file per project in src/content/projects/ → its own subpage at /projects/<id>/.
@@ -23,8 +24,12 @@ const projects = defineCollection({
     }),
     role: z.string(),
     engine: z.string(),
-    /** Bullet list of what I personally built. Never list third-party work here. */
+    /** Bullet list of core systems I personally built / architected. Never list third-party work here. */
     myContribution: z.array(z.string()),
+    /** Optional chronological iteration / release / playtest log (0.2.0 – 0.5.0) rendered in an expandable drawer. */
+    changelog: z.array(z.string()).default([]),
+    /** Git-verified engineering telemetry chips (test counts, benchmarks, invariants). */
+    metrics: z.array(z.string()).default([]),
     tools: z.array(z.string()),
     media: z
       .array(
@@ -37,17 +42,17 @@ const projects = defineCollection({
       )
       .default([]),
     /** Required for a playable project; leave out while the build isn't published yet. */
-    itchUrl: z.string().url().optional(),
+    itchUrl: z.url().optional(),
     /** For tools: the release/download page. */
-    downloadUrl: z.string().url().optional(),
-    githubUrl: z.string().url().optional(),
+    downloadUrl: z.url().optional(),
+    githubUrl: z.url().optional(),
     /** Every third-party asset, pack, font and sound used. */
     credits: z
       .array(
         z.object({
           asset: z.string(),
           author: z.string(),
-          url: z.string().url().optional(),
+          url: z.url().optional(),
           license: z.string().optional(),
         }),
       )

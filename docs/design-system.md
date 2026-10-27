@@ -106,7 +106,10 @@ Scale (desktop → mobile):
   `prefers-reduced-motion`**, as is every transition.
 - No parallax, no autoplaying video with sound.
 
-## 7. Imagery rules
+## 7. Imagery rules & CRT viewport
 
-Screenshots/GIFs sit in `--r-md` frames on `--surface` with a 1 px `--umber` border and a faint
-prism smear at the bottom edge. Captions in DM Mono below ("Fig. 1 — …").
+Screenshots/GIFs sit in `--r-md` frames on `--surface` with a 1 px `--umber` border, a faint
+prism smear at the bottom edge, and a subtle `.crt-frame` scanline + radial vignette overlay
+(`--scanline-alpha: 0.2`) plus a `4px 4px 0` boxed-manual shadow (`--card-depth`). Captions in
+DM Mono below ("Fig. 1 — …"). Fonts (`Fraunces`, `DM Sans`, `DM Mono`) are self-hosted in
+`public/fonts/*.woff2` (`latin` + `latin-ext`) with `<link rel="preload">` on the primary weights.
