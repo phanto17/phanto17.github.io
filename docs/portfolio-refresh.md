@@ -153,3 +153,29 @@ lazily. Verified in the dev server: the chunk loads after `load`, headings and r
 the stage-3 title rises, motion off tears everything down. Not measured: mobile LCP, INP, CLS.
 The built-in browser pane throttles `requestAnimationFrame` to about one frame per second, so
 timing there is not representative; the watchdog is what let the checks complete.
+
+### Restyle: signal field and glass keys (2026-10-29)
+
+From three references the owner supplied (two grainy retro gradient fields in sunset orange,
+red, black and teal and in orange, pink and peach; one glass "esc." keycap on black with
+cyan/magenta refraction edges), the page background is now a **signal field**
+(`src/scripts/field.ts`): a fullscreen WebGL quad at half resolution and at most 30 fps,
+domain-warped fractal noise ramping through five `field-*` tokens per theme (colours sampled
+from the references), pulled and brightened by the cursor, with per-pixel grain. Legibility is in
+the shader: the field is mixed toward `bg` by `field-lane` (0.20) under the content column, which
+is measured in pixels from the container width, and by `field-edge` (0.62) at the page edges; the
+cursor bloom is zero inside the lane. On the brightest ramp stop under text, the lowest ratio is
+`steel` at 4.6:1 in Prism and 5.0:1 in CRT (computed). Reduced motion renders one still frame;
+data saver or no WebGL leaves a static CSS gradient of the same colours on `body`; the old prism
+band is hidden while the field runs.
+
+Every control is a **glass key**: `.btn`, the popup's stage tabs and `[ESC ×]`, the board cells
+and the copy button share a dark `key-glass` dome with a top gloss, a bottom bevel, backdrop blur
+and an iridescent `key-cyan` / `key-magenta` refraction ring that brightens and turns on hover
+and flattens on press. The hard umber offset now belongs to cards, notes and stamps only. The
+design system has the palette, a SignalField component (with the bundled shader) and a Key
+component.
+
+Not measured: GPU cost on a phone. The shader is cheap (five octaves of value noise at half
+resolution, 30 fps cap) but it should be profiled on a representative device before the next
+release; `field-edge` and the 0.5 resolution scale are the knobs if it runs hot.

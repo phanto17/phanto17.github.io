@@ -93,6 +93,7 @@ const jsonLd = schema ?? defaultSchema;
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
+    <canvas id="signal-field" class="signal-field" aria-hidden="true"></canvas>
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true"></div>
     <Nav />
     <main id="main">
@@ -138,6 +139,17 @@ const jsonLd = schema ?? defaultSchema;
       if (document.readyState === 'complete') bootMotion();
       else window.addEventListener('load', bootMotion, { once: true });
       window.addEventListener('portfolio:motionchange', bootMotion);
+
+      // 1c. Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
+      // after first paint; renders one still frame under reduced motion; skipped with data saver or no WebGL.
+      const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
+      const bootField = () => {
+        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+        if (!fieldCanvas || nav.connection?.saveData) return;
+        void import('../scripts/field').then((f) => f.init(fieldCanvas));
+      };
+      if (document.readyState === 'complete') bootField();
+      else window.addEventListener('load', bootField, { once: true });
 
       // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards
       const isMotionAllowed = () =>

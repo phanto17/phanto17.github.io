@@ -234,9 +234,6 @@ import PopupCRT from './PopupCRT.astro';
   }
   .tg-cell {
     aspect-ratio: 1;
-    background: var(--bg);
-    border: 1px solid var(--umber);
-    border-radius: var(--r-sm);
     color: var(--text-3);
     font-family: var(--mono);
     font-size: 11px;
@@ -248,21 +245,20 @@ import PopupCRT from './PopupCRT.astro';
   }
   .tg-cell:hover {
     border-color: var(--peach);
-    background: var(--surface-2);
   }
   .tg-cell.telegraph {
-    background: rgba(242, 124, 82, 0.28);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1)), var(--cell-telegraph);
     border-color: var(--coral);
     box-shadow: var(--glow);
     color: var(--text);
   }
   .tg-cell.hit {
-    background: rgba(159, 211, 168, 0.22);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1)), var(--cell-hit);
     border-color: var(--mint);
     color: var(--mint);
   }
   .tg-cell.miss {
-    background: rgba(233, 92, 58, 0.35);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1)), var(--cell-miss);
     border-color: var(--coral);
   }
   .tg-cell.unavailable {
