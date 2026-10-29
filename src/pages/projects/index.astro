@@ -2,11 +2,30 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import ProjectRow from '../../components/ProjectRow.astro';
+import { site } from '../../data/site';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const listSchema = [
+  {
+    '@type': 'CollectionPage',
+    '@id': `${site.url}/projects/`,
+    url: `${site.url}/projects/`,
+    name: `Projects — ${site.name}`,
+    isPartOf: { '@id': `${site.url}/#website` },
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: projects.map((p, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        url: `${site.url}/projects/${p.id}/`,
+        name: p.data.title,
+      })),
+    },
+  },
+];
 ---
 
-<Base title="Projects" description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
+<Base title="Projects" schema={listSchema} description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
   <section class="section">
     <div class="wrap">
       <h1>Projects</h1>

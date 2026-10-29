@@ -766,6 +766,34 @@ html.js-motion [data-reveal].is-visible {
   -webkit-text-stroke: 1.5px var(--coral);
   font-variation-settings: 'SOFT' 100, 'WONK' 1;
   user-select: none;
+  /* Fill level, scrubbed by scroll in motion.ts (0% = the outline alone, the static look). */
+  background: linear-gradient(to top, var(--coral) var(--fill, 0%), transparent var(--fill, 0%));
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* Projects: the head bar stays under the nav while the rows scroll beneath it (native sticky, no
+   pinning). index.astro adds .is-stuck while it is held, which only changes paint, never height. */
+@media (min-width: 861px) and (min-height: 700px) {
+  #projects .section-head-bar {
+    position: sticky;
+    top: 70px;
+    z-index: 6;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 12px;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    transition:
+      background-color var(--t-lift, 250ms) ease,
+      box-shadow var(--t-lift, 250ms) ease;
+  }
+  #projects .section-head-bar.is-stuck {
+    /* Opaque: rows scroll right under the title; any see-through ghosts their light text. */
+    background: var(--bg);
+    box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.7);
+  }
 }
 
 /* Interactive Definition List rows in #about and #contact */

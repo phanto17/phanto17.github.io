@@ -46,6 +46,8 @@ const projects = defineCollection({
     /** For tools: the release/download page. */
     downloadUrl: z.url().optional(),
     githubUrl: z.url().optional(),
+    /** Upstream project this one is forked from or built on (emitted as schema.org isBasedOn). */
+    basedOn: z.url().optional(),
     /** Every third-party asset, pack, font and sound used. */
     credits: z
       .array(

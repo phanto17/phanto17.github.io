@@ -1,0 +1,326 @@
+---
+/**
+ * Nonlinear notes: a project's technical breakdown as an explorable grid of cards (InteractivePanel)
+ * with a reading pane (the inspector pattern from the Telegraph Recall lab).
+ *
+ * Progressive enhancement: the server renders every note as a plain section, so without JavaScript
+ * the write-up reads top to bottom. The script switches to "explore" mode (one note in the pane at a
+ * time) unless the reader chose "one page", which is remembered in localStorage. Deep links to any
+ * heading inside a note open that note.
+ */
+import InteractivePanel from './InteractivePanel.astro';
+import type { Note } from '../lib/notes';
+
+interface Props {
+  notes: Note[];
+  title: string;
+}
+const { notes, title } = Astro.props;
+---
+
+<div class="notes" data-notes>
+  <div class="notes-head" data-notes-ui hidden>
+    <p class="kicker">Explore the breakdown</p>
+    <span class="meta notes-progress">EXPLORED: <b data-notes-progress>1</b>/{notes.length} NOTES</span>
+    <button type="button" class="btn notes-mode" data-notes-mode aria-pressed="false">Read as one page</button>
+  </div>
+
+  <div class="notes-grid" style={`--note-cols:${notes.length === 4 ? 2 : 3}`} role="group" aria-label={`${title}: technical notes`} data-notes-ui hidden>
+    {notes.map((note, i) => <InteractivePanel node={note} active={i === 0} kind="note" />)}
+  </div>
+
+  <div class="notes-pane" data-notes-pane>
+    {
+      notes.map((note, i) => (
+        <section class="note" id={note.id} data-note aria-labelledby={note.headingId}>
+          <p class="note-bar meta" data-notes-ui hidden>
+            <span>
+              <b>{note.code}</b> · {note.tag}
+            </span>
+            <span>
+              Note {i + 1} of {notes.length}
+            </span>
+          </p>
+          <Fragment set:html={note.html} />
+          <div class="note-nav" data-notes-ui hidden>
+            {i > 0 ? (
+              <button type="button" class="btn" data-note-step={notes[i - 1].id}>
+                ← {notes[i - 1].title}
+              </button>
+            ) : (
+              <span />
+            )}
+            {i < notes.length - 1 && (
+              <button type="button" class="btn" data-note-step={notes[i + 1].id}>
+                {notes[i + 1].title} →
+              </button>
+            )}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  const STORE = 'portfolio-notes';
+  let controller: AbortController | null = null;
+
+  const readMode = (): 'explore' | 'page' => {
+    try {
+      return localStorage.getItem(STORE) === 'page' ? 'page' : 'explore';
+    } catch {
+      return 'explore';
+    }
+  };
+  const saveMode = (mode: 'explore' | 'page') => {
+    try {
+      localStorage.setItem(STORE, mode);
+    } catch {
+      /* private mode: the choice lasts for this page only */
+    }
+  };
+
+  function setup(root: HTMLElement) {
+    if (root.dataset.notesReady) return;
+    root.dataset.notesReady = 'true';
+    const notes = Array.from(root.querySelectorAll<HTMLElement>('[data-note]'));
+    const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-note-tab]'));
+    const modeBtn = root.querySelector<HTMLButtonElement>('[data-notes-mode]');
+    const progress = root.querySelector<HTMLElement>('[data-notes-progress]');
+    const explored = new Set<string>();
+    let mode = readMode();
+    let active = notes[0]?.id ?? '';
+
+    root.querySelectorAll<HTMLElement>('[data-notes-ui]').forEach((el) => (el.hidden = false));
+
+    const paint = () => {
+      const exploring = mode === 'explore';
+      root.classList.toggle('is-explorer', exploring);
+      notes.forEach((note) => (note.hidden = exploring && note.id !== active));
+      tabs.forEach((tab) => {
+        const id = tab.dataset.noteTab ?? '';
+        const on = exploring && id === active;
+        tab.setAttribute('aria-pressed', String(on));
+        tab.classList.toggle('is-active', on);
+        tab.classList.toggle('is-explored', explored.has(id));
+        const status = tab.querySelector<HTMLElement>('.panel-status');
+        if (status) status.textContent = on ? '● ACTIVE' : explored.has(id) ? '✓ READ' : '○ NOTE';
+      });
+      if (progress) progress.textContent = String(explored.size);
+      if (modeBtn) {
+        modeBtn.setAttribute('aria-pressed', String(!exploring));
+        modeBtn.textContent = exploring ? 'Read as one page' : 'Explore as notes';
+      }
+    };
+
+    const heading = (id: string) => document.getElementById(id)?.querySelector<HTMLElement>('h3') ?? null;
+    const replaceHash = (id: string) => {
+      const h = heading(id);
+      if (h?.id) history.replaceState(history.state, '', `#${h.id}`);
+    };
+
+    const open = (id: string, opts: { focus?: boolean; scroll?: boolean } = {}) => {
+      if (!notes.some((n) => n.id === id)) return;
+      active = id;
+      explored.add(id);
+      paint();
+      const target = document.getElementById(id);
+      if (target && mode === 'explore') {
+        target.classList.remove('is-entering');
+        void target.offsetWidth;
+        target.classList.add('is-entering');
+      }
+      const h = heading(id);
+      if (opts.focus && h) {
+        h.tabIndex = -1;
+        h.focus({ preventScroll: true });
+      }
+      if (opts.scroll) (mode === 'explore' ? root : target)?.scrollIntoView({ block: 'start' });
+    };
+
+    /** Open the note that holds the element the URL hash points at; true when one was found. */
+    const fromHash = (): boolean => {
+      const raw = decodeURIComponent(location.hash.slice(1));
+      if (!raw) return false;
+      const el = document.getElementById(raw);
+      const note = el?.closest<HTMLElement>('[data-note]');
+      if (!el || !note || !root.contains(note)) return false;
+      open(note.id);
+      el.scrollIntoView({ block: 'start' });
+      return true;
+    };
+
+    explored.add(active);
+    paint();
+    fromHash();
+
+    const signal = controller!.signal;
+    tabs.forEach((tab) =>
+      tab.addEventListener(
+        'click',
+        () => {
+          const id = tab.dataset.noteTab ?? '';
+          if (mode === 'explore') {
+            open(id);
+            replaceHash(id);
+          } else {
+            active = id; // explore mode resumes on the last note picked
+            explored.add(id);
+            paint();
+            document.getElementById(id)?.scrollIntoView({ block: 'start' });
+            replaceHash(id);
+          }
+        },
+        { signal },
+      ),
+    );
+    root.querySelectorAll<HTMLButtonElement>('[data-note-step]').forEach((btn) =>
+      btn.addEventListener(
+        'click',
+        () => {
+          const id = btn.dataset.noteStep ?? '';
+          open(id, { focus: true, scroll: root.getBoundingClientRect().top < 0 });
+          replaceHash(id);
+        },
+        { signal },
+      ),
+    );
+    modeBtn?.addEventListener(
+      'click',
+      () => {
+        mode = mode === 'explore' ? 'page' : 'explore';
+        saveMode(mode);
+        paint();
+        if (mode === 'explore') open(active);
+        modeBtn.focus();
+      },
+      { signal },
+    );
+    window.addEventListener('hashchange', fromHash, { signal });
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    controller?.abort();
+    controller = new AbortController();
+    document.querySelectorAll<HTMLElement>('[data-notes]').forEach(setup);
+  });
+  document.addEventListener('astro:before-swap', () => controller?.abort());
+</script>
+
+<style>
+  .notes {
+    margin-top: 24px;
+  }
+  .notes-head {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    margin-bottom: 12px;
+  }
+  .notes-head .kicker {
+    margin: 0;
+  }
+  .notes-progress {
+    flex: 1;
+  }
+  .notes-mode {
+    font-size: 13px;
+    padding: 6px 14px;
+  }
+  /* Balanced rows: four notes as 2 × 2, three or five as rows of three. */
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--note-cols, 3), minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .notes-grid :global(.interactive-panel) {
+    min-width: 0;
+  }
+  /* Explore mode: the pane takes the inspector's look and shows one note. */
+  .notes.is-explorer .notes-pane {
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-md);
+    padding: 18px 22px 22px;
+  }
+  .note-bar {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 4px;
+    padding-bottom: 8px;
+    border-bottom: var(--line);
+  }
+  .notes:not(.is-explorer) .note-bar {
+    margin-top: 40px;
+  }
+  .notes.is-explorer .note :global(h3:first-of-type) {
+    margin-top: 16px;
+  }
+  .note :global(h3:focus) {
+    outline: none;
+  }
+  .note :global(h3:focus-visible) {
+    outline: 2px solid var(--coral);
+    outline-offset: 4px;
+  }
+  .note-nav {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .notes:not(.is-explorer) .note-nav {
+    display: none;
+  }
+  .note-nav .btn {
+    font-size: 13px;
+    max-width: 100%;
+    white-space: normal;
+    text-align: left;
+  }
+  .note.is-entering {
+    animation: note-in 260ms var(--ease-out-expo, cubic-bezier(0.22, 1, 0.36, 1)) both;
+  }
+  @keyframes note-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .note.is-entering {
+      animation: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .note.is-entering {
+    animation: none;
+  }
+  @media (max-width: 700px) {
+    .notes-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 540px) {
+    .notes-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 8px;
+    }
+    /* Compact cards on phones so the pane is not pushed a screen down. */
+    .notes-grid :global(.panel-summary) {
+      display: none;
+    }
+    .notes-grid :global(.interactive-panel) {
+      padding: 10px 14px;
+      gap: 4px;
+    }
+    .notes.is-explorer .notes-pane {
+      padding: 14px 14px 18px;
+    }
+  }
+</style>

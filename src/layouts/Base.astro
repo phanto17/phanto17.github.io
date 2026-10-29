@@ -3,7 +3,7 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-import { site } from '../data/site';
+import { site, PERSON_ID } from '../data/site';
 
 interface Props {
   title?: string;
@@ -12,8 +12,11 @@ interface Props {
   image?: string;
   /** Keep the page out of search results (404, style-guide). */
   noindex?: boolean;
-  /** Optional JSON-LD structured data object or graph. */
-  schema?: Record<string, unknown>;
+  /**
+   * Extra JSON-LD nodes for this page (no @context). They are emitted in one @graph together with
+   * the site's Person and WebSite nodes, so a node can point at the author with { '@id': PERSON_ID }.
+   */
+  schema?: Record<string, unknown>[];
 }
 const {
   title,
@@ -26,9 +29,9 @@ const ogImage = new URL(image, site.url).toString();
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString();
 
-const defaultSchema = {
-  '@context': 'https://schema.org',
+const personNode = {
   '@type': 'Person',
+  '@id': PERSON_ID,
   name: site.name,
   jobTitle: site.title,
   url: site.url,
@@ -44,7 +47,15 @@ const defaultSchema = {
   },
   sameAs: [site.github, site.youtube, 'https://phanto-official.itch.io'],
 };
-const jsonLd = schema ?? defaultSchema;
+const websiteNode = {
+  '@type': 'WebSite',
+  '@id': `${site.url}/#website`,
+  url: `${site.url}/`,
+  name: site.name,
+  inLanguage: 'en',
+  publisher: { '@id': PERSON_ID },
+};
+const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websiteNode, ...(schema ?? [])] };
 ---
 
 <!doctype html>
@@ -73,7 +84,7 @@ const jsonLd = schema ?? defaultSchema;
     <link rel="preload" href="/fonts/fraunces-normal-400-700-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-sans-normal-400-600-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-mono-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin />
-    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\u003c')} />}
     <!-- Page-to-page navigation with the View Transitions API (a CRT power-cycle, see global.css). -->
     <ClientRouter />
     <script is:inline>

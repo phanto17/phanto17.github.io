@@ -55,8 +55,31 @@ function takeOverReveals() {
     el.classList.add('is-visible');
     el.style.transition = 'none';
   });
-  gsap.set(pending, { autoAlpha: 0, y: 20 });
-  ScrollTrigger.batch(pending, {
+  const tipUps = pending.filter((el) => el.matches(tipUpSelector));
+  const plain = pending.filter((el) => !el.matches(tipUpSelector));
+  if (tipUps.length > 0) {
+    tipUps.forEach((el) =>
+      gsap.set(el, { autoAlpha: 0, y: 12, rotateX: -tiltOf(el) * 4, transformPerspective: 900, transformOrigin: '50% 0%' }),
+    );
+    ScrollTrigger.batch(tipUps, {
+      start: 'top 92%',
+      once: true,
+      onEnter: (batch) =>
+        gsap.to(batch, {
+          autoAlpha: 1,
+          y: 0,
+          rotateX: 0,
+          duration: timing.reveal * 1.3,
+          ease: timing.ease,
+          stagger: timing.staggerReveal * 1.5,
+          overwrite: true,
+          clearProps: 'transform,opacity,visibility',
+        }),
+    });
+  }
+  if (plain.length === 0) return;
+  gsap.set(plain, { autoAlpha: 0, y: 20 });
+  ScrollTrigger.batch(plain, {
     start: 'top 92%',
     once: true,
     onEnter: (batch) =>
@@ -104,6 +127,46 @@ function kineticHeadings() {
   });
 }
 
+/**
+ * Scroll choreography (Phase 2). Everything is scrubbed by scroll position or fires once on entry;
+ * the document always scrolls natively (no pinning spacers, no scroll-jacking, no parallax).
+ * - The outlined section numeral (01–06) fills with coral as its section arrives.
+ * - The prism band (shown when the WebGL field is unavailable) turns a few degrees with scroll.
+ * - Timeline cards tip up from a rotateX tied to their tilt limit when they enter.
+ * The Projects head bar stays in view while the rows scroll under it: that is CSS `position: sticky`
+ * (global.css), toggled to its stuck look by index.astro, so it also works without this module.
+ */
+function scrollChoreography() {
+  document.querySelectorAll<HTMLElement>('.section-index-tag').forEach((tag) => {
+    const section = tag.closest('section') ?? tag;
+    gsap.fromTo(
+      tag,
+      { '--fill': '0%' },
+      {
+        '--fill': '100%',
+        ease: 'none',
+        scrollTrigger: { trigger: section, start: 'top 85%', end: 'top 30%', scrub: 0.4 },
+      },
+    );
+  });
+
+  document.querySelectorAll<HTMLElement>('.prism-wrap').forEach((wrap) => {
+    gsap.fromTo(
+      wrap,
+      { rotate: -2.5 },
+      {
+        rotate: 2.5,
+        ease: 'none',
+        scrollTrigger: { trigger: wrap.parentElement ?? wrap, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
+      },
+    );
+  });
+}
+
+/** Timeline cards: a 3D tip-up on entry instead of the plain rise (they keep the shared batch timing). */
+const tipUpSelector = '.tl > article[data-reveal]';
+const tiltOf = (el: HTMLElement): number => Number(el.dataset.tiltMax ?? 3);
+
 /** Characters of a title rise in sequence; used by the Telegraph popup for the stage-3 logo title. */
 export function riseTitle(el: HTMLElement): void {
   if (isReducedMotion()) return;
@@ -145,6 +208,7 @@ export function init(): void {
     ctx = gsap.context(() => {
       takeOverReveals();
       kineticHeadings();
+      scrollChoreography();
     });
   };
   build();

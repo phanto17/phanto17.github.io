@@ -236,3 +236,54 @@ is never prefetched. Screenshots of a mid-transition frame show the cover and ti
 Sizes after this step (production build, gzip): the router 5.7 KB, the layout script 1.9 KB, the nav
 script 1.5 KB, the Telegraph loader 0.5 KB on every page; the lazy Telegraph chunk 6.7 KB, the field
 2.5 KB, GSAP unchanged at 48 KB. Not measured: mobile LCP, INP and CLS, and the GPU cost of the field.
+
+### Phase 2, scroll, notes, SEO and responsive slice (2026-10-29)
+
+Four more plan tasks: scroll choreography, nonlinear notes on project pages, SEO basics and the
+responsive refinements that can be checked without a physical phone.
+
+**Scroll choreography.** `motion.ts` gained `scrollChoreography()`: each outlined section numeral
+(01–06) fills with coral as its section arrives (a `--fill` gradient clipped to the text, scrubbed
+from `top 85%` to `top 30%`); the prism band, which only shows when the WebGL field is unavailable,
+turns ±2.5° with scroll; the Activities timeline cards tip up from a rotateX of four times their tilt
+limit instead of the plain rise. The Projects head bar stays under the nav while the rows scroll
+beneath it, which is native `position: sticky` on screens at least 861px wide and 700px tall, not a
+GSAP pin; a small scroll listener in `index.astro` marks the held state (`.is-stuck`, an opaque `bg`
+and a shadow, paint only, measured CLS 0). There is no scroll-jacking and no parallax. Without the
+motion module (reduced motion, data saver) the numerals stay outlines and the sticky head still works.
+
+**Nonlinear notes.** `src/lib/notes.ts` splits each project's rendered Markdown at "Technical
+breakdown": every H3 below it becomes a note, and the "What changed in …" sections are gathered
+into one "Release notes" note (their headings drop to H4). `NotesExplorer.astro` shows the notes as a
+grid of `InteractivePanel` cards (now generic: `kind="note"`) with a reading pane in the inspector's
+look, "Note n of N", previous/next buttons that move focus to the new heading, an EXPLORED counter
+and a "Read as one page" switch remembered in `localStorage['portfolio-notes']`. Without JavaScript
+every note is a plain section and the write-up reads top to bottom. A hash naming any heading inside a
+note opens that note (on load and on `hashchange`), and choosing a note writes its heading's id into
+the URL with `replaceState`. Card summaries are the first sentence of each section, so nothing on the
+cards is new copy. Four notes sit 2 × 2, three or five in rows of three, two columns under 700px and
+compact one-line cards under 540px.
+
+**SEO basics.** Every page's JSON-LD is now one `@graph`: the Person (`#person`) and WebSite
+(`#website`) nodes from `Base.astro`, plus per page a `WebPage` with a `BreadcrumbList` and a
+`VideoGame` (the three games) or `SoftwareApplication` (Eternity Keeper) node with the cover, every
+screenshot, `dateCreated`, the author by `@id`, a zero-price `Offer` (all three games sit in itch.io's
+Free category; the tool is GPL-3.0, with `isBasedOn` naming the upstream repository through a new
+`basedOn` schema field) and `sameAs` links. The projects index carries a `CollectionPage` with an
+`ItemList`. No `VideoObject`: no project has a clip yet. No ratings or reviews exist, so none are
+claimed; Google shows its software-app rich result only with a rating, so these pages may not get one.
+Canonical tags and the sitemap were checked in the build: one canonical per page, six URLs in the
+sitemap, all of them real pages.
+
+**Responsive.** At 320px, 375px and 640px (a 1280px window at 200% zoom) no page scrolls sideways
+and no element pokes past the viewport. Under 420px the hero's monitor (the bar and the 3D canvas)
+is hidden and the field-note quote stays; the "move cursor" hint is hidden on touch screens. At
+320px every project cover comes after its copy. iOS Safari with the on-screen keyboard and real-device
+zoom remain the owner's checks.
+
+Verified in headless Chrome against the production build (52 checks: notes with and without JS,
+deep links, mode persistence, focus, numeral scrub, tip-up, sticky state, CLS, view-transition
+navigation and back, small-phone layout, reduced motion, JSON-LD parse) and the earlier 43
+navigation checks again; `astro check` 0 errors; link check 54 internal and 41 external URLs, none
+broken. Sizes (gzip): the notes script 1.1 KB inline on project pages, the sticky-head script inline
+on the home page, GSAP chunk unchanged at 48 KB.

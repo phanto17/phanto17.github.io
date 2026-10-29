@@ -15,6 +15,9 @@ export const site = {
     'Portfolio of Tymoteusz Jaskólski, Junior Gameplay Programmer (Unity / C#) and Game Development student in Poznań: playable projects, technical breakdowns and contact.',
 };
 
+/** JSON-LD @id of the site owner; every page's graph links its nodes to this Person. */
+export const PERSON_ID = `${site.url}/#person`;
+
 export const nav = [
   { href: '/#about', label: 'About' },
   { href: '/#projects', label: 'Projects' },

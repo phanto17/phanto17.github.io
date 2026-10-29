@@ -46,6 +46,7 @@ media:
   - { type: image, src: /media/eternity-keeper/stronghold.avif, alt: "Stronghold tab with upgrades, hirelings and prisoners", caption: "Fig. 4 — stronghold upgrades with the game's Prestige and Security arithmetic" }
 downloadUrl: https://github.com/phanto17/eternity-keeper/releases
 githubUrl: https://github.com/phanto17/eternity-keeper
+basedOn: https://github.com/aybrkaknc/eternity-keeper
 credits:
   - { asset: "Eternity Keeper (original, 2015–16)", author: "Kim Mantas", url: "https://bitbucket.org/Fyorl/eternity-keeper", license: "GPL-3.0" }
   - { asset: "0.20a conversion work (2020)", author: "ktully", url: "https://github.com/ktully/eternity-keeper", license: "GPL-3.0" }

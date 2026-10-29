@@ -57,7 +57,7 @@ const systemSpecs = [
           <aside class="note">
             "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how
             I approach systems work.
-            <small>field note · move cursor to inspect 3D mesh</small>
+            <small>field note<span class="mesh-hint"> · move cursor to inspect 3D mesh</span></small>
           </aside>
         </div>
       </div>
@@ -372,7 +372,33 @@ const systemSpecs = [
         .requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
     document.addEventListener('astro:page-load', () => {
       if (document.getElementById('tactical-polyhedron')) idle(startPolyhedron, { timeout: 1500 });
+      armStuckHead();
     });
+
+    // Projects head bar: CSS makes it sticky on wide screens; this only marks when it is being held
+    // under the nav (.is-stuck adds the frosted background). Paint only, so no layout shift.
+    function armStuckHead() {
+      const bar = document.querySelector<HTMLElement>('#projects .section-head-bar');
+      if (!bar) return;
+      const page = new AbortController();
+      let queued = false;
+      const update = () => {
+        queued = false;
+        const sticky = getComputedStyle(bar).position === 'sticky';
+        const top = bar.getBoundingClientRect().top;
+        const offset = parseFloat(getComputedStyle(bar).top) || 0;
+        bar.classList.toggle('is-stuck', sticky && window.scrollY > 0 && Math.abs(top - offset) < 1);
+      };
+      const queue = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(update);
+      };
+      window.addEventListener('scroll', queue, { passive: true, signal: page.signal });
+      window.addEventListener('resize', queue, { passive: true, signal: page.signal });
+      document.addEventListener('astro:before-swap', () => page.abort(), { once: true, signal: page.signal });
+      update();
+    }
   </script>
 </Base>
 
@@ -575,6 +601,27 @@ const systemSpecs = [
   @media (max-width: 520px) {
     .crt-spec-grid {
       grid-template-columns: 1fr;
+    }
+  }
+  /* Small phones: the monitor (bar + 3D canvas) goes, the field-note quote stays. The canvas loop never
+     starts drawing because its IntersectionObserver never reports a hidden canvas as visible. */
+  @media (max-width: 419px) {
+    .holo-card {
+      padding: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+    .holo-card::before,
+    .holo-bar,
+    #tactical-polyhedron,
+    .mesh-hint {
+      display: none;
+    }
+  }
+  @media (hover: none) {
+    .mesh-hint {
+      display: none;
     }
   }
 </style>

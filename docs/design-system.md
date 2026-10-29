@@ -111,6 +111,10 @@ Scale (desktop → mobile):
   project covers and titles morphing into the subpage hero (`transition:name`), nav / signal field / reticle persisted.
   A theme change cross-fades colours for one lift and flickers the page once (360ms); the `theme-color` meta follows
   the theme. Stage deep links: `/#lab?stage=<id>`. The click ripple and the opt-in click sound answer every control.
+- Scroll choreography (2026-10-29): section numerals fill with coral as their section arrives (scrubbed),
+  the Projects head bar is sticky under the nav on wide screens, timeline cards tip up on entry. Native
+  scrolling only. Project write-ups show their technical breakdown as nonlinear notes (card grid + reading
+  pane, "Read as one page" switch).
 - No parallax, no autoplaying video with sound.
 
 The site offers Prism, Paper and CRT themes. `--action-text` supplies readable link text
