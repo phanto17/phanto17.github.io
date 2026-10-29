@@ -2,9 +2,31 @@ import {
   TELEGRAPH_STAGES,
   TelegraphEngine,
   TelegraphStageController,
+  type Cue,
+  type Direction,
   type PortalNodeId,
   type StageId,
 } from './telegraph-engine';
+
+const ARROW: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
+const BEST_KEY = 'portfolio-tg-best';
+
+const readBest = (): number => {
+  try {
+    return Number(localStorage.getItem(BEST_KEY)) || 0;
+  } catch {
+    return 0;
+  }
+};
+const saveBest = (score: number) => {
+  try {
+    localStorage.setItem(BEST_KEY, String(score));
+  } catch {
+    /* private mode: the best score lasts for this visit only */
+  }
+};
+const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
+const tiles = (n: number) => `${n} tile${n === 1 ? '' : 's'}`;
 
 declare global {
   interface Window {
@@ -48,6 +70,7 @@ export function init(): void {
   const statusEl = document.querySelector<HTMLElement>('#tg-status');
   const waveEl = document.querySelector<HTMLElement>('#tg-wave');
   const scoreEl = document.querySelector<HTMLElement>('#tg-score');
+  const pointsEl = document.querySelector<HTMLElement>('#tg-points');
   const startBtn = document.querySelector<HTMLButtonElement>('#tg-start');
   const hintBtn = document.querySelector<HTMLButtonElement>('#tg-hint');
   const muteBtn = document.querySelector<HTMLButtonElement>('#tg-mute');
@@ -89,8 +112,9 @@ export function init(): void {
   let playbackToken = 0;
   let stage2Timer: number | null = null;
   let nextWaveTimer: number | null = null;
-  let playingSequence: readonly number[] | null = null;
-  let replayOnReturn: readonly number[] | null = null;
+  let playingSequence: readonly Cue[] | null = null;
+  let replayOnReturn: readonly Cue[] | null = null;
+  let best = readBest();
   let lastFocusedBeforeModal: HTMLElement | null = null;
 
   const isReducedMotion = () => document.documentElement.dataset.motion === 'reduced' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -412,7 +436,8 @@ export function init(): void {
 
   function clearBoardVisuals() {
     cells.forEach((cell) => {
-      cell.classList.remove('telegraph', 'hit', 'miss');
+      cell.classList.remove('telegraph', 'shove', 'hit', 'miss');
+      delete cell.dataset.shove;
       const badge = cell.querySelector<HTMLElement>('.step-badge');
       if (badge) badge.textContent = '';
     });
@@ -421,13 +446,14 @@ export function init(): void {
   function syncHud() {
     if (waveEl) waveEl.textContent = String(engine.getWave());
     if (scoreEl) scoreEl.textContent = String(engine.getStreak());
+    if (pointsEl) pointsEl.textContent = String(engine.getScore());
     if (hintBtn) {
       hintBtn.textContent = `Forecast Hint (${engine.getHintsRemaining()})`;
       hintBtn.disabled = !engine.isAcceptingInput() || engine.getHintsRemaining() <= 0;
     }
   }
 
-  async function playTelegraphSequence(seq: readonly number[]) {
+  async function playTelegraphSequence(seq: readonly Cue[]) {
     const myToken = ++playbackToken;
     replayOnReturn = null;
     pendingCue?.();
@@ -456,16 +482,22 @@ export function init(): void {
     for (let i = 0; i < seq.length; i++) {
       if (myToken !== playbackToken) return;
       if (manualCues) clearBoardVisuals();
-      const idx = seq[i];
-      const cell = cells[idx];
+      const cue = seq[i];
+      const cell = cells[cue.shown];
       const badge = cell?.querySelector<HTMLElement>('.step-badge');
       cell?.classList.add('telegraph');
-      if (badge) badge.textContent = String(i + 1);
+      if (cue.shove && cell) {
+        cell.classList.add('shove');
+        cell.dataset.shove = cue.shove;
+      }
+      if (badge) badge.textContent = cue.shove ? `${i + 1}${ARROW[cue.shove]}` : String(i + 1);
       playTone(300 + i * 55, 'triangle', 0.12);
+      if (cue.shove) playTone(180, 'square', 0.08);
 
       if (statusEl) {
-        const { row, col } = TelegraphEngine.cellToCoord(idx);
-        statusEl.textContent = `Wave ${engine.getWave()} Telegraph ${i + 1} of ${seq.length}: Row ${row}, Col ${col}`;
+        const { row, col } = TelegraphEngine.cellToCoord(cue.shown);
+        const shove = cue.shove ? `, shoved ${cue.shove}. Answer with the tile it lands on.` : '';
+        statusEl.textContent = `Wave ${engine.getWave()} Telegraph ${i + 1} of ${seq.length}: Row ${row}, Col ${col}${shove}`;
       }
 
       if (manualCues && nextCueBtn) {
@@ -477,7 +509,8 @@ export function init(): void {
       if (myToken !== playbackToken) return;
 
       if (!isReducedMotion()) {
-        cell?.classList.remove('telegraph');
+        cell?.classList.remove('telegraph', 'shove');
+        if (cell) delete cell.dataset.shove;
         if (badge) badge.textContent = '';
       }
       if (!manualCues) await new Promise((r) => setTimeout(r, 110));
@@ -492,7 +525,10 @@ export function init(): void {
     engine.setAcceptingInput(true);
     syncHud();
     if (statusEl) {
-      statusEl.textContent = `Your turn: reproduce all ${seq.length} telegraphed tiles in order.`;
+      const shoves = seq.filter((cue) => cue.shove).length;
+      statusEl.textContent = shoves
+        ? `Your turn: reproduce all ${seq.length} tiles in order, shoved cues where they land.`
+        : `Your turn: reproduce all ${seq.length} telegraphed tiles in order.`;
     }
     if (focusWasOnCue) cells[0]?.focus();
   }
@@ -533,7 +569,9 @@ export function init(): void {
       playTone(660, 'triangle', 0.22);
       syncHud();
       if (statusEl) {
-        statusEl.textContent = `Wave ${outcome.completedWave} resolved! Preparing Wave ${outcome.nextWave} (${outcome.nextLength} tiles)...`;
+        const shoves = TelegraphEngine.shovesForWave(outcome.nextWave);
+        const extra = shoves ? `, ${shoves} shove${shoves === 1 ? '' : 's'}` : '';
+        statusEl.textContent = `Wave ${outcome.completedWave} resolved in ${seconds(outcome.waveMs)} (+${outcome.waveScore}). Preparing Wave ${outcome.nextWave} (${outcome.nextLength} tiles${extra})...`;
       }
       const nextSeq = engine.rollWaveSequence();
       nextWaveTimer = window.setTimeout(() => {
@@ -548,13 +586,19 @@ export function init(): void {
       if (badge) badge.textContent = String(engine.getSequence().length);
       playTone(784, 'triangle', 0.28);
       syncHud();
+      const newBest = outcome.score > best;
+      if (newBest) {
+        best = outcome.score;
+        saveBest(best);
+      }
       if (statusEl) {
-        statusEl.textContent = `Perfect 7-tile recall! All ${outcome.totalWaves} waves cleared (Streak: ${outcome.streak}).`;
+        const record = newBest ? 'a new best' : `best ${best}`;
+        statusEl.textContent = `All ${outcome.totalWaves} waves cleared! Last wave ${seconds(outcome.waveMs)} (+${outcome.waveScore}). Score ${outcome.score}, ${record}.`;
       }
       if (startBtn) startBtn.textContent = '↻ Play Again';
       window.dispatchEvent(
         new CustomEvent('portfolio:track', {
-          detail: { event: 'minigame-cleared', meta: `streak-${outcome.streak}`, ts: Date.now() },
+          detail: { event: 'minigame-cleared', meta: `score-${outcome.score}`, ts: Date.now() },
         }),
       );
       return;
@@ -570,7 +614,8 @@ export function init(): void {
       syncHud();
       if (statusEl) {
         const { row, col } = TelegraphEngine.cellToCoord(outcome.expectedCell);
-        statusEl.textContent = `Telegraph missed at step ${outcome.failedAtStep} (expected Row ${row}, Col ${col}). Press Retry.`;
+        const why = outcome.expectedShove ? `that cue was shoved ${outcome.expectedShove}, so ` : '';
+        statusEl.textContent = `Telegraph missed at step ${outcome.failedAtStep}: ${why}the answer was Row ${row}, Col ${col}, ${tiles(outcome.distance)} from your pick. Press Retry.`;
       }
       if (startBtn) startBtn.textContent = '↻ Retry from Wave 1';
     }

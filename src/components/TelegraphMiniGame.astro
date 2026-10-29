@@ -6,6 +6,33 @@
  */
 import NonLinearLayout from './NonLinearLayout.astro';
 import PopupCRT from './PopupCRT.astro';
+
+const designNotes = [
+  {
+    title: 'Reading, not memorising',
+    body: 'Sequences run from three cues to seven and stop there. Any longer and the game would test how much you can hold, not how well you read the board, which is the skill Push Comes to Shove and Cinderhold ask for.',
+  },
+  {
+    title: 'Shoves ask for a prediction',
+    body: 'From Wave 4 some cues carry an arrow. The answer is the tile one step that way, so you work out a result instead of replaying what you saw: the same one-tile shove as in Push Comes to Shove.',
+  },
+  {
+    title: 'Your pace, if you want it',
+    body: 'Manual cues lets you step through the signal one cue at a time. The clock only runs during the recall, from the moment the board opens, so watching slowly costs nothing.',
+  },
+  {
+    title: 'A miss explains itself',
+    body: 'When you miss, the right tile lights up with its step number and the status line says how many tiles away your pick was, so you can tell a wrong order from a wrong position.',
+  },
+  {
+    title: 'A score that rewards reading',
+    body: '100 points per cue, 50 more for a shove, and a pace bonus that runs out at 1.5 seconds per cue. The Forecast Hint replays a wave once per run and gives up that wave’s bonus.',
+  },
+  {
+    title: 'Quiet by default',
+    body: 'Sound stays off until you turn it on, for the whole site. The tones are synthesised in the browser, so there are no audio files to load. With reduced motion the cues play slower and stay lit.',
+  },
+];
 ---
 
 <section id="lab" class="section" data-crt-interactive-root>
@@ -59,7 +86,8 @@ import PopupCRT from './PopupCRT.astro';
         </p>
         <p class="muted">
           Watch the enemy windup sequence on the 4×4 board (from 3 tiles in Wave 1 up to 7 tiles in Wave 5), then step
-          through the telegraphed cells in order. Play with mouse, touch, or keyboard (<code>WASD</code> / Arrow keys +
+          through the telegraphed cells in order. From Wave 4 some cues carry an arrow: the tile is shoved one cell that way, and
+          the answer is where it lands. Play with mouse, touch, or keyboard (<code>WASD</code> / Arrow keys +
           <code>Enter</code> or <code>Space</code>). Need a second look? Spend your single <b>Forecast Hint</b> to replay
           the board simulation. Turn on <b>Manual cues</b> to advance the sequence at your own pace.
         </p>
@@ -74,7 +102,7 @@ import PopupCRT from './PopupCRT.astro';
       <div class="cabinet crt-frame" role="region" aria-labelledby="tg-heading" data-reveal data-tilt data-tilt-max="3.5" style="--reveal-delay:2" data-crt-ripple>
         <div class="cab-bar">
           <span id="tg-heading" class="meta"><b>TACTICAL_CRT v2.0</b> · 4×4 GRID</span>
-          <span class="meta">WAVE <b id="tg-wave">1</b>/5 · STREAK <b id="tg-score">0</b></span>
+          <span class="meta">WAVE <b id="tg-wave">1</b>/5 · STREAK <b id="tg-score">0</b> · SCORE <b id="tg-points">0</b></span>
         </div>
 
         <div id="tg-grid" class="tg-grid" role="group" aria-label="4 by 4 tactical telegraph board">
@@ -122,6 +150,20 @@ import PopupCRT from './PopupCRT.astro';
           </button>
         </div>
       </div>
+    </div>
+
+    <div class="tg-notes">
+      <p class="kicker" data-reveal>Design notes · why it plays this way</p>
+      <ol class="tg-notes-list">
+        {
+          designNotes.map((note, i) => (
+            <li data-reveal style={`--reveal-delay:${(i % 3) + 1}`}>
+              <h3>{note.title}</h3>
+              <p>{note.body}</p>
+            </li>
+          ))
+        }
+      </ol>
     </div>
   </div>
 
@@ -242,6 +284,11 @@ import PopupCRT from './PopupCRT.astro';
     box-shadow: var(--glow);
     color: var(--text);
   }
+  /* Shove cue: the arrow in the badge says which way the tile is pushed; the answer is where it lands. */
+  .tg-cell.shove {
+    border-color: var(--gold);
+    border-style: dashed;
+  }
   .tg-cell.hit {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1)), var(--cell-hit);
     border-color: var(--mint);
@@ -273,6 +320,50 @@ import PopupCRT from './PopupCRT.astro';
     color: var(--gold);
     min-height: 2.8em;
     margin-bottom: 12px;
+  }
+  /* Design notes: numbered field notes under the board. */
+  .tg-notes {
+    margin-top: 48px;
+  }
+  .tg-notes-list {
+    list-style: none;
+    counter-reset: tg-note;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px 24px;
+    margin: 12px 0 0;
+    padding: 0;
+  }
+  .tg-notes-list li {
+    counter-increment: tg-note;
+    border-top: var(--line);
+    padding-top: 12px;
+  }
+  .tg-notes-list h3 {
+    font-size: 18px;
+    margin: 0 0 6px;
+  }
+  .tg-notes-list h3::before {
+    content: counter(tg-note, decimal-leading-zero) ' ';
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--coral);
+    margin-right: 4px;
+  }
+  .tg-notes-list p {
+    margin: 0;
+    color: var(--text-2);
+    font-size: 15px;
+  }
+  @media (max-width: 860px) {
+    .tg-notes-list {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 540px) {
+    .tg-notes-list {
+      grid-template-columns: minmax(0, 1fr);
+    }
   }
   .cab-actions {
     display: flex;

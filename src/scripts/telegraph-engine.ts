@@ -228,28 +228,76 @@ export class TelegraphStageController {
   }
 }
 
+export type Direction = 'up' | 'down' | 'left' | 'right';
+
+/**
+ * One telegraphed step. A plain cue asks for the tile that lit up (`shown === target`); a shove cue
+ * shows a tile and an arrow, and the answer is the tile one step that way: the one-tile shove from
+ * Push Comes to Shove.
+ */
+export interface Cue {
+  shown: number;
+  shove: Direction | null;
+  target: number;
+}
+
+export interface WaveResult {
+  /** Time from the board opening for input to the last correct tile, hint replays included. */
+  waveMs: number;
+  waveScore: number;
+  score: number;
+}
+
 export type StepOutcome =
   | { kind: 'ignored' }
   | { kind: 'step-ok'; step: number; total: number; streak: number }
-  | { kind: 'wave-cleared'; completedWave: number; nextWave: number; nextLength: number; streak: number }
-  | { kind: 'campaign-cleared'; totalWaves: number; streak: number }
-  | { kind: 'disrupted'; failedAtStep: number; expectedCell: number; actualCell: number; streak: number };
+  | ({ kind: 'wave-cleared'; completedWave: number; nextWave: number; nextLength: number; streak: number } & WaveResult)
+  | ({ kind: 'campaign-cleared'; totalWaves: number; streak: number } & WaveResult)
+  | {
+      kind: 'disrupted';
+      failedAtStep: number;
+      expectedCell: number;
+      actualCell: number;
+      /** Orthogonal steps between the tile pressed and the right one: positional feedback for a miss. */
+      distance: number;
+      expectedShove: Direction | null;
+      streak: number;
+    };
+
+const SIDE = 4;
+const STEP: Record<Direction, { row: number; col: number }> = {
+  up: { row: -1, col: 0 },
+  down: { row: 1, col: 0 },
+  left: { row: 0, col: -1 },
+  right: { row: 0, col: 1 },
+};
+const DIRECTIONS = Object.keys(STEP) as Direction[];
 
 export class TelegraphEngine {
-  public static readonly GRID_SIZE = 16;
+  public static readonly GRID_SIZE = SIDE * SIDE;
   public static readonly MAX_WAVES = 5;
   public static readonly BASE_LENGTH = 2; // Wave 1 = 3 tiles, Wave 5 = 7 tiles.
+  public static readonly POINTS_PER_CUE = 100;
+  public static readonly POINTS_PER_SHOVE = 50;
+  /** Recall pace at which the pace bonus reaches zero, per cue. */
+  public static readonly PAR_MS_PER_CUE = 1500;
+  public static readonly MAX_PACE_BONUS_PER_CUE = 50;
 
   private wave = 1;
   private streak = 0;
+  private score = 0;
   private hintsRemaining = 1;
-  private sequence: number[] = [];
+  private hintUsedThisWave = false;
+  private sequence: Cue[] = [];
   private playerIndex = 0;
   private acceptingInput = false;
+  private inputOpenedAt: number | null = null;
   private rng: () => number;
+  private now: () => number;
 
-  constructor(rng: () => number = Math.random) {
+  constructor(rng: () => number = Math.random, now: () => number = () => performance.now()) {
     this.rng = rng;
+    this.now = now;
   }
 
   public getWave(): number {
@@ -260,11 +308,15 @@ export class TelegraphEngine {
     return this.streak;
   }
 
+  public getScore(): number {
+    return this.score;
+  }
+
   public getHintsRemaining(): number {
     return this.hintsRemaining;
   }
 
-  public getSequence(): readonly number[] {
+  public getSequence(): readonly Cue[] {
     return this.sequence;
   }
 
@@ -276,40 +328,93 @@ export class TelegraphEngine {
     return this.acceptingInput;
   }
 
+  /** Opening the board starts the wave clock; it keeps running through a hint replay. */
   public setAcceptingInput(accepting: boolean): void {
     this.acceptingInput = accepting;
+    if (accepting && this.inputOpenedAt === null) this.inputOpenedAt = this.now();
   }
 
   public static sequenceLengthForWave(wave: number): number {
     return Math.min(TelegraphEngine.BASE_LENGTH + Math.max(1, wave), 7);
   }
 
+  /** Waves 1–3 are plain; wave 4 has one shove cue, wave 5 two. */
+  public static shovesForWave(wave: number): number {
+    return Math.max(0, Math.min(2, wave - 3));
+  }
+
   public static cellToCoord(cellIndex: number): { row: number; col: number } {
     return {
-      row: Math.floor(cellIndex / 4) + 1,
-      col: (cellIndex % 4) + 1,
+      row: Math.floor(cellIndex / SIDE) + 1,
+      col: (cellIndex % SIDE) + 1,
     };
   }
 
-  public startCampaign(): readonly number[] {
+  /** The tile one step from `cell` in `dir`, or null off the board. */
+  public static shoveTarget(cell: number, dir: Direction): number | null {
+    const row = Math.floor(cell / SIDE) + STEP[dir].row;
+    const col = (cell % SIDE) + STEP[dir].col;
+    return row < 0 || row >= SIDE || col < 0 || col >= SIDE ? null : row * SIDE + col;
+  }
+
+  public static distance(a: number, b: number): number {
+    return Math.abs(Math.floor(a / SIDE) - Math.floor(b / SIDE)) + Math.abs((a % SIDE) - (b % SIDE));
+  }
+
+  /**
+   * Points for a cleared wave: 100 per cue and 50 more per shove cue, plus a pace bonus of up to 50
+   * per cue that shrinks linearly to zero at 1.5 s per cue. A wave where the hint was spent earns no
+   * pace bonus. Only the recall is timed, never the cues, so manual cue playback costs nothing.
+   */
+  public static scoreWave(cues: number, shoves: number, elapsedMs: number, hintUsed: boolean): number {
+    const base = cues * TelegraphEngine.POINTS_PER_CUE + shoves * TelegraphEngine.POINTS_PER_SHOVE;
+    if (hintUsed) return base;
+    const par = cues * TelegraphEngine.PAR_MS_PER_CUE;
+    const pace = Math.min(1, Math.max(0, 1 - elapsedMs / par));
+    return base + Math.round(cues * TelegraphEngine.MAX_PACE_BONUS_PER_CUE * pace);
+  }
+
+  public startCampaign(): readonly Cue[] {
     this.wave = 1;
     this.streak = 0;
+    this.score = 0;
     this.hintsRemaining = 1;
     return this.rollWaveSequence();
   }
 
-  public rollWaveSequence(): readonly number[] {
+  public rollWaveSequence(): readonly Cue[] {
     this.playerIndex = 0;
     this.acceptingInput = false;
+    this.inputOpenedAt = null;
+    this.hintUsedThisWave = false;
     const len = TelegraphEngine.sequenceLengthForWave(this.wave);
     const pool = Array.from({ length: TelegraphEngine.GRID_SIZE }, (_, i) => i);
-    const nextSeq: number[] = [];
-    while (nextSeq.length < len && pool.length > 0) {
-      const pick = Math.floor(this.rng() * pool.length);
-      nextSeq.push(pool.splice(pick, 1)[0]);
+    const cues: Cue[] = [];
+    while (cues.length < len && pool.length > 0) {
+      const shown = pool.splice(Math.floor(this.rng() * pool.length), 1)[0];
+      cues.push({ shown, shove: null, target: shown });
     }
-    this.sequence = nextSeq;
+    this.addShoves(cues, TelegraphEngine.shovesForWave(this.wave));
+    this.sequence = cues;
     return this.sequence;
+  }
+
+  /** Turn `count` cues into shoves whose landing tiles stay on the board and clash with no other answer. */
+  private addShoves(cues: Cue[], count: number): void {
+    const candidates = cues.map((_, i) => i);
+    let added = 0;
+    while (added < count && candidates.length > 0) {
+      const i = candidates.splice(Math.floor(this.rng() * candidates.length), 1)[0];
+      const taken = new Set(cues.filter((_, j) => j !== i).map((c) => c.target));
+      const options = DIRECTIONS.filter((dir) => {
+        const target = TelegraphEngine.shoveTarget(cues[i].shown, dir);
+        return target !== null && !taken.has(target);
+      });
+      if (options.length === 0) continue;
+      const dir = options[Math.floor(this.rng() * options.length)];
+      cues[i] = { shown: cues[i].shown, shove: dir, target: TelegraphEngine.shoveTarget(cues[i].shown, dir)! };
+      added += 1;
+    }
   }
 
   public useForecastHint(): boolean {
@@ -317,6 +422,7 @@ export class TelegraphEngine {
       return false;
     }
     this.hintsRemaining -= 1;
+    this.hintUsedThisWave = true;
     this.playerIndex = 0;
     this.acceptingInput = false;
     return true;
@@ -328,13 +434,15 @@ export class TelegraphEngine {
     }
 
     const expected = this.sequence[this.playerIndex];
-    if (cellIndex !== expected) {
+    if (cellIndex !== expected.target) {
       this.acceptingInput = false;
       return {
         kind: 'disrupted',
         failedAtStep: this.playerIndex + 1,
-        expectedCell: expected,
+        expectedCell: expected.target,
         actualCell: cellIndex,
+        distance: TelegraphEngine.distance(cellIndex, expected.target),
+        expectedShove: expected.shove,
         streak: this.streak,
       };
     }
@@ -353,11 +461,19 @@ export class TelegraphEngine {
 
     // Wave finished
     this.acceptingInput = false;
+    const finishedAt = this.now();
+    const waveMs = Math.max(0, finishedAt - (this.inputOpenedAt ?? finishedAt));
+    const shoves = this.sequence.filter((cue) => cue.shove !== null).length;
+    const waveScore = TelegraphEngine.scoreWave(this.sequence.length, shoves, waveMs, this.hintUsedThisWave);
+    this.score += waveScore;
+    const result: WaveResult = { waveMs, waveScore, score: this.score };
+
     if (this.wave >= TelegraphEngine.MAX_WAVES) {
       return {
         kind: 'campaign-cleared',
         totalWaves: TelegraphEngine.MAX_WAVES,
         streak: this.streak,
+        ...result,
       };
     }
 
@@ -369,6 +485,7 @@ export class TelegraphEngine {
       nextWave: this.wave,
       nextLength: TelegraphEngine.sequenceLengthForWave(this.wave),
       streak: this.streak,
+      ...result,
     };
   }
 }

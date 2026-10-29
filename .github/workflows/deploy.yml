@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 22
           package-manager: npm@latest
+      - name: Unit tests and type check
+        run: |
+          npm test
+          npx astro check
       - name: Verify internal links and anchors
         run: |
           node tools/test-check-links.mjs

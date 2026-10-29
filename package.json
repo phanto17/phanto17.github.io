@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "check": "astro check",
     "test:browser": "node tools/check-browser.cjs",
-    "astro": "astro"
+    "astro": "astro",
+    "test": "vitest run"
   },
   "dependencies": {
     "astro": "^7.3.8",
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "5.0.5"
   }
 }

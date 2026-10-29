@@ -15,6 +15,10 @@ const mimeTypes = {
   '.woff2': 'font/woff2', '.avif': 'image/avif', '.svg': 'image/svg+xml',
 };
 
+/** A shove cue (waves 4–5) is answered with the tile it lands on, one step in the arrow's direction. */
+const SHOVE = { up: -4, down: 4, left: -1, right: 1 };
+const landing = (idx, dir) => (dir ? idx + SHOVE[dir] : idx);
+
 async function serveBuild(page) {
   await page.route('http://portfolio.test/**', async (route) => {
     const pathname = decodeURIComponent(new URL(route.request().url()).pathname);
@@ -207,7 +211,8 @@ async function checkFullCampaign(browser) {
     const sequence = [];
     for (let i = 0; i < length; i++) {
       await page.locator('#tg-next-cue').click();
-      sequence.push(await page.locator('.tg-cell.telegraph').getAttribute('data-idx'));
+      const lit = page.locator('.tg-cell.telegraph');
+      sequence.push(String(landing(Number(await lit.getAttribute('data-idx')), await lit.getAttribute('data-shove'))));
     }
     await page.locator('#tg-next-cue').click();
     return sequence;
@@ -249,7 +254,8 @@ async function checkKeyboardGame(browser) {
       const text = await page.locator('#tg-status').textContent();
       const match = text.match(/Row (\d), Col (\d)/);
       assert.ok(match, `Cue coordinates missing from live status: ${text}`);
-      sequence.push((Number(match[1]) - 1) * 4 + Number(match[2]) - 1);
+      const shove = text.match(/shoved (up|down|left|right)/);
+      sequence.push(landing((Number(match[1]) - 1) * 4 + Number(match[2]) - 1, shove?.[1]));
       if (tryLocked && i === 1) {
         await page.keyboard.press('Shift+Tab');
         await page.keyboard.press('Shift+Tab');

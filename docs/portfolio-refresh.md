@@ -52,7 +52,7 @@ reusable panel.
 ## Local runbook
 
 Run `npm install`, then `npm run dev` for development. Before release run
-`npm run check`, `npm run build`, `node tools/verify-portfolio.mjs` and
+`npm test` (Vitest unit tests in `tests/`), `npm run check`, `npm run build`, `node tools/verify-portfolio.mjs` and
 `node tools/check-links.mjs`. The link checker requires network access for external links;
 use `node tools/check-links.mjs --internal-only` when offline. Run
 `node tools/test-check-links.mjs` to verify its relative-link and fragment detection.
@@ -287,3 +287,41 @@ navigation and back, small-phone layout, reduced motion, JSON-LD parse) and the 
 navigation checks again; `astro check` 0 errors; link check 54 internal and 41 external URLs, none
 broken. Sizes (gzip): the notes script 1.1 KB inline on project pages, the sticky-head script inline
 on the home page, GSAP chunk unchanged at 48 KB.
+
+### Phase 3, Telegraph Recall slice (2026-10-29)
+
+Four plan tasks: engine tests, scoring, a second cue type and the design-decisions note.
+
+**Engine tests.** Vitest 5.0.5 (pinned) runs `tests/*.test.ts` with `npm test`: 33 tests for
+`telegraph-engine.ts` (sequence length per wave, unique shown tiles and answers over 300 seeds,
+shove placement, every `StepOutcome`, the hint, scoring with a hand-moved clock, the stage
+controller's order and 32-event history cap, `parseLabHash`) and 6 for `src/lib/notes.ts`. The
+deploy workflow runs `npm test` and `astro check` after the build; a failure stops the deploy.
+
+**Scoring.** The engine takes a clock (`now`, default `performance.now`) beside the random source. A
+wave's time runs from the board opening for input to the last correct tile, through a hint replay;
+cue playback is never timed, so manual cues cost nothing. Points per wave: 100 per cue, 50 more per
+shove cue, and a pace bonus of up to 50 per cue that falls linearly to zero at 1.5 s per cue; no pace
+bonus on a wave where the hint was spent. The cabinet bar reads `WAVE · STREAK · SCORE`; a cleared
+wave reports its time and points; the campaign end reports the score against the best, kept per
+visitor in `localStorage['portfolio-tg-best']`. The `minigame-cleared` track event carries
+`score-<n>` instead of the streak.
+
+**Shove cue.** Wave 4 has one shove cue and wave 5 two: the tile lights with a dashed gold border
+and an arrow after its step number, and the answer is the tile one step that way (the one-tile shove
+from Push Comes to Shove). Shoves never leave the board and never land on another cue's answer. The
+plan asked for the arrow to be repeated with an arrow key; that was changed because the arrow keys
+already move focus around the board and touch screens have none, and predicting where a shove lands
+is closer to the game it comes from. A miss now says how many tiles away the pick was, and for a
+shove cue which way it was shoved.
+
+**Design notes.** Six numbered notes under the board (reading over memorising, shoves as prediction,
+manual pace, misses that explain themselves, the score, quiet by default). The text is a draft in
+the owner's voice and waits for the owner's approval.
+
+Verified in headless Chrome against the production build (44 checks: a full five-wave campaign with
+manual cues, times and points per wave, the running score, shove cues in waves 4 and 5, a plain miss
+and a shove miss, best score saved and shown, design notes at 1280/375/320px, no console errors),
+the earlier 52 notes/scroll checks and 43 navigation checks; `astro check` 0 errors; link check
+clean; no sideways overflow at 320/375/640px. `tools/check-browser.cjs` reads shove cues too
+(Playwright is not installed locally, so it was not run).
