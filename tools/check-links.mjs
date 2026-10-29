@@ -1,68 +1,106 @@
-// Link checker for the built site.
-// usage: node tools/check-links.mjs [distDir]
-// Internal links and assets must exist in dist/; external URLs are fetched (GET, 15 s timeout).
-// Exit code 1 when any internal link is broken or an external URL answers 404/410/5xx.
+// Check built links and assets. Usage: node tools/check-links.mjs [distDir] [--internal-only]
+// The optional flag skips external requests, but still validates local paths and HTML fragments.
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
-import { join, dirname, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 
-const dist = resolve(process.argv[2] ?? 'dist');
+const args = process.argv.slice(2);
+const internalOnly = args.includes('--internal-only');
+const dist = resolve(args.find((arg) => !arg.startsWith('--')) ?? 'dist');
+const siteOrigin = 'https://phanto17.github.io';
 const pages = [];
 (function walk(dir) {
   for (const name of readdirSync(dir)) {
-    const p = join(dir, name);
-    if (statSync(p).isDirectory()) walk(p);
-    else if (name.endsWith('.html')) pages.push(p);
+    const file = join(dir, name);
+    if (statSync(file).isDirectory()) walk(file);
+    else if (file.endsWith('.html')) pages.push(file);
   }
 })(dist);
 
-const internal = new Map(); // target -> pages
+const internal = new Map(); // Resolved URL -> source pages, including query and fragment.
 const external = new Map();
 const attr = /\s(?:href|src)="([^"]+)"/g;
-const hint = /<link[^>]*rel="(?:preconnect|dns-prefetch)"[^>]*>/g; // resource hints are not links
+const hint = /<link[^>]*rel="(?:preconnect|dns-prefetch)"[^>]*>/g;
+let broken = 0;
+const rel = (file) => relative(dist, file).split(sep).join('/');
+
 for (const page of pages) {
+  const pagePath = `/${rel(page).replace(/index\.html$/, '')}`;
   const html = readFileSync(page, 'utf8').replace(hint, '');
   for (const [, raw] of html.matchAll(attr)) {
-    const url = raw.replace(/&amp;/g, '&');
-    if (url.startsWith('#') || url.startsWith('mailto:') || url.startsWith('data:')) continue;
-    const bucket = /^https?:\/\//.test(url) ? external : internal;
-    if (bucket === external && url.startsWith('https://phanto17.github.io')) {
-      const path = url.replace('https://phanto17.github.io', '') || '/';
-      (internal.get(path) ?? internal.set(path, new Set()).get(path)).add(page);
+    const value = raw.replace(/&amp;/g, '&');
+    let url;
+    try {
+      url = new URL(value, `${siteOrigin}${pagePath}`);
+    } catch {
+      broken++;
+      console.log(`BROKEN URL ${value} (on ${rel(page)})`);
       continue;
     }
-    (bucket.get(url) ?? bucket.set(url, new Set()).get(url)).add(page);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') continue;
+    const bucket = url.origin === siteOrigin ? internal : external;
+    const key = url.href;
+    if (!bucket.has(key)) bucket.set(key, new Set());
+    bucket.get(key).add(page);
   }
 }
 
-const rel = (p) => p.slice(dist.length + 1).replace(/\\/g, '/');
-let broken = 0;
-
-for (const [url, from] of internal) {
-  const clean = url.split('#')[0].split('?')[0];
-  const base = clean.startsWith('/') ? join(dist, clean) : join(dirname([...from][0]), clean);
-  const ok = existsSync(base) && (statSync(base).isFile() || existsSync(join(base, 'index.html')));
-  if (!ok) {
-    broken++;
-    console.log(`BROKEN internal ${url}  (on ${[...from].map(rel).join(', ')})`);
-  }
-}
-console.log(`internal: ${internal.size} unique targets, ${broken} broken`);
-
-const results = await Promise.all(
-  [...external.keys()].map(async (url) => {
-    try {
-      const res = await fetch(url, {
-        method: 'GET',
-        redirect: 'follow',
-        signal: AbortSignal.timeout(15000),
-        headers: { 'User-Agent': 'Mozilla/5.0 (portfolio link check)' },
-      });
-      return [url, res.status];
-    } catch (e) {
-      return [url, `error: ${e.cause?.code ?? e.name}`];
+const idCache = new Map();
+function idsFor(file) {
+  if (!idCache.has(file)) {
+    const html = readFileSync(file, 'utf8');
+    const ids = new Set();
+    for (const match of html.matchAll(/\sid\s*=\s*(?:"([^"]*)"|'([^']*)')/g)) {
+      ids.add(match[1] ?? match[2]);
     }
-  }),
-);
+    for (const match of html.matchAll(/<a\b[^>]*\sname\s*=\s*(?:"([^"]*)"|'([^']*)')/gi)) {
+      ids.add(match[1] ?? match[2]);
+    }
+    idCache.set(file, ids);
+  }
+  return idCache.get(file);
+}
+
+for (const [href, from] of internal) {
+  const url = new URL(href);
+  let pathname;
+  let fragment;
+  try {
+    pathname = decodeURIComponent(url.pathname);
+    fragment = decodeURIComponent(url.hash.slice(1));
+  } catch {
+    broken++;
+    console.log(`BROKEN encoding ${href} (on ${[...from].map(rel).join(', ')})`);
+    continue;
+  }
+  let target = resolve(dist, `.${pathname}`);
+  const inside = target === dist || target.startsWith(`${dist}${sep}`);
+  if (inside && existsSync(target) && statSync(target).isDirectory()) target = join(target, 'index.html');
+  if (!inside || !existsSync(target) || !statSync(target).isFile()) {
+    broken++;
+    console.log(`BROKEN internal ${href} (on ${[...from].map(rel).join(', ')})`);
+  } else if (fragment && target.endsWith('.html') && !idsFor(target).has(fragment)) {
+    broken++;
+    console.log(`BROKEN fragment ${href} (on ${[...from].map(rel).join(', ')})`);
+  }
+}
+console.log(`internal: ${internal.size} resolved URLs, ${broken} broken`);
+
+if (internalOnly) {
+  console.log(`external: ${external.size} URLs skipped (--internal-only)`);
+  process.exit(broken ? 1 : 0);
+}
+
+const results = await Promise.all([...external.keys()].map(async (url) => {
+  try {
+    const res = await fetch(url, {
+      method: 'GET', redirect: 'follow', signal: AbortSignal.timeout(15000),
+      headers: { 'User-Agent': 'Mozilla/5.0 (portfolio link check)' },
+    });
+    return [url, res.status];
+  } catch (error) {
+    return [url, `error: ${error.cause?.code ?? error.name}`];
+  }
+}));
 let extBad = 0;
 for (const [url, status] of results.sort((a, b) => String(a[1]).localeCompare(String(b[1])))) {
   const bad = typeof status !== 'number' || status === 404 || status === 410 || status >= 500;

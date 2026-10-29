@@ -10,13 +10,13 @@ export type TransitionStyle = 'crt-flicker' | 'scanline-wipe' | 'phosphor-warp' 
 
 export interface StageConfig {
   id: StageId;
-  index: number;
+  label: string;
   code: string;
   title: string;
   subtitle: string;
   transition: TransitionStyle;
   ctaLabel: string;
-  durationMs?: number;
+  action: 'next' | 'play';
 }
 
 export type InteractionKind =
@@ -53,63 +53,65 @@ export interface PortalNode {
 export const TELEGRAPH_STAGES: readonly StageConfig[] = [
   {
     id: 'welcome',
-    index: 1,
+    label: 'Welcome',
     code: 'STG_01 // SYS_HANDSHAKE',
-    title: 'Welcome to Field Note Terminal 03',
-    subtitle: 'CRT Phosphor Calibration & Cognitive Telemetry Link',
+    title: 'Welcome to Telegraph Recall',
+    subtitle: 'Watch a signal and repeat it on the board.',
     transition: 'crt-flicker',
-    ctaLabel: 'Initialize Sequence [Stage 02] →',
+    ctaLabel: 'Watch the signal →',
+    action: 'next',
   },
   {
     id: 'animation-sequence',
-    index: 2,
+    label: 'Sequence',
     code: 'STG_02 // SIGNAL_SWEEP',
-    title: 'Enemy Windup & Spatial Chunking Sequence',
-    subtitle: 'Simulating 4×4 Threat Vectors Across Working Memory',
+    title: 'Watch the signal',
+    subtitle: 'The board lights up one position at a time. Remember the order.',
     transition: 'scanline-wipe',
-    ctaLabel: 'Enter Telegraph Recall [Stage 03] →',
-    durationMs: 3200,
+    ctaLabel: 'Continue →',
+    action: 'next',
   },
   {
     id: 'title-intro',
-    index: 3,
+    label: 'Recall',
     code: 'STG_03 // TELEGRAPH_RECALL',
     title: 'Telegraph Recall',
-    subtitle: 'Non-Linear Exploratory Portal & 4×4 Tactical Memory Matrix',
+    subtitle: 'Read the signal. Recall the sequence.',
     transition: 'phosphor-warp',
-    ctaLabel: 'Launch 4×4 Tactical Board ↓',
+    ctaLabel: 'Start the game ↓',
+    action: 'play',
   },
 ] as const;
 
 export const TELEGRAPH_PORTAL_NODES: readonly PortalNode[] = [
   {
     id: 'psychology',
-    code: 'NODE_A // MILLER_LAW',
-    title: 'Working Memory & The 4–7 Chunk Ceiling',
+    code: 'NODE_A // MEMORY',
+    title: 'Remembering the signal',
     tag: 'Game Psychology · phanto',
-    summary: 'Why 3-tile to 7-tile windups create the "perfect turn" tension without overwhelming the player.',
+    summary: 'A short sequence turns observing and remembering into the challenge.',
     detail:
-      'Human spatial working memory holds roughly 4 to 7 discrete chunks simultaneously. Wave 1 starts at 3 tiles (immediate mastery) and scales to 7 tiles in Wave 5 — the exact cognitive boundary where players shift from passive observation to active spatial chunking.',
+      'The sequence starts at three tiles and grows to seven. Telegraph Recall is a small experiment in how a game can make observation part of a decision, not a test of memory capacity.',
     projectHref: 'https://www.youtube.com/@phanto.official',
     projectLabel: 'Watch on phanto YouTube ↗',
   },
   {
     id: 'tactics-shove',
     code: 'NODE_B // DETERMINISTIC_GRID',
-    title: 'Zero-RNG Turn Forecasts & Knockback Chains',
+    title: 'Planning the next move',
     tag: 'Unity 6 · Push Comes to Shove',
-    summary: 'Replacing hidden hit-chance rolls with 100% readable enemy intent lines and 1-tile melee shoves.',
+    summary: 'Pushes, hazards and visible enemy intent shape the tactics board.',
     detail:
-      'In Push Comes to Shove, enemies broadcast their exact target cell before your turn begins. Because melee attacks shove 1 tile into hazard pits (verified by EditMode ShoveTests), reading the telegraph order lets you turn enemy windups against them.',
+      'In Push Comes to Shove, each enemy reveals its route and target cells just before acting. Melee shoves and hazards give the player opportunities to plan around the board.',
     projectHref: '/projects/push-comes-to-shove/',
     projectLabel: 'Inspect Push Comes to Shove →',
   },
   {
     id: 'dungeon-cinderhold',
     code: 'NODE_C // FLOOR_TELEGRAPHS',
-    title: ' Pure-C# Enemy States & AttackTelegraph Windows',
+    title: 'Reading an attack',
     tag: 'Unity 6 · Cinderhold',
-    summary: 'Decoupling enemy decision states behind IEnemyContext for readable 320×180 pixel-art combat.',
+    summary: 'Enemy windups make space for a player to react in Cinderhold.',
     detail:
       'In Cinderhold, Slime, Bat, Rat, and boss Cinderclaw run pure-C# state machines behind IEnemyContext. Every swing renders an explicit AttackTelegraph window paired with hit-stop and knockback so players react to geometry, not guesswork.',
     projectHref: '/projects/cinderhold/',
@@ -118,11 +120,11 @@ export const TELEGRAPH_PORTAL_NODES: readonly PortalNode[] = [
   {
     id: 'simulation',
     code: 'NODE_D // LIVE_MATRIX',
-    title: 'Interactive 4×4 Tactical Recall Simulator',
+    title: 'Try the board',
     tag: 'Pure TS · Web Audio Synth',
     summary: 'Step into the live 5-wave telegraph board with keyboard/mouse grid navigation and Forecast Hint.',
     detail:
-      'Test your own spatial recall right inside the terminal. Observe the amber telegraph sequence, reproduce each coordinate in order, and use your single Forecast Hint when Wave 4–5 pushes your working memory to the limit.',
+      'Watch the amber sequence, repeat the positions in order, and use the Forecast Hint if you need another look.',
   },
 ] as const;
 
@@ -166,9 +168,8 @@ export class TelegraphStageController {
   }
 
   public nextStage(): { from: StageId; to: StageConfig; event: InteractionEvent } {
-    const order: StageId[] = ['welcome', 'animation-sequence', 'title-intro'];
-    const idx = order.indexOf(this.currentStage);
-    const next = order[(idx + 1) % order.length];
+    const idx = TELEGRAPH_STAGES.findIndex((stage) => stage.id === this.currentStage);
+    const next = TELEGRAPH_STAGES[(idx + 1) % TELEGRAPH_STAGES.length].id;
     return this.transitionTo(next);
   }
 
@@ -237,7 +238,7 @@ export type StepOutcome =
 export class TelegraphEngine {
   public static readonly GRID_SIZE = 16;
   public static readonly MAX_WAVES = 5;
-  public static readonly BASE_LENGTH = 2; // Wave 1 = 3 tiles, Wave 5 = 7 tiles (Miller's Law ceiling)
+  public static readonly BASE_LENGTH = 2; // Wave 1 = 3 tiles, Wave 5 = 7 tiles.
 
   private wave = 1;
   private streak = 0;

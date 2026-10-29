@@ -1,0 +1,469 @@
+---
+import { TELEGRAPH_PORTAL_NODES, TELEGRAPH_STAGES } from '../scripts/telegraph-engine';
+const welcome = TELEGRAPH_STAGES.find((stage) => stage.id === 'welcome')!;
+const sequence = TELEGRAPH_STAGES.find((stage) => stage.id === 'animation-sequence')!;
+const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
+---
+
+<!-- PopupCRT Modal: 3-Stage Guided Experience (Welcome -> Animation Sequence -> Telegraph Recall) -->
+<dialog
+  id="tg-crt-popup"
+  class="crt-popup-backdrop"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Telegraph Recall introduction"
+>
+  <div class="crt-popup-monitor crt-frame" data-crt-ripple>
+    <div class="crt-popup-scanlines" aria-hidden="true"></div>
+    <div class="crt-popup-vignette" aria-hidden="true"></div>
+
+    <!-- Monitor Top Bezel Bar -->
+    <div class="crt-popup-topbar">
+      <div class="crt-popup-brand">
+        <span class="crt-led" aria-hidden="true"></span>
+        <span id="crt-stage-code" class="meta">STG_01 // SYS_HANDSHAKE</span>
+      </div>
+      <div class="crt-stage-tabs" role="group" aria-label="Introduction stages">
+        {
+          TELEGRAPH_STAGES.map((stg, idx) => (
+            <button
+              type="button"
+              class={`crt-stage-tab ${idx === 0 ? 'is-active' : ''}`}
+              data-stage-target={stg.id}
+              aria-pressed={idx === 0 ? 'true' : 'false'}
+              data-crt-ripple
+            >
+              {String(idx + 1).padStart(2, '0')} · {stg.label}
+            </button>
+          ))
+        }
+      </div>
+      <button type="button" id="tg-close-popup" class="crt-close-btn" aria-label="Close CRT terminal (Escape)" data-crt-ripple>
+        [ESC ×]
+      </button>
+    </div>
+
+    <!-- StageRouter Viewport -->
+    <div id="tg-stage-router" class="crt-stage-viewport" data-transition="crt-flicker">
+      <!-- STAGE 1: WELCOME SCREEN -->
+      <article class="crt-scene is-current" data-stage-scene="welcome">
+        <p class="kicker">STAGE 01 OF 03 · TERMINAL INITIALIZATION</p>
+        <h3 id="crt-stage-title" class="crt-scene-title" tabindex="-1">{welcome.title}</h3>
+        <p id="crt-stage-subtitle" class="crt-scene-sub">
+          {welcome.subtitle}
+        </p>
+        <div class="crt-welcome-grid">
+          <div class="crt-diag-card" data-crt-ripple>
+            <span class="meta">01 // OPERATOR</span>
+            <strong>Tymoteusz Jaskólski</strong>
+            <span>Junior Gameplay Programmer (Unity / C#)</span>
+          </div>
+          <div class="crt-diag-card" data-crt-ripple>
+            <span class="meta">02 // COGNITIVE TARGET</span>
+            <strong>Recall the signal</strong>
+            <span>Watch a sequence, then repeat it on the board</span>
+          </div>
+          <div class="crt-diag-card" data-crt-ripple>
+            <span class="meta">03 // AUDIO &amp; MOTION</span>
+            <strong>Procedural Web Audio</strong>
+            <span>Sound is optional and starts off</span>
+          </div>
+        </div>
+        <p class="crt-terminal-prompt">
+          &gt; SYSTEM READY. Continue to see the signal, or choose a stage above.
+        </p>
+      </article>
+
+      <!-- STAGE 2: ANIMATION SEQUENCE -->
+      <article class="crt-scene" data-stage-scene="animation-sequence" hidden>
+        <p class="kicker">STAGE 02 OF 03 · SIGNAL SWEEP &amp; TELEGRAPH CALIBRATION</p>
+        <h3 class="crt-scene-title" tabindex="-1">{sequence.title}</h3>
+        <p class="crt-scene-sub">
+          {sequence.subtitle}
+        </p>
+
+        <div class="crt-anim-stage" id="crt-anim-canvas" data-crt-ripple>
+          <div class="crt-radar-sweep" aria-hidden="true"></div>
+          <div class="crt-mini-matrix" aria-label="Animated telegraph calibration preview">
+            {
+              Array.from({ length: 16 }).map((_, i) => (
+                <div class="crt-mini-cell" data-preview-cell={i}>
+                  <span>{Math.floor(i / 4) + 1},{(i % 4) + 1}</span>
+                </div>
+              ))
+            }
+          </div>
+          <div class="crt-anim-readout">
+            <p class="meta">SIGNAL_TRACE // <b id="crt-seq-step-label">SCANNING VECTORS...</b></p>
+            <div class="crt-wave-bars" aria-hidden="true">
+              <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+            </div>
+            <p class="muted" style="font-size:13px;margin:0">
+              Watch the signal move across the board, then continue when you're ready.
+            </p>
+          </div>
+        </div>
+      </article>
+
+      <!-- STAGE 3: TELEGRAPH RECALL TITLE / INTRO + PORTAL LAUNCH -->
+      <article class="crt-scene" data-stage-scene="title-intro" hidden>
+        <p class="kicker">STAGE 03 OF 03 · SYSTEM ONLINE</p>
+        <div class="crt-title-hero">
+          <h3 class="crt-logo-title" tabindex="-1">{intro.title}</h3>
+          <p class="crt-scene-sub">
+            {intro.subtitle}
+          </p>
+        </div>
+        <p class="crt-intro-copy">
+          Inspired by the deterministic 1-tile melee shove puzzles in <b>Push Comes to Shove</b> and the pure-C#
+          <code>AttackTelegraph</code> windows in <b>Cinderhold</b>, <em>Telegraph Recall</em> isolates the core cognitive
+          loop of tactical games: holding an enemy's multi-step intent in spatial working memory long enough to counter it.
+        </p>
+        <div class="crt-stage3-portals">
+          {
+            TELEGRAPH_PORTAL_NODES.map((node) => (
+              <button
+                type="button"
+                class="crt-stage3-node"
+                data-popup-portal={node.id}
+                data-crt-ripple
+              >
+                <span class="meta">{node.code}</span>
+                <strong>{node.title}</strong>
+                <span>{node.tag}</span>
+              </button>
+            ))
+          }
+        </div>
+      </article>
+    </div>
+
+    <!-- Monitor Bottom Control Bar -->
+    <div class="crt-popup-footer">
+      <div class="meta">
+        KEYS: {TELEGRAPH_STAGES.slice(0, 9).map((_, index) => <code>{index + 1}</code>)} STAGES · <code>TAB</code> FOCUS · <code>ESC</code> EXIT
+      </div>
+      <div class="crt-popup-cta-group">
+        <button type="button" id="crt-prev-stage" class="btn" data-crt-ripple>
+          ← Prev Stage
+        </button>
+        <button type="button" id="crt-next-stage" class="btn primary" data-crt-ripple>
+          Watch the signal →
+        </button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<style>
+  .crt-led {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--coral);
+    box-shadow: 0 0 10px var(--coral);
+    display: inline-block;
+  }
+  /* PopupCRT Modal & StageRouter */
+  .crt-popup-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 120;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    color: inherit;
+    background: transparent;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+  }
+  .crt-popup-backdrop:not([open]) {
+    display: none !important;
+  }
+  .crt-popup-backdrop::backdrop {
+    background: rgba(11, 7, 11, 0.86);
+    backdrop-filter: blur(6px);
+  }
+  .crt-popup-monitor {
+    width: min(860px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    background: var(--bg);
+    border: 2px solid var(--coral);
+    border-radius: var(--r-lg);
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.85), 0 0 42px rgba(242, 124, 82, 0.22);
+    padding: 22px 26px;
+    position: relative;
+  }
+  .crt-popup-scanlines {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0px,
+      transparent 2px,
+      rgba(243, 230, 211, 0.03) 3px,
+      rgba(11, 7, 11, 0.16) 4px
+    );
+    z-index: 2;
+  }
+  .crt-popup-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-bottom: var(--line);
+    padding-bottom: 12px;
+    margin-bottom: 18px;
+    position: relative;
+    z-index: 3;
+  }
+  .crt-popup-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .crt-stage-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .crt-stage-tab {
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-sm);
+    color: var(--text-2);
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 6px 10px;
+    cursor: pointer;
+  }
+  .crt-stage-tab.is-active {
+    border-color: var(--gold);
+    color: var(--gold);
+    background: var(--surface-2);
+  }
+  .crt-close-btn {
+    background: transparent;
+    border: 1px solid var(--umber);
+    border-radius: var(--r-sm);
+    color: var(--peach);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .crt-stage-viewport {
+    min-height: 290px;
+    position: relative;
+    z-index: 3;
+  }
+  .crt-stage-viewport.is-transitioning[data-transition='crt-flicker'] {
+    animation: crtStageFlicker 0.36s ease-out;
+  }
+  .crt-stage-viewport.is-transitioning[data-transition='scanline-wipe'] {
+    animation: crtStageSlide 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .crt-stage-viewport.is-transitioning[data-transition='phosphor-warp'] {
+    animation: crtStageWarp 0.42s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes crtStageFlicker {
+    0% { opacity: 0.15; filter: brightness(1.8); }
+    45% { opacity: 0.85; }
+    65% { opacity: 0.4; }
+    100% { opacity: 1; filter: brightness(1); }
+  }
+  @keyframes crtStageSlide {
+    0% { opacity: 0; transform: translateY(14px) scaleY(0.96); }
+    100% { opacity: 1; transform: translateY(0) scaleY(1); }
+  }
+  @keyframes crtStageWarp {
+    0% { opacity: 0; transform: scale(0.94) rotate(-0.6deg); filter: brightness(1.5); }
+    100% { opacity: 1; transform: scale(1) rotate(0deg); filter: brightness(1); }
+  }
+  .crt-scene-title {
+    font-family: var(--display);
+    font-size: clamp(22px, 3vw, 30px);
+    margin: 4px 0 6px;
+    color: var(--text);
+  }
+  .crt-scene-sub {
+    color: var(--text-2);
+    margin: 0 0 16px;
+  }
+  .crt-welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 680px) {
+    .crt-welcome-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  .crt-diag-card {
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-sm);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+  }
+  .crt-terminal-prompt {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--gold);
+    background: var(--surface);
+    border-left: 3px solid var(--coral);
+    padding: 10px 12px;
+    margin: 0;
+  }
+
+  /* Stage 2 Animation Sequence */
+  .crt-anim-stage {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 20px;
+    align-items: center;
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-md);
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  @media (max-width: 640px) {
+    .crt-anim-stage {
+      grid-template-columns: 1fr;
+    }
+  }
+  .crt-mini-matrix {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .crt-mini-cell {
+    aspect-ratio: 1;
+    background: var(--bg);
+    border: 1px solid var(--umber);
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-3);
+    transition: background 0.18s, border-color 0.18s, transform 0.18s;
+  }
+  .crt-mini-cell.is-lit {
+    background: rgba(242, 124, 82, 0.35);
+    border-color: var(--gold);
+    color: var(--text);
+    transform: scale(1.06);
+    box-shadow: 0 0 12px rgba(242, 124, 82, 0.45);
+  }
+  .crt-wave-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    height: 36px;
+    margin: 12px 0;
+  }
+  .crt-wave-bars span {
+    flex: 1;
+    background: linear-gradient(to top, var(--coral), var(--gold));
+    border-radius: 2px;
+    height: 45%;
+    animation: crtBarPulse 1.1s ease-in-out infinite alternate;
+  }
+  .crt-wave-bars span:nth-child(2) { animation-delay: 0.15s; height: 75%; }
+  .crt-wave-bars span:nth-child(3) { animation-delay: 0.3s; height: 60%; }
+  .crt-wave-bars span:nth-child(4) { animation-delay: 0.45s; height: 95%; }
+  .crt-wave-bars span:nth-child(5) { animation-delay: 0.6s; height: 55%; }
+  .crt-wave-bars span:nth-child(6) { animation-delay: 0.75s; height: 85%; }
+  .crt-wave-bars span:nth-child(7) { animation-delay: 0.9s; height: 100%; }
+  @keyframes crtBarPulse {
+    from { transform: scaleY(0.45); opacity: 0.65; }
+    to { transform: scaleY(1); opacity: 1; }
+  }
+
+  /* Stage 3 Title/Intro */
+  .crt-logo-title {
+    font-family: var(--display);
+    text-transform: uppercase;
+    font-size: clamp(28px, 4.5vw, 44px);
+    letter-spacing: 0.03em;
+    color: var(--gold);
+    text-shadow: 0 0 24px rgba(242, 124, 82, 0.45);
+    margin: 4px 0;
+  }
+  .crt-intro-copy {
+    color: var(--text-2);
+    margin: 0 0 16px;
+  }
+  .crt-stage3-portals {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  @media (max-width: 580px) {
+    .crt-stage3-portals {
+      grid-template-columns: 1fr;
+    }
+  }
+  .crt-stage3-node {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-sm);
+    padding: 10px 14px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .crt-stage3-node:hover {
+    border-color: var(--gold);
+  }
+  .crt-popup-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    border-top: var(--line);
+    padding-top: 14px;
+    margin-top: 18px;
+    position: relative;
+    z-index: 3;
+  }
+  .crt-popup-cta-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 680px) {
+    .crt-stage-tab, .crt-close-btn, .crt-stage3-node { min-width: 44px; min-height: 44px; }
+    .crt-popup-cta-group .btn { min-width: 48px; min-height: 48px; }
+    .crt-popup-monitor { scroll-padding-bottom: 120px; }
+    .crt-popup-footer {
+      position: sticky;
+      bottom: -22px;
+      z-index: 4;
+      background: var(--bg);
+      padding: 12px 0 22px;
+      margin-bottom: -22px;
+    }
+    .crt-popup-footer > .meta { display: none; }
+  }
+
+</style>

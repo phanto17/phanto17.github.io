@@ -26,7 +26,7 @@ myContribution:
   - "Built the release pipeline: ready-to-run zip and a per-user Inno Setup installer carrying their own Java 8 runtime, a GitHub Actions CI workflow for the 708 JUnit tests, and a Package workflow that installs, upgrades and uninstalls the build on a clean Windows runner."
   - "Wrote the game-data reader (Python, UnityPy, frozen with PyInstaller) that pulls item names, icons, abilities and stronghold data from the player's own install in the game's language."
   - "Opened a pull request offering everything back to the parent project, and announced the releases to the Pillars of Eternity community."
-  - "Most of the code was written with an AI assistant (Claude Code) under my direction: I specified each feature from the game's behaviour, reviewed the changes, and did all in-game testing. The commits say so."
+  - "Most of the code was written with Codex, Antigravity and Claude Code under my direction: I specified each feature from the game's behaviour, reviewed the changes, and did all in-game testing. The commits say so."
 tools:
   - Java 8 (bundled JDK)
   - Maven
@@ -37,6 +37,8 @@ tools:
   - Inno Setup 6
   - GitHub Actions
   - Claude Code
+  - Codex
+  - Antigravity
 media:
   - { type: image, src: /media/eternity-keeper/inventory.avif, alt: "Inventory tab: equipment around the portrait, quick items and weapon sets, every party member's pack", caption: "Fig. 1 — the Inventory tab, laid out like the game's own screen" }
   - { type: image, src: /media/eternity-keeper/character.avif, alt: "Character tab with attributes, skills, identity and portrait", caption: "Fig. 2 — character sheet: identity choices show what they are worth" }
@@ -53,7 +55,7 @@ credits:
 
 ## What it is
 
-Eternity Keeper is a desktop save editor for *Pillars of Eternity*. The original (2015–16) stopped working when the game was rebuilt in 2025; a community member brought it back to life in February 2026, and I have been building on his work since July. Version 1.0.0-beta (6 October 2026) is the first release with an installer: open a save, change your characters, their gear and abilities, your party and your stronghold, press Save, and load the result in the game. The editor never writes to the save you opened.
+Eternity Keeper is a desktop save editor for *Pillars of Eternity*. The original (2015–16) stopped working when the game was rebuilt in 2025; a community member brought it back to life in February 2026, and I have been building on his work since July. Version 1.0.0-beta (6 October 2026) was the first release with an installer; version 1.1.0-beta followed on 23 October. Open a save, change your characters, their gear and abilities, your party and your stronghold, press Save, and load the result in the game. The editor never writes to the save you opened.
 
 This is not a game, but it is the project where I've done my deepest gameplay-systems work: every feature is a model of how the game actually treats its data, checked by loading the result in the game. It also feeds my YouTube channel, which is adapting a Pillars of Eternity questline.
 
@@ -73,4 +75,4 @@ The CI workflow runs 708 JUnit tests and the node-run suites for the page's merg
 
 ### How I worked
 
-Most of the code was written with Claude Code. My job was the part an AI can't do from the outside: decide what the editor should do by watching the game, specify each feature in the game's own terms, review what came back, run it against real saves, load the result in the game and read the game's log. The process notes, invariants and lessons files in the repository are the record of that.
+Most of the code was written with Codex, Antigravity and Claude Code under my direction. I decided what the editor should do by watching the game, specified each feature in the game's own terms, reviewed the changes, ran them against real saves, loaded the result in the game and read the game's log. The process notes, invariants and lessons files in the repository are the record of that.

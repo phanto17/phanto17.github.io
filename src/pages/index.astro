@@ -11,7 +11,7 @@ const projects = (await getCollection('projects')).sort((a, b) => a.data.order -
 
 const systemSpecs = [
   { label: 'RUNTIME', val: 'Unity 6 (URP) & C#' },
-  { label: 'VERIFIED SUITES', val: '276 NUnit + 708 JUnit Tests' },
+  { label: 'PRACTICE', val: 'Gameplay systems & automated tests' },
   { label: 'SHIPPED TARGETS', val: '3 WebGL Games · 1 Desktop Tool' },
   { label: 'FOCUS', val: 'Gameplay Systems, AI & Game Psychology' },
 ];
@@ -36,9 +36,9 @@ const systemSpecs = [
         <p class="lead" data-reveal style="--reveal-delay:1">{site.tagline}</p>
         <div class="actions" data-reveal style="--reveal-delay:2">
           <a class="btn primary" href="#projects" data-track="hero-cta" data-track-meta="projects">▶ See the projects</a>
-          <a class="btn" href="#lab" data-track="hero-cta" data-track-meta="lab">Play Mini-Game</a>
-          <a class="btn" href={site.cv} download data-track="download-cv" data-track-meta="hero">CV (PDF)</a>
-          <a class="btn" href={site.github} data-track="outbound-github" data-track-meta="hero">GitHub</a>
+          <a class="btn" href="#lab" data-track="hero-cta" data-track-meta="lab">Play the mini-game</a>
+          <a class="btn" href={site.cv} download data-track="download-cv" data-track-meta="hero">↓ Download the CV</a>
+          <a class="btn" href={site.github} data-track="outbound-github" data-track-meta="hero">Open GitHub ↗</a>
         </div>
       </div>
 
@@ -52,7 +52,7 @@ const systemSpecs = [
             id="tactical-polyhedron"
             width="300"
             height="200"
-            aria-label="Interactive 3D wireframe tactical octahedron over a perspective grid"
+            aria-hidden="true"
           ></canvas>
           <aside class="note">
             "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how
@@ -91,8 +91,8 @@ const systemSpecs = [
         <div data-reveal style="--reveal-delay:1">
           <p>
             I'm a BA Game Development student at Collegium Da Vinci in Poznań (2024 – present), specialising in gameplay
-            programming in Unity 6 and C#. My projects are prototypes I design and code myself: a survivors-like with a
-            data-driven ability system, a deterministic grid-tactics engine, and a 2D dungeon crawler I'm rebuilding
+            programming in Unity 6 and C#. My projects include a survivors-like with a data-driven ability system,
+            a deterministic grid-tactics game, and a 2D dungeon crawler I'm rebuilding
             from the ground up. Since July 2026 I've also been shipping Eternity Keeper, an open-source save editor for
             Pillars of Eternity — reverse-engineering a real RPG's save format and verifying every edit in the game.
           </p>
@@ -222,14 +222,18 @@ const systemSpecs = [
 
   <script>
     // Zero-dependency 3D Isometric Tactical Grid + Rotating Wireframe Octahedron in Hero
+    // Started after first paint: the hero text is the LCP element and must not wait for the canvas.
     const canvas = document.getElementById('tactical-polyhedron') as HTMLCanvasElement | null;
-    if (canvas) {
+    const startPolyhedron = () => {
+      if (!canvas) return;
       const ctx = canvas.getContext('2d');
       let angleY = 0.5;
       let angleX = 0.35;
       let targetVelY = 0.012;
       let targetAngleX = 0.35;
       let pulse = 0;
+      let frame: number | null = null;
+      let inView = true;
 
       // Octahedron + inner core vertices in 3D space
       const verts: [number, number, number][] = [
@@ -272,6 +276,7 @@ const systemSpecs = [
       };
 
       const drawFrame = () => {
+        frame = null;
         if (!ctx) return;
         const w = canvas.width;
         const h = canvas.height;
@@ -325,16 +330,34 @@ const systemSpecs = [
         const reduced =
           document.documentElement.getAttribute('data-motion') === 'reduced' ||
           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (!reduced) {
+        if (!reduced && inView && !document.hidden) {
           angleY += targetVelY;
           angleX += (targetAngleX - angleX) * 0.08;
           pulse += 0.04;
-          requestAnimationFrame(drawFrame);
+          frame = requestAnimationFrame(drawFrame);
         }
       };
 
+      const resumeDrawing = () => {
+        if (frame !== null) cancelAnimationFrame(frame);
+        frame = null;
+        drawFrame();
+      };
+      window.addEventListener('portfolio:motionchange', resumeDrawing);
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', resumeDrawing);
+      document.addEventListener('visibilitychange', resumeDrawing);
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([entry]) => {
+          inView = entry.isIntersecting;
+          resumeDrawing();
+        }).observe(canvas);
+      }
       drawFrame();
-    }
+    };
+    const idle =
+      (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number })
+        .requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
+    idle(startPolyhedron, { timeout: 1500 });
   </script>
 </Base>
 
@@ -367,7 +390,7 @@ const systemSpecs = [
     flex-wrap: wrap;
   }
   .holo-card {
-    background: rgba(47, 41, 27, 0.72);
+    background: var(--surface);
     border: 1.5px solid var(--umber);
     border-radius: var(--r-md);
     padding: 16px;
@@ -416,7 +439,7 @@ const systemSpecs = [
     margin-top: 10px;
   }
   .brutal-note {
-    background: rgba(47, 41, 27, 0.45);
+    background: var(--surface);
     border: 1.5px solid var(--umber);
     border-left: 4px solid var(--coral);
     border-radius: var(--r-sm);
@@ -425,7 +448,7 @@ const systemSpecs = [
     align-self: start;
   }
   .brutal-panel {
-    background: rgba(47, 41, 27, 0.5);
+    background: var(--surface);
     border: 1.5px solid var(--umber);
     border-radius: var(--r-md);
     padding: 22px;
@@ -438,7 +461,7 @@ const systemSpecs = [
   }
   .tl article {
     padding: 20px 22px 20px 26px;
-    background: rgba(47, 41, 27, 0.42);
+    background: var(--surface);
     border: 1px solid var(--umber);
     border-left: 3px solid var(--coral);
     border-radius: var(--r-sm);

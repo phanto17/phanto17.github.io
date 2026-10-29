@@ -1,0 +1,80 @@
+---
+import type { PortalNode } from '../scripts/telegraph-engine';
+interface Props { node: PortalNode; active: boolean; }
+const { node, active } = Astro.props;
+---
+
+<button type="button" id={`portal-tab-${node.id}`} aria-pressed={active ? 'true' : 'false'}
+  aria-controls="tg-portal-inspector" class={`interactive-panel crt-frame ${active ? 'is-active is-explored' : ''}`}
+  data-portal-id={node.id} data-crt-ripple>
+  <span class="panel-top">
+    <span class="panel-code">{node.code}</span>
+    <span class="panel-status" aria-hidden="true">{active ? '● ACTIVE' : '○ PORTAL'}</span>
+  </span>
+  <span class="panel-title">{node.title}</span>
+  <span class="panel-summary">{node.summary}</span>
+  <span class="panel-tag">{node.tag}</span>
+</button>
+
+<style>
+  .interactive-panel {
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-md);
+    padding: 16px;
+    color: var(--text);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  }
+  .interactive-panel:hover {
+    transform: translateY(-2px);
+    border-color: var(--peach);
+  }
+  .interactive-panel.is-active {
+    border-color: var(--coral);
+    background: var(--surface-2);
+    box-shadow: var(--glow);
+  }
+  .panel-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-3);
+  }
+  .interactive-panel.is-active .panel-status {
+    color: var(--gold);
+  }
+  .interactive-panel.is-explored:not(.is-active) .panel-status {
+    color: var(--mint);
+  }
+  .panel-title {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 17px;
+    line-height: 1.25;
+    margin: 0;
+    color: var(--text);
+  }
+  .panel-summary {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-2);
+    margin: 0;
+    flex: 1;
+  }
+  .panel-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--peach);
+  }
+
+</style>

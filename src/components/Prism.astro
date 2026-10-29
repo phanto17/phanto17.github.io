@@ -17,6 +17,15 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
   <div class="organic-orb orb-b"></div>
 </div>
 
+<script>
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => entry.target.classList.toggle('is-offscreen', !entry.isIntersecting));
+    });
+    document.querySelectorAll('.prism-wrap').forEach((prism) => observer.observe(prism));
+  }
+</script>
+
 <style>
   .prism-wrap {
     position: absolute;
@@ -28,6 +37,10 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
   }
   .prism-wrap.small {
     height: 240px;
+  }
+  .prism-wrap.is-offscreen .prism,
+  .prism-wrap.is-offscreen .organic-orb {
+    animation-play-state: paused;
   }
   .prism {
     position: absolute;
@@ -90,15 +103,12 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
   @keyframes orb-morph {
     0%,
     100% {
-      border-radius: 62% 38% 46% 54% / 60% 44% 56% 40%;
       transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
     }
     33% {
-      border-radius: 42% 58% 64% 36% / 48% 62% 38% 52%;
       transform: translate3d(28px, -18px, 0) rotate(12deg) scale(1.08);
     }
     66% {
-      border-radius: 55% 45% 35% 65% / 40% 55% 45% 60%;
       transform: translate3d(-22px, 16px, 0) rotate(-8deg) scale(0.95);
     }
   }
@@ -109,11 +119,11 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
     }
     .orb-a {
       animation: orb-morph 18s ease-in-out infinite;
-      will-change: transform, border-radius;
+      will-change: transform;
     }
     .orb-b {
       animation: orb-morph 23s ease-in-out infinite reverse;
-      will-change: transform, border-radius;
+      will-change: transform;
     }
   }
 </style>

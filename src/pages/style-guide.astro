@@ -1,81 +1,142 @@
 ---
+/**
+ * Living style guide, generated from design/tokens.json (the Prism CRT design system's token file).
+ * Colour swatches, contrast ratios, the type scale and the spacing/radius tables are read from the
+ * file at build time, so this page cannot drift from src/styles/tokens.css.
+ */
 import Base from '../layouts/Base.astro';
 import Prism from '../components/Prism.astro';
 import Figure from '../components/Figure.astro';
+import tokens from '../../design/tokens.json';
 
-const backgrounds = [
-  { token: '--bg-0', hex: '#0b070b', use: 'Page vignette, deepest shadow' },
-  { token: '--bg', hex: '#1a1713', use: 'Primary darkroom background' },
-  { token: '--surface', hex: '#2f291b', use: 'Cards, panels, code blocks, CRT bezel' },
-  { token: '--surface-2', hex: '#3a3224', use: 'Raised / hover surfaces' },
-  { token: '--umber', hex: '#5d412b', use: '1px structural borders & card backplates' },
-];
+type ThemeId = 'prism' | 'paper' | 'crt';
+const themes = tokens.color.themes as { id: ThemeId; name: string }[];
+const colourTokens = tokens.color.tokens as { name: string; value: string | Record<string, string>; usage: string }[];
 
-const textTokens = [
-  { token: '--text', hex: '#f3e6d3', ratio: '14.5:1 (AAA)', use: 'Headings & primary body copy' },
-  { token: '--text-2', hex: '#b9a68f', ratio: '8.0:1 (AAA)', use: 'Secondary body & lead paragraphs' },
-  { token: '--text-3', hex: '#a79a88', ratio: '6.5:1 on bg / 4.6:1 on raised (AA)', use: 'Captions & footnotes' },
-  { token: '--steel', hex: '#979ca4', ratio: '6.3:1 (AA)', use: 'Metadata & mono field-note labels' },
-];
+const valueFor = (t: { value: string | Record<string, string> }, theme: ThemeId): string =>
+  typeof t.value === 'string' ? t.value : (t.value[theme] ?? t.value[themes[0].id]);
+const resolve = (name: string, theme: ThemeId): string => {
+  const t = colourTokens.find((c) => c.name === name);
+  if (!t) return '#000000';
+  const v = valueFor(t, theme);
+  return /^\{[^}]+\}$/.test(v) ? resolve(v.slice(1, -1), theme) : v;
+};
 
-const accents = [
-  { token: '--coral', hex: '#f27c52', ratio: '6.4:1 (AA)', use: 'Primary CTA, links, attack telegraphs' },
-  { token: '--peach', hex: '#f2b180', ratio: '9.8:1 (AAA)', use: 'Link hover & italic display emphasis' },
-  { token: '--gold', hex: '#f6d370', ratio: '12.8:1 (AAA)', use: 'Eyebrows, dates, focus rings, telemetry' },
-  { token: '--mint', hex: '#9fd3a8', ratio: '10.9:1 (AAA)', use: 'Resolved / safe tactical state' },
-  { token: '--lavender', hex: '#cab5ce', ratio: '9.6:1 (AAA)', use: 'Pull quotes & margin notes' },
-  { token: '--brick', hex: '#a95c3d', ratio: '3.6:1 (AA Large)', use: 'Large display project numerals' },
-];
+/** WCAG 2 contrast for hex or rgba colours; a translucent ink is composited over the ground first. */
+const parse = (c: string): [number, number, number, number] => {
+  const hex = c.match(/^#([0-9a-f]{6})$/i);
+  if (hex) return [parseInt(hex[1].slice(0, 2), 16), parseInt(hex[1].slice(2, 4), 16), parseInt(hex[1].slice(4, 6), 16), 1];
+  const rgba = c.match(/rgba?\(([^)]+)\)/);
+  if (rgba) {
+    const [r, g, b, a = '1'] = rgba[1].split(',').map((s) => s.trim());
+    return [Number(r), Number(g), Number(b), Number(a)];
+  }
+  return [0, 0, 0, 1];
+};
+const luminance = ([r, g, b]: number[]) => {
+  const f = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+const contrast = (ink: string, ground: string): number => {
+  const i = parse(ink);
+  const g = parse(ground);
+  const over = [0, 1, 2].map((k) => i[k] * i[3] + g[k] * (1 - i[3]));
+  const [l1, l2] = [luminance(over), luminance(g)];
+  return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 10) / 10;
+};
+
+const grounds = ['bg', 'surface', 'surface-2'];
+const inks = ['text', 'text-2', 'text-3', 'steel', 'action-text', 'coral', 'peach', 'gold', 'mint', 'lavender', 'brick'];
+const decorative = ['bg-0', 'umber', 'hairline', 'nav-bg', 'scanline', 'teal', 'pink', 'sky', 'backdrop', 'glow-ink'];
+const bands = colourTokens.filter((t) => t.name.startsWith('prism-'));
+const cells = colourTokens.filter((t) => t.name.startsWith('cell-'));
+
+const typeGroups = tokens.type.groups as {
+  name: string;
+  family: string;
+  note?: string;
+  styles: { name: string; fontSize: string; lineHeight?: number | string; fontWeight?: number; letterSpacing?: string; fontStyle?: string; sample?: string; usage: string }[];
+}[];
+const families = tokens.type.families as Record<string, string>;
+const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam] as { tokens: { name: string; value: string; usage: string }[] }).tokens;
 ---
 
 <Base
   noindex
-  title="Style Guide — Prism & Retro CRT"
-  description="Living design system and component reference for Tymoteusz Jaskólski's game-dev portfolio."
+  title="Style Guide — Prism CRT"
+  description="Living design system and component reference for Tymoteusz Jaskólski's game-dev portfolio, generated from the token file."
 >
   <header class="sg-hero">
     <Prism />
     <div class="wrap">
-      <p class="kicker"><a href="/">← Portfolio Home</a> · Living Design Document</p>
-      <h1>Prism <em>Style Guide</em></h1>
+      <p class="kicker"><a href="/">← Portfolio Home</a> · Living Design Document · generated from design/tokens.json</p>
+      <h1>Prism <em>CRT</em></h1>
       <p class="lead">
         Warm darkroom grain, Cooper/Windsor-inspired variable serif display type, tactile 80s/90s CRT viewport frames,
-        and WCAG 2.1 AA verified tokens.
+        and accessible theme and motion controls. Three themes, one token file.
       </p>
     </div>
   </header>
 
   <section class="section">
     <div class="wrap">
-      <h2>01 · Colour Palette &amp; Contrast</h2>
-      <p class="sub-h">extracted from analog film references · verified against #1a1713 and #2f291b</p>
-
-      <h3>Backgrounds &amp; Borders</h3>
-      <div class="swatches">
-        {
-          backgrounds.map((s) => (
-            <div class="swatch-card">
-              <div class="swatch-chip" style={`background:${s.hex}`} />
-              <div class="swatch-meta">
-                <code>{s.token}</code>
-                <span class="hex">{s.hex}</span>
-                <p>{s.use}</p>
-              </div>
+      <h2>01 · Colour &amp; contrast</h2>
+      <p class="sub-h">every ink on every ground, per theme · WCAG 2 ratios computed at build time</p>
+      {
+        themes.map((theme) => (
+          <div class="theme-block" data-theme={theme.id}>
+            <h3>{theme.name}</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ink</th>
+                    <th>Value</th>
+                    {grounds.map((g) => (
+                      <th>on {g}</th>
+                    ))}
+                    <th>Use</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {inks.map((name) => {
+                    const t = colourTokens.find((c) => c.name === name)!;
+                    const ink = resolve(name, theme.id);
+                    return (
+                      <tr>
+                        <td>
+                          <span class="chip" style={`background:${ink}`} /> <code>{name}</code>
+                        </td>
+                        <td class="hex">{ink}</td>
+                        {grounds.map((g) => {
+                          const ratio = contrast(ink, resolve(g, theme.id));
+                          const large = name === 'brick';
+                          const ok = ratio >= (large ? 3 : 4.5);
+                          return <td class={ok ? 'ok' : 'warn'}>{ratio}:1{large ? ' (large)' : ''}</td>;
+                        })}
+                        <td class="use">{t.usage}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
-          ))
-        }
-      </div>
-
-      <h3 style="margin-top:36px">Text &amp; Accent Tokens</h3>
+          </div>
+        ))
+      }
+      <h3 style="margin-top:36px">Decoration, bands and board fills</h3>
+      <p class="muted">Never text. The usage note on each says where it may appear.</p>
       <div class="swatches">
         {
-          [...textTokens, ...accents].map((s) => (
+          [...decorative.map((n) => colourTokens.find((c) => c.name === n)!), ...bands, ...cells].map((t) => (
             <div class="swatch-card">
-              <div class="swatch-chip" style={`background:${s.hex}`} />
+              <div class="swatch-chip" style={`background:${resolve(t.name, 'prism')}`} />
               <div class="swatch-meta">
-                <code>{s.token}</code>
-                <span class="hex">{s.hex} · {s.ratio}</span>
-                <p>{s.use}</p>
+                <code>{t.name}</code>
+                <span class="hex">
+                  {themes.map((th) => resolve(t.name, th.id)).filter((v, i, a) => a.indexOf(v) === i).join(' · ')}
+                </span>
+                <p>{t.usage}</p>
               </div>
             </div>
           ))
@@ -85,40 +146,66 @@ const accents = [
   </section>
 
   <section class="section">
+    <div class="wrap">
+      <h2>02 · Typography</h2>
+      <p class="sub-h">self-hosted variable woff2 · latin + latin-ext · {Object.keys(families).length} families</p>
+      {
+        typeGroups.map((group) => (
+          <div class="type-group">
+            <h3>{group.name}</h3>
+            {group.note && <p class="muted">{group.note}</p>}
+            <div class="type-specimens">
+              {group.styles.map((s) => (
+                <div>
+                  <span class="meta">
+                    <b>{s.name}</b> · {families[group.family].split(',')[0].replace(/"/g, '')} {s.fontWeight ?? 400} · {s.fontSize}
+                    {s.lineHeight ? ` / ${s.lineHeight}` : ''}
+                    {s.letterSpacing ? ` · ${s.letterSpacing}` : ''}
+                  </span>
+                  <p
+                    class="specimen"
+                    style={`font-family:${families[group.family]};font-size:${s.fontSize};line-height:${s.lineHeight ?? 1.2};font-weight:${s.fontWeight ?? 400};letter-spacing:${s.letterSpacing ?? 'normal'};font-style:${s.fontStyle ?? 'normal'};${group.family === 'display' ? "font-variation-settings:'SOFT' 100,'WONK' 1;" : ''}`}
+                  >
+                    {s.sample ?? 'Read the board, set up the perfect turn.'}
+                  </p>
+                  <p class="use">{s.usage}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
     <div class="wrap two">
       <div>
-        <h2>02 · Typography</h2>
-        <p class="sub-h">self-hosted variable woff2 · latin + latin-ext · cls 0.00</p>
-        <div class="type-specimens">
-          <div>
-            <span class="meta">H1 · Fraunces 600 (SOFT 100, WONK 1) · clamp(44px, 6.6vw, 80px)</span>
-            <p class="spec-h1">Read the board.</p>
-          </div>
-          <div>
-            <span class="meta">H2 · Fraunces 600 · 36px / 30px mobile</span>
-            <p class="spec-h2">Deterministic Grid Tactics</p>
-          </div>
-          <div>
-            <span class="meta">Body · DM Sans 400 · 17px (line-height 1.6)</span>
-            <p>
-              Every weapon is a ScriptableObject asset derived from <code>Ability</code>. Adding a weapon means adding
-              an asset, not touching the controller. Polish diacritics test: Tymoteusz Jaskólski, Poznań.
-            </p>
-          </div>
-          <div>
-            <span class="meta">Eyebrow &amp; Telemetry · DM Mono 400/500 · 11–12px</span>
-            <p class="kicker" style="margin-top:6px">UNITY 6000.6 · URP 2D · 105 EDITMODE + 41 PLAYMODE TESTS</p>
-          </div>
-        </div>
+        <h2>03 · Spacing, radii, timing</h2>
+        <p class="sub-h">8px base · the house curve is ease-out-expo</p>
+        {
+          (['spacing', 'radius', 'timing', 'easing'] as const).map((fam) => (
+            <details class="changelog" open={fam === 'radius'}>
+              <summary>{fam}</summary>
+              <ul>
+                {simple(fam).map((t) => (
+                  <li>
+                    <code>{t.name}</code> <span class="hex">{t.value}</span> — {t.usage}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          ))
+        }
       </div>
 
       <div>
-        <h2>03 · Interactive Elements</h2>
-        <p class="sub-h">buttons · pills · telemetry chips · changelog drawer</p>
+        <h2>04 · Interactive elements</h2>
+        <p class="sub-h">buttons · pills · telemetry chips · CRT frame</p>
 
         <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px">
           <a class="btn primary" href="#main">▶ Primary CTA</a>
-          <a class="btn" href="#main">Secondary Action</a>
+          <a class="btn" href="#main">Secondary action</a>
         </div>
 
         <div style="margin-bottom:24px">
@@ -133,27 +220,6 @@ const accents = [
           <span class="stat-chip">25 save invariants</span>
         </div>
 
-        <details class="changelog" open>
-          <summary>Iteration &amp; playtest history (specimen)</summary>
-          <ul>
-            <li>Collapsible release history keeps core architectural contributions scannable above the fold.</li>
-          </ul>
-        </details>
-      </div>
-    </div>
-  </section>
-
-  <section class="section">
-    <div class="wrap two">
-      <div>
-        <h2>04 · Retro CRT Frame</h2>
-        <p class="sub-h">.crt-frame scanline overlay + boxed-manual shadow</p>
-        <p class="muted">
-          Game screenshots and the interactive mini-game sit inside <code>.crt-frame</code> containers featuring a
-          subtle 3px scanline gradient, radial barrel vignette, and <code>4px 4px 0</code> umber backplate.
-        </p>
-      </div>
-      <div>
         <Figure
           type="image"
           src="/media/push-comes-to-shove/cover.avif"
@@ -161,6 +227,10 @@ const accents = [
           caption="Fig. 1 — .crt-frame specimen with AVIF cover art & scanline overlay"
           ratio="16 / 9"
         />
+        <p class="muted" style="margin-top:16px">
+          The full component catalogue with live previews and guidelines lives in the Prism CRT design system; this
+          page shows the tokens it compiles to.
+        </p>
       </div>
     </div>
   </section>
@@ -176,6 +246,50 @@ const accents = [
     font-style: italic;
     font-weight: 400;
     color: var(--peach);
+  }
+  .theme-block {
+    margin: 24px 0 40px;
+    padding: 20px;
+    border-radius: var(--r-md);
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--umber);
+    box-shadow: var(--card-depth);
+  }
+  .theme-block table {
+    font-size: 13px;
+  }
+  .chip {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    border: 1px solid var(--umber);
+    vertical-align: -2px;
+    margin-right: 4px;
+  }
+  .hex {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+  }
+  td.ok {
+    color: var(--mint);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  td.warn {
+    color: var(--coral);
+    font-family: var(--mono);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  td.use,
+  p.use {
+    color: var(--text-2);
+    font-size: 13px;
+    max-width: 48ch;
   }
   .swatches {
     display: grid;
@@ -199,9 +313,6 @@ const accents = [
   }
   .swatch-meta .hex {
     display: block;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--gold);
     margin: 4px 0 6px;
   }
   .swatch-meta p {
@@ -209,25 +320,25 @@ const accents = [
     color: var(--text-2);
     margin: 0;
   }
+  .type-group {
+    margin-top: 28px;
+  }
   .type-specimens > div {
     padding: 16px 0;
     border-bottom: var(--line);
   }
-  .spec-h1 {
-    font-family: var(--display);
-    font-size: 48px;
-    font-weight: 600;
-    font-variation-settings: var(--soft);
-    text-shadow: var(--glow);
-    margin: 6px 0 0;
-    line-height: 1;
+  .specimen {
+    margin: 6px 0 4px;
+    overflow-wrap: anywhere;
   }
-  .spec-h2 {
-    font-family: var(--display);
-    font-size: 30px;
-    font-weight: 600;
-    font-variation-settings: var(--soft);
-    text-shadow: var(--glow-soft);
-    margin: 6px 0 0;
+  p.use {
+    margin: 0;
+  }
+  details.changelog {
+    margin-top: 12px;
+  }
+  details.changelog li {
+    font-size: 14px;
+    color: var(--text-2);
   }
 </style>

@@ -7,6 +7,11 @@ import { site, nav } from '../data/site';
     <a class="brand" href="/">{site.name} <em>— field notes</em></a>
     <ul id="nav-links" class="nav-list">
       {nav.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
+      <li class="mobile-motion">
+        <button type="button" class="btn util-btn" data-motion-switcher aria-pressed="true">
+          <span data-motion-label>Motion: ON</span>
+        </button>
+      </li>
     </ul>
     <div class="nav-actions">
       <button
@@ -22,12 +27,13 @@ import { site, nav } from '../data/site';
       <button
         type="button"
         id="motion-switcher"
+        data-motion-switcher
         class="btn util-btn"
         aria-pressed="true"
         aria-label="Toggle kinetic animations and motion effects"
         title="Toggle Motion (Full / Reduced)"
       >
-        <span id="motion-label">Motion: ON</span>
+        <span data-motion-label>Motion: ON</span>
       </button>
       <button
         type="button"
@@ -47,13 +53,14 @@ import { site, nav } from '../data/site';
 </nav>
 
 <script>
+  document.documentElement.classList.add('js-nav');
   const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
   const list = document.querySelector<HTMLUListElement>('#nav-links');
   const navEl = document.querySelector<HTMLElement>('.nav');
   const themeBtn = document.querySelector<HTMLButtonElement>('#theme-switcher');
   const themeLabel = document.querySelector<HTMLElement>('#theme-label');
-  const motionBtn = document.querySelector<HTMLButtonElement>('#motion-switcher');
-  const motionLabel = document.querySelector<HTMLElement>('#motion-label');
+  const motionButtons = document.querySelectorAll<HTMLButtonElement>('[data-motion-switcher]');
+  const motionLabels = document.querySelectorAll<HTMLElement>('[data-motion-label]');
 
   // 1. Dynamic Theme Switcher (Prism Dark -> Daylight Paper -> CRT Phosphor)
   const themes = ['prism', 'paper', 'crt'] as const;
@@ -72,8 +79,10 @@ import { site, nav } from '../data/site';
   const syncThemeUi = () => {
     const cur = getCurrentTheme();
     if (themeLabel) themeLabel.textContent = themeNames[cur];
+    themeBtn?.setAttribute('aria-label', `Current theme: ${themeNames[cur]}. Change theme`);
   };
   syncThemeUi();
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', syncThemeUi);
 
   themeBtn?.addEventListener('click', () => {
     const cur = getCurrentTheme();
@@ -88,14 +97,23 @@ import { site, nav } from '../data/site';
   });
 
   // 2. Accessibility Motion Switcher (Full vs Reduced)
+  const systemMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const syncMotionUi = () => {
-    const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
-    motionBtn?.setAttribute('aria-pressed', String(!isReduced));
-    if (motionLabel) motionLabel.textContent = isReduced ? 'Motion: OFF' : 'Motion: ON';
+    const isReduced = systemMotion.matches || document.documentElement.getAttribute('data-motion') === 'reduced';
+    motionButtons.forEach((button) => {
+      button.setAttribute('aria-pressed', String(!isReduced));
+      button.disabled = systemMotion.matches;
+      button.title = systemMotion.matches ? 'Reduced motion is enabled in your system settings' : 'Toggle motion';
+    });
+    motionLabels.forEach((label) => { label.textContent = systemMotion.matches ? 'Motion: system reduced' : isReduced ? 'Motion: OFF' : 'Motion: ON'; });
   };
   syncMotionUi();
+  systemMotion.addEventListener('change', () => {
+    syncMotionUi();
+    window.dispatchEvent(new Event('portfolio:motionchange'));
+  });
 
-  motionBtn?.addEventListener('click', () => {
+  motionButtons.forEach((button) => button.addEventListener('click', () => {
     const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
     if (isReduced) {
       document.documentElement.removeAttribute('data-motion');
@@ -116,7 +134,8 @@ import { site, nav } from '../data/site';
       }
     }
     syncMotionUi();
-  });
+    window.dispatchEvent(new Event('portfolio:motionchange'));
+  }));
 
   // 3. Mobile Drawer
   if (toggle && list) {
@@ -148,6 +167,8 @@ import { site, nav } from '../data/site';
         toggle.focus();
       }
     });
+
+    window.matchMedia('(max-width: 980px)').addEventListener('change', () => setOpen(false));
   }
 
   // 4. Active section scroll-spy on home page
@@ -260,6 +281,13 @@ import { site, nav } from '../data/site';
     font-size: 11px;
     gap: 6px;
   }
+  .mobile-motion {
+    display: none;
+  }
+  :global(html:not(.js-nav)) #theme-switcher,
+  :global(html:not(.js-nav)) #motion-switcher {
+    display: none;
+  }
   .cv {
     white-space: nowrap;
     padding: 8px 14px;
@@ -273,16 +301,20 @@ import { site, nav } from '../data/site';
       display: none;
     }
   }
-  @media (max-width: 860px) {
-    .menu-toggle {
+  @media (max-width: 980px) {
+    .nav-actions .btn,
+    .mobile-motion .btn { min-width: 44px; min-height: 44px; justify-content: center; }
+    :global(html.js-nav) .menu-toggle {
       display: inline-flex;
     }
     .nav-list {
-      display: none;
+      display: flex;
       position: absolute;
       top: 68px;
       left: 0;
       right: 0;
+      max-height: calc(100dvh - 68px);
+      overflow-y: auto;
       flex-direction: column;
       gap: 0;
       background: var(--surface);
@@ -290,11 +322,21 @@ import { site, nav } from '../data/site';
       padding: 8px 20px 16px;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65);
     }
-    .nav-list.open {
+    :global(html.js-nav) .nav-list {
+      display: none;
+    }
+    :global(html.js-nav) .nav-list.open {
       display: flex;
     }
     .nav-list li {
       margin: 0;
+    }
+    .mobile-motion {
+      display: none;
+      padding-top: 12px;
+    }
+    :global(html.js-nav) .mobile-motion {
+      display: block;
     }
     .nav-list li a {
       display: block;
@@ -313,5 +355,27 @@ import { site, nav } from '../data/site';
     .cv .short {
       display: inline;
     }
+  }
+  @media (max-width: 980px) {
+    :global(html:not(.js-nav)) .nav { position: static; }
+    :global(html:not(.js-nav)) .bar { height: auto; min-height: 68px; flex-wrap: wrap; }
+    :global(html:not(.js-nav)) .nav-list {
+      position: static;
+      order: 3;
+      width: 100%;
+      max-height: none;
+      box-shadow: none;
+      padding: 0 0 12px;
+    }
+    :global(html:not(.js-nav)) .nav-actions { order: 2; }
+    :global(html:not(.js-nav)) #theme-switcher { display: none; }
+  }
+  @media (max-width: 420px) {
+    .brand { font-size: 14px; }
+    .bar { gap: 6px; }
+    .nav-actions { gap: 4px; }
+    .util-btn, .menu-toggle, .cv { padding-inline: 7px; }
+    #theme-label { display: none; }
+    .menu-text { display: none; }
   }
 </style>

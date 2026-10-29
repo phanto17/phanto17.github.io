@@ -133,7 +133,7 @@ markers on the site are deliberate placeholders. Session plan with hours: `docs/
 
 ## Visual style — "Prism" (direction B revised, chosen 2026-10-11, pending final confirmation)
 
-Full spec with tokens, scale and rationale: `docs/design-system.md`. Reference mockup:
+Full spec with tokens, scale and rationale: `docs/design-system.md`. **Token source since 2026-10-29:** `design/tokens.json` (copy of the Prism CRT design system artifact, https://claude.ai/artifact/H8KNYRf8sL8hggvY1uMAWi) → `node tools/build-tokens.mjs` → `src/styles/tokens.css` (generated, committed; never hand-edit). `global.css` keeps only the aliases `--display/--sans/--mono/--line`; `/style-guide/` is generated from the same file. Reference mockup:
 `mockups/direction-B-prism.html`. Reference images: `references/`.
 
 - **Tone:** dark room, warm film grain, one blurred prism light band per hero/section.

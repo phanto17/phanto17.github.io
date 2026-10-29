@@ -1,3 +1,5 @@
+@import './tokens.css';
+
 /* ---------------------------------------------------------------------------
    Prism design system — self-hosted fonts, tokens and base styles.
    Spec: docs/design-system.md
@@ -101,135 +103,16 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
+/* Tokens: src/styles/tokens.css is generated from design/tokens.json (the Prism CRT design system)
+   by tools/build-tokens.mjs. Colours, shadows, spacing, radii, timing and the three themes live there.
+   The names below are aliases the site's rules were written against. */
 :root {
-  /* backgrounds */
-  --bg-0: #0b070b;
-  --bg: #1a1713;
-  --surface: #2f291b;
-  --surface-2: #3a3224;
-  --umber: #5d412b;
-  /* text */
-  --text: #f3e6d3;
-  --text-2: #b9a68f;
-  --text-3: #a79a88; /* AA on bg 6.5, surface 5.2, raised 4.6 (was #8a7a66, 4.3 on bg) */
-  --steel: #979ca4;
-  /* accents */
-  --coral: #f27c52;
-  --peach: #f2b180;
-  --gold: #f6d370;
-  --brick: #a95c3d;
-  --teal: #4e6367;
-  --pink: #faa193;
-  --mint: #9fd3a8;
-  --sky: #8fc3df;
-  --lavender: #cab5ce;
-  /* type */
-  --display: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --sans: 'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display: var(--font-display);
+  --sans: var(--font-sans);
+  --mono: var(--font-mono);
   --soft: 'SOFT' 100, 'WONK' 1;
-  /* radii */
-  --r-xs: 6px;
-  --r-sm: 10px;
-  --r-md: 16px;
-  --r-lg: 24px;
-  --r-pill: 999px;
-  /* spacing */
-  --container: 1040px;
-  --gutter: 24px;
-  --section: 80px;
-  /* effects */
-  --glow: 0 0 14px rgba(242, 124, 82, 0.55), 0 0 48px rgba(242, 177, 128, 0.28);
-  --glow-soft: 0 0 24px rgba(242, 124, 82, 0.25);
-  --glow-amber: 0 0 14px rgba(246, 211, 112, 0.35);
-  --scanline-alpha: 0.2;
-  --card-depth: 5px 5px 0 rgba(93, 65, 43, 0.72);
-  --card-depth-hover: 8px 8px 0 var(--coral);
-  --line: 1px solid rgba(93, 65, 43, 0.55);
-  --nav-bg: rgba(26, 23, 19, 0.82);
-  color-scheme: dark;
-}
-
-/* Dynamic Theme 2: Warm Archival Paper (Light / Neo-Brutalist Editorial) */
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='prism']):not([data-theme='crt']) {
-    --bg-0: #dfd3be;
-    --bg: #f4ede1;
-    --surface: #e9decb;
-    --surface-2: #dfd1b8;
-    --umber: #2b2118;
-    --text: #18130e;
-    --text-2: #3e3227;
-    --text-3: #5c4b3b;
-    --steel: #525860;
-    --coral: #b83b14;
-    --peach: #8f2d0c;
-    --gold: #7c4d00;
-    --brick: #8c3419;
-    --mint: #1d6338;
-    --lavender: #5b3a69;
-    --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
-    --glow-soft: none;
-    --card-depth: 5px 5px 0 #2b2118;
-    --card-depth-hover: 8px 8px 0 #b83b14;
-    --line: 1px solid rgba(43, 33, 24, 0.32);
-    --nav-bg: rgba(244, 237, 225, 0.88);
-    --scanline-alpha: 0.06;
-    color-scheme: light;
-  }
-}
-
-html[data-theme='paper'] {
-  --bg-0: #dfd3be;
-  --bg: #f4ede1;
-  --surface: #e9decb;
-  --surface-2: #dfd1b8;
-  --umber: #2b2118;
-  --text: #18130e;
-  --text-2: #3e3227;
-  --text-3: #5c4b3b;
-  --steel: #525860;
-  --coral: #b83b14;
-  --peach: #8f2d0c;
-  --gold: #7c4d00;
-  --brick: #8c3419;
-  --mint: #1d6338;
-  --lavender: #5b3a69;
-  --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
-  --glow-soft: none;
-  --card-depth: 5px 5px 0 #2b2118;
-  --card-depth-hover: 8px 8px 0 #b83b14;
-  --line: 1px solid rgba(43, 33, 24, 0.32);
-  --nav-bg: rgba(244, 237, 225, 0.88);
-  --scanline-alpha: 0.06;
-  color-scheme: light;
-}
-
-/* Dynamic Theme 3: CRT Phosphor Terminal (High-Contrast Arcade / Brutalist) */
-html[data-theme='crt'] {
-  --bg-0: #020403;
-  --bg: #070b09;
-  --surface: #0e1713;
-  --surface-2: #15241d;
-  --umber: #2b5c47;
-  --text: #e6fff2;
-  --text-2: #9fd3a8;
-  --text-3: #78b086;
-  --steel: #7ba396;
-  --coral: #ff8e53;
-  --peach: #ffc285;
-  --gold: #f6d370;
-  --brick: #d46a3f;
-  --mint: #52ffa8;
-  --lavender: #b8c9ff;
-  --glow: 0 0 18px rgba(82, 255, 168, 0.45), 0 0 42px rgba(246, 211, 112, 0.22);
-  --glow-soft: 0 0 18px rgba(82, 255, 168, 0.25);
-  --card-depth: 5px 5px 0 #2b5c47;
-  --card-depth-hover: 8px 8px 0 #52ffa8;
-  --line: 1px solid rgba(82, 255, 168, 0.28);
-  --nav-bg: rgba(7, 11, 9, 0.88);
-  --scanline-alpha: 0.34;
-  color-scheme: dark;
+  --line: 1px solid var(--hairline);
+  --section: var(--space-10);
 }
 
 *,
@@ -240,6 +123,7 @@ html[data-theme='crt'] {
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 88px;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -276,21 +160,24 @@ body::after {
 }
 
 a {
-  color: var(--coral);
+  color: var(--action-text);
   text-decoration: none;
   transition: color 0.2s, text-shadow 0.2s;
+}
+[hidden] {
+  display: none !important;
 }
 p a,
 li a,
 td a,
 dd a {
   text-decoration: underline;
-  text-decoration-color: rgba(242, 124, 82, 0.45);
+  text-decoration-color: var(--glow-ink);
   text-underline-offset: 3px;
 }
 a:hover {
   color: var(--peach);
-  text-shadow: 0 0 10px rgba(242, 124, 82, 0.5);
+  text-shadow: 0 0 10px var(--glow-ink);
 }
 a:focus-visible,
 button:focus-visible,
@@ -362,7 +249,7 @@ pre {
   line-height: 1.5;
 }
 :not(pre) > code {
-  background: rgba(47, 41, 27, 0.8);
+  background: var(--surface-2);
   border-radius: var(--r-xs);
   padding: 1px 6px;
   color: var(--peach);
@@ -484,11 +371,11 @@ th {
   font-size: 15px;
   border: 1px solid var(--umber);
   color: var(--text);
-  background: rgba(47, 41, 27, 0.6);
+  background: var(--surface);
   transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
   cursor: pointer;
 }
-.btn:hover {
+.btn:not(:disabled):hover {
   transform: translateY(-1px);
   background: var(--surface-2);
   color: var(--text);
@@ -496,14 +383,14 @@ th {
 }
 .btn.primary {
   background: var(--coral);
-  color: #1a1713;
+  color: var(--on-accent);
   border-color: var(--coral);
   box-shadow: var(--glow);
 }
-.btn.primary:hover {
+.btn.primary:not(:disabled):hover {
   background: var(--peach);
   border-color: var(--peach);
-  color: #1a1713;
+  color: var(--on-accent);
 }
 .pill {
   display: inline-block;
@@ -517,7 +404,7 @@ th {
 }
 .pill.play {
   border-color: var(--coral);
-  color: var(--coral);
+  color: var(--action-text);
   box-shadow: 0 0 12px rgba(242, 124, 82, 0.25);
 }
 .pill.wip {
@@ -559,7 +446,7 @@ th {
   top: -60px;
   z-index: 100;
   background: var(--coral);
-  color: #1a1713;
+  color: var(--on-accent);
   padding: 10px 16px;
   border-radius: var(--r-pill);
 }
@@ -569,8 +456,8 @@ th {
 
 @media (max-width: 860px) {
   :root {
-    --gutter: 16px;
-    --section: 56px;
+    --gutter: var(--gutter-mobile);
+    --section: var(--space-7);
   }
   body {
     font-size: 16px;
@@ -637,8 +524,8 @@ pre.astro-code {
   background:
     repeating-linear-gradient(
       0deg,
-      rgba(11, 7, 11, var(--scanline-alpha)) 0px,
-      rgba(11, 7, 11, var(--scanline-alpha)) 1px,
+      var(--scanline) 0px,
+      var(--scanline) 1px,
       transparent 1px,
       transparent 3px
     ),
@@ -666,7 +553,7 @@ html[data-crt="off"] .crt-frame::before,
   font-size: 11px;
   padding: 3px 10px;
   border-radius: var(--r-xs);
-  background: rgba(47, 41, 27, 0.85);
+  background: var(--surface-2);
   border: 1px solid rgba(246, 211, 112, 0.32);
   color: var(--gold);
   letter-spacing: 0.03em;
@@ -680,7 +567,7 @@ html[data-crt="off"] .crt-frame::before,
 /* Collapsible version history / patch notes on project subpages */
 details.changelog {
   margin-top: 20px;
-  background: rgba(47, 41, 27, 0.55);
+  background: var(--surface);
   border: 1px solid var(--umber);
   border-radius: var(--r-md);
   padding: 14px 18px;
@@ -730,7 +617,7 @@ details.changelog ul {
   padding: 4px 9px;
   border-radius: var(--r-xs);
   border: 1px solid var(--umber);
-  background: rgba(26, 23, 19, 0.88);
+  background: var(--surface-2);
   color: var(--text-2);
   cursor: pointer;
   transition: color 0.15s, border-color 0.15s, background 0.15s;
@@ -879,7 +766,7 @@ html.js-motion [data-reveal].is-visible {
   border-radius: var(--r-xs);
 }
 .dl > div:hover {
-  background: rgba(58, 50, 36, 0.55);
+  background: var(--surface-2);
   padding-left: 10px;
   transform: translateX(4px);
 }
@@ -899,7 +786,7 @@ html.js-motion [data-reveal].is-visible {
     background 0.2s ease,
     border-color 0.2s ease;
 }
-.btn:hover {
+.btn:not(:disabled):hover {
   transform: translate3d(var(--bx, 0px), calc(var(--by, 0px) - 2px), 0);
   box-shadow: 5px 5px 0 var(--coral);
   border-color: var(--peach);
@@ -907,8 +794,18 @@ html.js-motion [data-reveal].is-visible {
 .btn.primary {
   box-shadow: 4px 4px 0 var(--umber), var(--glow);
 }
-.btn.primary:hover {
+.btn.primary:not(:disabled):hover {
   box-shadow: 6px 6px 0 var(--gold), var(--glow);
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+.btn:not(:disabled):active {
+  transform: translate3d(var(--bx, 0px), var(--by, 0px), 0) scale(0.97);
+  box-shadow: 1px 1px 0 var(--umber);
 }
 
 /* Custom Tactical Cursor Reticle (fine pointer only) */

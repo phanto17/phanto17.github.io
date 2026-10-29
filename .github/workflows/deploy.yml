@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 22
           package-manager: npm@latest
+      - name: Verify internal links and anchors
+        run: |
+          node tools/test-check-links.mjs
+          node tools/check-links.mjs --internal-only
 
   deploy:
     needs: build

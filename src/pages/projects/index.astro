@@ -6,12 +6,16 @@ import ProjectRow from '../../components/ProjectRow.astro';
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 ---
 
-<Base title="Projects" description="Playable personal projects by Tymoteusz Jaskólski, each with a technical write-up.">
+<Base title="Projects" description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
   <section class="section">
     <div class="wrap">
-      <h2>Projects</h2>
-      <p class="sub-h">personal, playable on itch.io — each has its own write-up</p>
+      <h1>Projects</h1>
+      <p class="sub-h">Play the games on itch.io, or explore the open-source tool. Each has its own write-up.</p>
       {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
     </div>
   </section>
 </Base>
+
+<style>
+  h1 { font-size: clamp(36px, 5vw, 56px); }
+</style>

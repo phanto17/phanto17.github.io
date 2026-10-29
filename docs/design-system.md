@@ -6,6 +6,9 @@ Colours come from pixel sampling (darkest 20 %, brightest 5 %, most saturated 5 
 plus a 10-cluster k-means over all images). Everything below is implemented in
 `mockups/direction-B-prism.html`.
 
+
+> **Since 2026-10-29 the values are generated.** `design/tokens.json` (a copy of the Prism CRT design system's token file) is compiled by `node tools/build-tokens.mjs` into `src/styles/tokens.css`, which `global.css` imports; the three theme blocks are no longer hand-written. The tables below describe the Prism theme; the token file is authoritative for all three.
+
 ## 1. Mood
 
 Dark room, warm film grain, one band of prism light. Editorial "field notes" structure (direction B)
@@ -102,9 +105,15 @@ Scale (desktop → mobile):
 ## 6. Motion
 
 - Hover: translateY(−1…−3 px) + glow box-shadow, 200–250 ms ease.
-- Prism band: optional slow drift (`transform` over 40 s) — **disabled under
-  `prefers-reduced-motion`**, as is every transition.
+- Prism band: slow drift (`transform` over 28 s), paused offscreen and disabled under
+  `prefers-reduced-motion` or the site motion setting, as is every transition.
 - No parallax, no autoplaying video with sound.
+
+The site offers Prism, Paper and CRT themes. `--action-text` supplies readable link text
+and `--on-accent` supplies text on primary buttons; both change with the theme. Verify
+foreground and background pairs in each state rather than assuming the Prism ratios
+apply to all themes. The manual-cue option in Telegraph Recall lets players advance
+each signal at their own pace, and game sound starts off.
 
 ## 7. Imagery rules & CRT viewport
 

@@ -6,15 +6,15 @@ const year = new Date().getFullYear();
 <footer class="footer">
   <div class="wrap">
     <span>© {year} {site.name}</span>
-    <span class="sep">·</span>
+    <span class="sep" aria-hidden="true">·</span>
     <a href={site.github} data-track="outbound-github" data-track-meta="footer">GitHub</a>
-    <span class="sep">·</span>
+    <span class="sep" aria-hidden="true">·</span>
     <a href={site.youtube} data-track="outbound-youtube" data-track-meta="footer">YouTube</a>
-    <span class="sep">·</span>
+    <span class="sep" aria-hidden="true">·</span>
     <a href={`mailto:${site.email}`} data-track="contact-email" data-track-meta="footer">{site.email}</a>
-    <span class="sep">·</span>
+    <span class="sep" aria-hidden="true">·</span>
     <a href="/style-guide/">Style Guide</a>
-    <span class="sep">·</span>
+    <span class="sep" aria-hidden="true">·</span>
     <span>built with Astro, hosted on GitHub Pages</span>
   </div>
 </footer>

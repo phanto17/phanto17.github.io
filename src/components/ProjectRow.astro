@@ -96,7 +96,7 @@ const numStr = String(index + 1).padStart(2, '0');
 <style>
   .proj {
     margin-bottom: 28px;
-    background: rgba(47, 41, 27, 0.56);
+    background: var(--surface);
     border: 1.5px solid var(--umber);
     border-radius: var(--r-md);
     box-shadow: var(--card-depth);
@@ -105,14 +105,14 @@ const numStr = String(index + 1).padStart(2, '0');
   .proj:hover {
     border-color: var(--coral);
     box-shadow: var(--card-depth-hover);
-    background: rgba(58, 50, 36, 0.72);
+    background: var(--surface-2);
   }
   .crt-win-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 8px 18px;
-    background: rgba(11, 7, 11, 0.55);
+    background: var(--surface-2);
     border-bottom: 1px solid var(--umber);
     font-family: var(--mono);
     font-size: 11px;

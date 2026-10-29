@@ -1,5 +1,5 @@
 // Comprehensive verification suite for the built portfolio in dist/ + TelegraphEngine & TelegraphStageController unit tests.
-import { TelegraphEngine, TelegraphStageController } from '../src/scripts/telegraph-engine.ts';
+import { TELEGRAPH_STAGES, TelegraphEngine, TelegraphStageController } from '../src/scripts/telegraph-engine.ts';
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -72,6 +72,13 @@ check('Every page includes skip-link, main landmark, and accessible mobile menu 
   }
 });
 
+check('Every page has one top-level heading', () => {
+  for (const file of htmlFiles) {
+    const html = readFileSync(file, 'utf8');
+    assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `Expected one h1 in ${file}`);
+  }
+});
+
 check('Every <img> has non-empty alt, width, height, and uses .avif format', () => {
   const imgRegex = /<img\b[^>]*>/g;
   for (const file of htmlFiles) {
@@ -117,6 +124,13 @@ check('/style-guide/index.html is built and marked noindex', () => {
   assert.ok(sg.includes('--coral') && sg.includes('Fraunces'), 'Style guide missing tokens');
 });
 
+check('Cinderhold and Eternity Keeper disclose the confirmed AI tools', () => {
+  const cinderhold = readFileSync(join(dist, 'projects', 'cinderhold', 'index.html'), 'utf8');
+  const eternity = readFileSync(join(dist, 'projects', 'eternity-keeper', 'index.html'), 'utf8');
+  assert.ok(cinderhold.includes('Most of the code was written with Claude Code under my direction'));
+  assert.ok(eternity.includes('Most of the code was written with Codex, Antigravity and Claude Code under my direction'));
+});
+
 console.log('\n=== 4. Technical SEO: robots.txt, sitemap.xml & JSON-LD Structured Data ===');
 check('robots.txt and sitemap.xml exist and list all canonical routes', () => {
   const robots = readFileSync(join(dist, 'robots.txt'), 'utf8');
@@ -148,11 +162,11 @@ check('Indexed pages contain valid JSON-LD structured data (Person / VideoGame /
 });
 
 console.log('\n=== 5. Psychological Mini-Game ("Telegraph Recall") DOM & State Machine Tests ===');
-check('Home page embeds #lab mini-game with 16 ARIA gridcells and polite live region', () => {
+check('Home page embeds #lab mini-game with 16 labelled buttons and polite live region', () => {
   const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
   assert.ok(homeHtml.includes('id="lab"'), 'Missing #lab section');
-  assert.ok(homeHtml.includes('id="tg-grid"') && homeHtml.includes('role="grid"'), 'Missing #tg-grid');
-  const cellMatches = homeHtml.match(/role="gridcell"/g) ?? [];
+  assert.ok(homeHtml.includes('id="tg-grid"') && homeHtml.includes('role="group"'), 'Missing #tg-grid');
+  const cellMatches = homeHtml.match(/class="tg-cell"/g) ?? [];
   assert.equal(cellMatches.length, 16, `Expected 16 gridcells, found ${cellMatches.length}`);
   assert.ok(homeHtml.includes('id="tg-status"') && homeHtml.includes('aria-live="polite"'), 'Missing aria-live status');
 });
@@ -195,11 +209,14 @@ check('TelegraphEngine pure state machine passes deterministic wave, hint, and d
 
 check('TelegraphStageController & 3-Stage CRT Popup / Non-Linear Portal DOM pass verification', () => {
   const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
-  assert.ok(homeHtml.includes('id="tg-crt-popup"') && homeHtml.includes('role="dialog"'), 'Missing PopupCRT dialog');
+  assert.match(homeHtml, /<dialog\b[^>]*id="tg-crt-popup"/, 'Missing native PopupCRT dialog');
   assert.ok(homeHtml.includes('id="tg-stage-router"'), 'Missing StageRouter viewport');
   assert.ok(homeHtml.includes('id="tg-portal-grid"'), 'Missing NonLinearLayout portal grid');
 
   const ctrl = new TelegraphStageController();
+  assert.equal(new Set(TELEGRAPH_STAGES.map((stage) => stage.id)).size, TELEGRAPH_STAGES.length);
+  assert.deepEqual(TELEGRAPH_STAGES.map((stage) => stage.action), ['next', 'next', 'play']);
+  assert.ok(TELEGRAPH_STAGES.every((stage) => stage.label && stage.title && stage.ctaLabel));
   assert.equal(ctrl.getStage(), 'welcome');
   const step2 = ctrl.nextStage();
   assert.equal(step2.to.id, 'animation-sequence');

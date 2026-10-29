@@ -67,7 +67,7 @@ const jsonLd = schema ?? defaultSchema;
     <meta property="og:image:alt" content={fullTitle} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
-    <!-- Self-hosted WOFF2 preloads (zero third-party font requests, CLS 0.00) -->
+    <!-- Self-hosted WOFF2 preloads; no third-party font requests. -->
     <link rel="preload" href="/fonts/fraunces-normal-400-700-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-sans-normal-400-600-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-mono-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin />
@@ -80,8 +80,7 @@ const jsonLd = schema ?? defaultSchema;
             document.documentElement.setAttribute('data-theme', savedTheme);
           }
           var savedMotion = localStorage.getItem('portfolio-motion');
-          var sysReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-          if (savedMotion === 'reduced' || (!savedMotion && sysReduced)) {
+          if (savedMotion === 'reduced') {
             document.documentElement.setAttribute('data-motion', 'reduced');
           } else {
             document.documentElement.classList.add('js-motion');
@@ -152,10 +151,25 @@ const jsonLd = schema ?? defaultSchema;
         });
       });
 
+      // Clear any pointer-driven transforms when motion is turned off mid-interaction.
+      window.addEventListener('portfolio:motionchange', () => {
+        if (isMotionAllowed()) return;
+        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
+          card.style.setProperty('--rx', '0deg');
+          card.style.setProperty('--ry', '0deg');
+          card.style.setProperty('--glare-opacity', '0');
+          card.style.setProperty('--lift', '0px');
+        });
+        document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
+          btn.style.setProperty('--bx', '0px');
+          btn.style.setProperty('--by', '0px');
+        });
+      });
+
       // 3. Magnetic Micro-Interaction on .btn elements
       document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
         btn.addEventListener('pointermove', (e) => {
-          if (!isMotionAllowed() || e.pointerType === 'touch') return;
+          if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
           const rect = btn.getBoundingClientRect();
           const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
           const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
