@@ -130,3 +130,26 @@ three generated theme blocks); eager script on the home page 2,031 bytes (1,020 
 of the 16,997-byte (6,207 gzip) Telegraph script, which is now a lazy chunk of 17,075 bytes
 (6,215 gzip). No mobile LCP, INP or CLS measurement was taken; the browser regression suite
 needs the `playwright` package, which is not installed here, so it was not run.
+
+### Phase 2, first two tasks (2026-10-29)
+
+Hovered headings now grow (optical size 9, +0.02em tracking, scale 1.02 from the left) instead
+of sharpening and tightening; the owner's rule is that hovered text expands, never shrinks.
+
+GSAP 3.15 (ScrollTrigger, SplitText) is the motion toolkit, imported only in
+`src/scripts/motion.ts`. `Base.astro` loads it after the `load` event when motion is allowed and
+data saver is off, and again if the motion switch is turned on later. It takes over the elements
+the CSS reveal observer has not shown yet (ScrollTrigger batch, token durations and staggers),
+splits each section H2 into characters that rise when the heading enters the viewport (SplitText
+`aria: "auto"` keeps the accessible name and reverts the split when done), and animates the stage-3
+"Telegraph Recall" title character by character. Turning motion off reverts every split and
+inline style and shows every reveal. A 250ms watchdog ticks GSAP by hand if
+`requestAnimationFrame` stalls, so nothing it faded out can stay hidden. The hero keeps its
+CSS-only kinetic words so the LCP element never waits for a script.
+
+Sizes after this step: eager script on the home page 4.1 KB (1.6 KB gzip) in two small
+bootstraps; the GSAP chunk 122 KB (48 KB gzip) and the Telegraph chunk 17 KB (6 KB gzip) load
+lazily. Verified in the dev server: the chunk loads after `load`, headings and reveals complete,
+the stage-3 title rises, motion off tears everything down. Not measured: mobile LCP, INP, CLS.
+The built-in browser pane throttles `requestAnimationFrame` to about one frame per second, so
+timing there is not representative; the watchdog is what let the checks complete.

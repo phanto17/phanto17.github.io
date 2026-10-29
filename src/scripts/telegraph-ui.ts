@@ -6,6 +6,12 @@ import {
   type StageId,
 } from './telegraph-engine';
 
+declare global {
+  interface Window {
+    portfolioMotion?: boolean;
+  }
+}
+
 const engine = new TelegraphEngine();
 const stageCtrl = new TelegraphStageController();
 
@@ -209,6 +215,10 @@ function renderStage(targetStage: StageId, focusScene = false) {
     startStage2PreviewLoop();
   } else {
     stopStage2PreviewLoop();
+  }
+  if (targetStage === 'title-intro' && window.portfolioMotion && !isReducedMotion()) {
+    const logo = stageScenes.find((scene) => !scene.hidden)?.querySelector<HTMLElement>('.crt-logo-title');
+    if (logo) void import('./motion').then((m) => m.riseTitle(logo));
   }
 
   playTone(targetStage === 'welcome' ? 330 : targetStage === 'animation-sequence' ? 440 : 587, 'triangle', 0.14);

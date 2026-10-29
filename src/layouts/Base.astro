@@ -119,8 +119,25 @@ const jsonLd = schema ?? defaultSchema;
           { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
         );
         els.forEach((el) => io.observe(el));
+        window.portfolioReveal = { io, els };
       };
       initScrollReveal();
+
+      // 1b. Motion toolkit (GSAP, src/scripts/motion.ts): loaded after first paint, only when motion is
+      // allowed and data saver is off. Pages keep working without it; it only adds choreography.
+      let motionBooted = false;
+      const motionAllowed = () =>
+        document.documentElement.getAttribute('data-motion') !== 'reduced' &&
+        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const bootMotion = () => {
+        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+        if (motionBooted || nav.connection?.saveData || !motionAllowed()) return;
+        motionBooted = true;
+        void import('../scripts/motion').then((m) => m.init());
+      };
+      if (document.readyState === 'complete') bootMotion();
+      else window.addEventListener('load', bootMotion, { once: true });
+      window.addEventListener('portfolio:motionchange', bootMotion);
 
       // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards
       const isMotionAllowed = () =>

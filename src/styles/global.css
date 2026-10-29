@@ -202,12 +202,17 @@ h4 {
     font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     text-shadow 0.35s ease,
-    color 0.25s ease;
+    color 0.25s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
 }
+/* Hover grows the heading (owner rule 2026-10-29): heavier optical size, wider tracking, a slight
+   scale-up from the left. Never sharper or tighter. */
 h2:hover,
 h3:hover {
-  font-variation-settings: 'SOFT' 20, 'WONK' 0, 'opsz' 144;
-  letter-spacing: 0.005em;
+  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
+  letter-spacing: 0.02em;
+  transform: scale(1.02);
+  transform-origin: left center;
 }
 h1 {
   font-size: clamp(44px, 6.6vw, 80px);
