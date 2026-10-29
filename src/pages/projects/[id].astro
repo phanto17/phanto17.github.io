@@ -40,7 +40,7 @@ const projectSchema = {
     <Prism top="-120px" />
     <div class="wrap">
       <p class="kicker" data-reveal style="--reveal-delay:0"><a href="/#projects">← Projects</a> · {d.genre}</p>
-      <h1><span class="kinetic-word" style="--word-idx:0">{d.title}</span></h1>
+      <h1><span class="kinetic-word" style="--word-idx:0" transition:name={`title-${project.id}`}>{d.title}</span></h1>
       <p class="lead" data-reveal style="--reveal-delay:1">{d.summary}</p>
       <p class="meta" data-reveal style="--reveal-delay:1">{d.engine} · {d.role} · {period}</p>
       {
@@ -83,7 +83,8 @@ const projectSchema = {
 
   <div class="wrap layout">
     <article class="prose">
-      <div data-reveal data-tilt data-tilt-max="2.5">
+      <!-- No data-reveal here: the cover morphs in from the project row (transition:name) and must be visible at once. -->
+      <div data-tilt data-tilt-max="2.5" transition:name={`cover-${project.id}`}>
         <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} priority />
       </div>
 
@@ -191,6 +192,8 @@ const projectSchema = {
   </div>
 
   <script>
+    // Runs on every arrival at a project page (first load and client-side navigation alike).
+    document.addEventListener('astro:page-load', () => {
     // 1. Copy button on code blocks
     document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
       if (pre.parentElement?.classList.contains('code-block-wrap')) return;
@@ -243,6 +246,7 @@ const projectSchema = {
         }
       });
     }
+    });
   </script>
 </Base>
 

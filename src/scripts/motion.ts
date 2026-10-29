@@ -150,6 +150,17 @@ export function init(): void {
   build();
   window.addEventListener('portfolio:motionchange', () => (isReducedMotion() ? teardown() : build()));
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => (isReducedMotion() ? teardown() : build()));
+  // ClientRouter navigations: release the old page's tweens and triggers before the swap, choreograph
+  // the new page once it is in (Base.astro has re-armed the reveal observer by then).
+  document.addEventListener('astro:before-swap', () => {
+    splits.forEach((s) => s.revert());
+    splits.length = 0;
+    ctx?.revert();
+    ctx = null;
+  });
+  document.addEventListener('astro:page-load', () => {
+    if (!isReducedMotion()) build();
+  });
   // Watchdog: if requestAnimationFrame stalls (throttled background pane, some embedded browsers),
   // tick GSAP by hand four times a second so nothing it faded out stays hidden.
   let lastFrame = gsap.ticker.frame;

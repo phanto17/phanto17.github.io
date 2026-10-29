@@ -223,9 +223,13 @@ const systemSpecs = [
   <script>
     // Zero-dependency 3D Isometric Tactical Grid + Rotating Wireframe Octahedron in Hero
     // Started after first paint: the hero text is the LCP element and must not wait for the canvas.
-    const canvas = document.getElementById('tactical-polyhedron') as HTMLCanvasElement | null;
+    // Re-armed on every arrival at the home page (ClientRouter); stopped before the page is swapped out.
     const startPolyhedron = () => {
-      if (!canvas) return;
+      const canvas = document.getElementById('tactical-polyhedron') as HTMLCanvasElement | null;
+      if (!canvas || canvas.dataset.live) return;
+      canvas.dataset.live = '1';
+      const page = new AbortController();
+      const { signal } = page;
       const ctx = canvas.getContext('2d');
       let angleY = 0.5;
       let angleX = 0.35;
@@ -330,7 +334,7 @@ const systemSpecs = [
         const reduced =
           document.documentElement.getAttribute('data-motion') === 'reduced' ||
           window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (!reduced && inView && !document.hidden) {
+        if (!reduced && inView && !document.hidden && !signal.aborted) {
           angleY += targetVelY;
           angleX += (targetAngleX - angleX) * 0.08;
           pulse += 0.04;
@@ -343,21 +347,32 @@ const systemSpecs = [
         frame = null;
         drawFrame();
       };
-      window.addEventListener('portfolio:motionchange', resumeDrawing);
-      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', resumeDrawing);
-      document.addEventListener('visibilitychange', resumeDrawing);
+      window.addEventListener('portfolio:motionchange', resumeDrawing, { signal });
+      window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', resumeDrawing, { signal });
+      document.addEventListener('visibilitychange', resumeDrawing, { signal });
       if ('IntersectionObserver' in window) {
         new IntersectionObserver(([entry]) => {
           inView = entry.isIntersecting;
           resumeDrawing();
         }).observe(canvas);
       }
+      document.addEventListener(
+        'astro:before-swap',
+        () => {
+          if (frame !== null) cancelAnimationFrame(frame);
+          frame = null;
+          page.abort();
+        },
+        { once: true, signal },
+      );
       drawFrame();
     };
     const idle =
       (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number })
         .requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200));
-    idle(startPolyhedron, { timeout: 1500 });
+    document.addEventListener('astro:page-load', () => {
+      if (document.getElementById('tactical-polyhedron')) idle(startPolyhedron, { timeout: 1500 });
+    });
   </script>
 </Base>
 

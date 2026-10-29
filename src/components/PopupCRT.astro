@@ -31,6 +31,7 @@ const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
               class={`crt-stage-tab ${idx === 0 ? 'is-active' : ''}`}
               data-stage-target={stg.id}
               aria-pressed={idx === 0 ? 'true' : 'false'}
+              aria-keyshortcuts={idx < 9 ? String(idx + 1) : undefined}
               data-crt-ripple
             >
               {String(idx + 1).padStart(2, '0')} · {stg.label}
@@ -38,7 +39,7 @@ const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
           ))
         }
       </div>
-      <button type="button" id="tg-close-popup" class="crt-close-btn" aria-label="Close CRT terminal (Escape)" data-crt-ripple>
+      <button type="button" id="tg-close-popup" class="crt-close-btn" aria-label="Close CRT terminal (Escape)" aria-keyshortcuts="Escape" data-crt-ripple>
         [ESC ×]
       </button>
     </div>

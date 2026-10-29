@@ -94,18 +94,38 @@ export function init(canvas: HTMLCanvasElement): void {
   const u: Uniforms = {};
   ['u_res', 'u_time', 'u_mouse', 'u_scroll', 'u_c0', 'u_c1', 'u_c2', 'u_c3', 'u_c4', 'u_bg', 'u_lane', 'u_edge', 'u_bloom', 'u_half', 'u_feather'].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
 
+  // Theme colours: the six palette uniforms ease toward the new theme over a few frames instead of
+  // snapping, so a theme change is a cross-fade in the field too (a still frame just takes the target).
+  const target: number[][] = [];
+  const current: number[][] = [];
+  let settling = false;
   const applyTheme = () => {
-    const c = ['--field-1', '--field-2', '--field-3', '--field-4', '--field-5'].map((n, i) => cssColour(n, ['#ed8a3f', '#e1241f', '#251218', '#162c30', '#445951'][i]));
-    c.forEach((rgb, i) => gl.uniform3fv(u[`u_c${i}`], rgb));
-    gl.uniform3fv(u.u_bg, cssColour('--bg', '#1a1713'));
+    const names = ['--field-1', '--field-2', '--field-3', '--field-4', '--field-5', '--bg'];
+    const fallback = ['#ed8a3f', '#e1241f', '#251218', '#162c30', '#445951', '#1a1713'];
+    names.forEach((n, i) => {
+      target[i] = cssColour(n, fallback[i]);
+      if (!current[i]) current[i] = [...target[i]];
+    });
     const num = (n: string, f: number) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || f;
     gl.uniform1f(u.u_lane, num('--field-lane', 0.2));
     gl.uniform1f(u.u_edge, num('--field-edge', 0.62));
     gl.uniform1f(u.u_bloom, num('--field-bloom', 0.16));
+    settling = true;
+    kick();
   };
-  applyTheme();
-  new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
+  /** Move the palette toward the theme and upload it; returns true while still moving. */
+  const settleColours = (snap: boolean): boolean => {
+    let moving = false;
+    for (let i = 0; i < target.length; i++) {
+      for (let k = 0; k < 3; k++) {
+        const d = target[i][k] - current[i][k];
+        if (snap || Math.abs(d) < 0.002) current[i][k] = target[i][k];
+        else { current[i][k] += d * 0.14; moving = true; }
+      }
+      gl.uniform3fv(i < 5 ? u[`u_c${i}`] : u.u_bg, current[i]);
+    }
+    return moving;
+  };
 
   let w = 0, h = 0;
   const resize = () => {
@@ -123,10 +143,10 @@ export function init(canvas: HTMLCanvasElement): void {
   resize();
   window.addEventListener('resize', resize, { passive: true });
 
-  const target = { x: 0.5, y: 0.55 };
+  const pointer = { x: 0.5, y: 0.55 };
   const mouse = { x: 0.5, y: 0.55 };
-  window.addEventListener('pointermove', (e) => { target.x = e.clientX / window.innerWidth; target.y = 1 - e.clientY / window.innerHeight; }, { passive: true });
-  window.addEventListener('pointerleave', () => { target.x = 0.5; target.y = 0.55; });
+  window.addEventListener('pointermove', (e) => { pointer.x = e.clientX / window.innerWidth; pointer.y = 1 - e.clientY / window.innerHeight; }, { passive: true });
+  window.addEventListener('pointerleave', () => { pointer.x = 0.5; pointer.y = 0.55; });
 
   const start = performance.now();
   let last = 0;
@@ -137,14 +157,18 @@ export function init(canvas: HTMLCanvasElement): void {
     if (!still && now - last < 1000 / 30) { raf = requestAnimationFrame(draw); return; }
     last = now;
     const k = still ? 1 : 0.08;
-    mouse.x += (target.x - mouse.x) * k; mouse.y += (target.y - mouse.y) * k;
+    mouse.x += (pointer.x - mouse.x) * k; mouse.y += (pointer.y - mouse.y) * k;
+    if (settling) settling = settleColours(still);
     gl.uniform1f(u.u_time, still ? 40 : (now - start) / 1000);
     gl.uniform2f(u.u_mouse, mouse.x, mouse.y);
     gl.uniform1f(u.u_scroll, window.scrollY);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
-    if (!still && !document.hidden) raf = requestAnimationFrame(draw);
+    if ((!still || settling) && !document.hidden) raf = requestAnimationFrame(draw);
   };
   const kick = () => { if (raf === null) raf = requestAnimationFrame(draw); };
+  applyTheme();
+  new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
   kick();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
   window.addEventListener('portfolio:motionchange', kick);

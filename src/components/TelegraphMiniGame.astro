@@ -130,11 +130,18 @@ import PopupCRT from './PopupCRT.astro';
 
 <script>
   // The Telegraph Recall script is the largest on the page and nothing above the fold needs it:
-  // load it when the section comes within 600px of the viewport (or at once without IntersectionObserver).
-  const lab = document.getElementById('lab');
-  let loading: Promise<unknown> | null = null;
-  const load = () => (loading ??= import('../scripts/telegraph-ui'));
-  if (lab && 'IntersectionObserver' in window) {
+  // load it when the section comes within 600px of the viewport (or at once without IntersectionObserver,
+  // or when the URL deep-links into the lab). Re-armed on every arrival at the home page: the module is
+  // cached after the first import and its init() binds the fresh DOM.
+  let loading: Promise<{ init: () => void }> | null = null;
+  const load = () => (loading ??= import('../scripts/telegraph-ui')).then((m) => m.init());
+  const arm = () => {
+    const lab = document.getElementById('lab');
+    if (!lab || lab.dataset.tgReady) return;
+    if (/^#lab(\?|$)/.test(location.hash) || !('IntersectionObserver' in window)) {
+      void load();
+      return;
+    }
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((entry) => entry.isIntersecting)) {
@@ -147,9 +154,8 @@ import PopupCRT from './PopupCRT.astro';
     io.observe(lab);
     lab.addEventListener('pointerenter', () => void load(), { once: true });
     lab.addEventListener('focusin', () => void load(), { once: true });
-  } else {
-    void load();
-  }
+  };
+  document.addEventListener('astro:page-load', arm);
 </script>
 
 <style>
@@ -192,23 +198,7 @@ import PopupCRT from './PopupCRT.astro';
     display: inline-block;
   }
 
-  :global(.crt-click-ripple) {
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    pointer-events: none;
-    background: radial-gradient(circle, rgba(246, 211, 112, 0.75) 0%, rgba(242, 124, 82, 0.35) 55%, transparent 75%);
-    transform: translate(-50%, -50%) scale(0.4);
-    animation: crtRippleExpand 0.58s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    z-index: 5;
-  }
-  @keyframes crtRippleExpand {
-    to {
-      transform: translate(-50%, -50%) scale(16);
-      opacity: 0;
-    }
-  }
+  /* The click ripple (.crt-click-ripple) is site-wide now: global.css. */
 
   /* 4x4 Tactical Board Cabinet */
   .cabinet {

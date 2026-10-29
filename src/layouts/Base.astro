@@ -1,5 +1,6 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site } from '../data/site';
@@ -56,7 +57,8 @@ const jsonLd = schema ?? defaultSchema;
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
-    <meta name="theme-color" content="#1a1713" />
+    <!-- Browser chrome colour follows the theme (set by the inline script below and by the theme switch). -->
+    <meta name="theme-color" id="theme-color" content="#1a1713" transition:persist="theme-color" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
@@ -72,39 +74,69 @@ const jsonLd = schema ?? defaultSchema;
     <link rel="preload" href="/fonts/dm-sans-normal-400-600-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-mono-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin />
     {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+    <!-- Page-to-page navigation with the View Transitions API (a CRT power-cycle, see global.css). -->
+    <ClientRouter />
     <script is:inline>
       (function () {
+        var root = document.documentElement;
+        // Page background per theme; must match `bg` in design/tokens.json.
+        var themeBg = { prism: '#1a1713', paper: '#f4ede1', crt: '#070b09' };
         try {
           var savedTheme = localStorage.getItem('portfolio-theme');
           if (savedTheme === 'prism' || savedTheme === 'paper' || savedTheme === 'crt') {
-            document.documentElement.setAttribute('data-theme', savedTheme);
+            root.setAttribute('data-theme', savedTheme);
           }
           var savedMotion = localStorage.getItem('portfolio-motion');
           if (savedMotion === 'reduced') {
-            document.documentElement.setAttribute('data-motion', 'reduced');
+            root.setAttribute('data-motion', 'reduced');
           } else {
-            document.documentElement.classList.add('js-motion');
+            root.classList.add('js-motion');
           }
+          if (localStorage.getItem('portfolio-sound') === 'on') root.setAttribute('data-sound', 'on');
         } catch (e) {
-          document.documentElement.classList.add('js-motion');
+          root.classList.add('js-motion');
         }
+        var theme = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'prism');
+        var meta = document.getElementById('theme-color');
+        if (meta) meta.setAttribute('content', themeBg[theme] || themeBg.prism);
       })();
     </script>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
-    <canvas id="signal-field" class="signal-field" aria-hidden="true"></canvas>
-    <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true"></div>
+    <canvas id="signal-field" class="signal-field" aria-hidden="true" transition:persist="signal-field"></canvas>
+    <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
     <Nav />
     <main id="main">
       <slot />
     </main>
     <Footer />
     <script>
+      import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
+
+      declare global {
+        interface Window {
+          portfolioReveal?: { io: IntersectionObserver; els: HTMLElement[] };
+          /** Site-wide click sound (opt-in, default off). Persisted in localStorage as `portfolio-sound`. */
+          setPortfolioSound?: (on: boolean) => void;
+        }
+      }
+
+      const root = document.documentElement;
+      const isMotionAllowed = () =>
+        root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      // ---------------------------------------------------------------------------------------------
+      // Per-page bindings. With the ClientRouter this module runs once per session, so everything
+      // that binds to elements of the page re-runs on `astro:page-load` (which also fires on the
+      // first load, after `load`). Listeners on `window` and `document` are registered once, below.
+      // ---------------------------------------------------------------------------------------------
+
       // 1. Scroll-triggered Fade-In & Stagger Choreography
       const initScrollReveal = () => {
+        window.portfolioReveal?.io.disconnect();
         const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
-        if (!('IntersectionObserver' in window) || document.documentElement.getAttribute('data-motion') === 'reduced') {
+        if (!('IntersectionObserver' in window) || !isMotionAllowed()) {
           els.forEach((el) => el.classList.add('is-visible'));
           return;
         }
@@ -122,61 +154,70 @@ const jsonLd = schema ?? defaultSchema;
         els.forEach((el) => io.observe(el));
         window.portfolioReveal = { io, els };
       };
-      initScrollReveal();
-
-      // 1b. Motion toolkit (GSAP, src/scripts/motion.ts): loaded after first paint, only when motion is
-      // allowed and data saver is off. Pages keep working without it; it only adds choreography.
-      let motionBooted = false;
-      const motionAllowed = () =>
-        document.documentElement.getAttribute('data-motion') !== 'reduced' &&
-        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      const bootMotion = () => {
-        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
-        if (motionBooted || nav.connection?.saveData || !motionAllowed()) return;
-        motionBooted = true;
-        void import('../scripts/motion').then((m) => m.init());
-      };
-      if (document.readyState === 'complete') bootMotion();
-      else window.addEventListener('load', bootMotion, { once: true });
-      window.addEventListener('portfolio:motionchange', bootMotion);
-
-      // 1c. Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
-      // after first paint; renders one still frame under reduced motion; skipped with data saver or no WebGL.
-      const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
-      const bootField = () => {
-        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
-        if (!fieldCanvas || nav.connection?.saveData) return;
-        void import('../scripts/field').then((f) => f.init(fieldCanvas));
-      };
-      if (document.readyState === 'complete') bootField();
-      else window.addEventListener('load', bootField, { once: true });
 
       // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards
-      const isMotionAllowed = () =>
-        document.documentElement.getAttribute('data-motion') !== 'reduced' &&
-        !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
-        const maxDeg = Number(card.dataset.tiltMax ?? 4.5);
-        card.addEventListener('pointermove', (e) => {
-          if (!isMotionAllowed() || e.pointerType === 'touch') return;
-          const rect = card.getBoundingClientRect();
-          const x = e.clientX - rect.left;
-          const y = e.clientY - rect.top;
-          const nx = x / rect.width - 0.5;
-          const ny = y / rect.height - 0.5;
-          card.style.setProperty('--rx', `${(-ny * maxDeg * 2).toFixed(2)}deg`);
-          card.style.setProperty('--ry', `${(nx * maxDeg * 2).toFixed(2)}deg`);
-          card.style.setProperty('--mx', `${x.toFixed(0)}px`);
-          card.style.setProperty('--my', `${y.toFixed(0)}px`);
-          card.style.setProperty('--glare-opacity', '1');
-          card.style.setProperty('--lift', '-3px');
+      const bindTilt = () => {
+        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
+          const maxDeg = Number(card.dataset.tiltMax ?? 4.5);
+          card.addEventListener('pointermove', (e) => {
+            if (!isMotionAllowed() || e.pointerType === 'touch') return;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const nx = x / rect.width - 0.5;
+            const ny = y / rect.height - 0.5;
+            card.style.setProperty('--rx', `${(-ny * maxDeg * 2).toFixed(2)}deg`);
+            card.style.setProperty('--ry', `${(nx * maxDeg * 2).toFixed(2)}deg`);
+            card.style.setProperty('--mx', `${x.toFixed(0)}px`);
+            card.style.setProperty('--my', `${y.toFixed(0)}px`);
+            card.style.setProperty('--glare-opacity', '1');
+            card.style.setProperty('--lift', '-3px');
+          });
+          card.addEventListener('pointerleave', () => {
+            card.style.setProperty('--rx', '0deg');
+            card.style.setProperty('--ry', '0deg');
+            card.style.setProperty('--glare-opacity', '0');
+            card.style.setProperty('--lift', '0px');
+          });
         });
-        card.addEventListener('pointerleave', () => {
-          card.style.setProperty('--rx', '0deg');
-          card.style.setProperty('--ry', '0deg');
-          card.style.setProperty('--glare-opacity', '0');
-          card.style.setProperty('--lift', '0px');
+      };
+
+      // 3. Magnetic Micro-Interaction on .btn elements
+      const bindMagnetic = () => {
+        document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
+          btn.addEventListener('pointermove', (e) => {
+            if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
+            const rect = btn.getBoundingClientRect();
+            const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
+            const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
+            btn.style.setProperty('--bx', `${dx.toFixed(1)}px`);
+            btn.style.setProperty('--by', `${dy.toFixed(1)}px`);
+          });
+          btn.addEventListener('pointerleave', () => {
+            btn.style.setProperty('--bx', '0px');
+            btn.style.setProperty('--by', '0px');
+          });
+        });
+      };
+
+      document.addEventListener('astro:page-load', () => {
+        initScrollReveal();
+        bindTilt();
+        bindMagnetic();
+      });
+
+      // ---------------------------------------------------------------------------------------------
+      // Session-wide behaviour (registered once).
+      // ---------------------------------------------------------------------------------------------
+
+      // The router rebuilds <html>'s attributes from the new page, which never ran the theme script:
+      // carry the theme, motion, sound and CRT switches (and the js-* classes) across.
+      document.addEventListener('astro:before-swap', (event) => {
+        const next = (event as TransitionBeforeSwapEvent).newDocument.documentElement;
+        ['class', 'data-theme', 'data-motion', 'data-sound', 'data-crt'].forEach((name) => {
+          const value = root.getAttribute(name);
+          if (value === null) next.removeAttribute(name);
+          else next.setAttribute(name, value);
         });
       });
 
@@ -195,21 +236,30 @@ const jsonLd = schema ?? defaultSchema;
         });
       });
 
-      // 3. Magnetic Micro-Interaction on .btn elements
-      document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
-        btn.addEventListener('pointermove', (e) => {
-          if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
-          const rect = btn.getBoundingClientRect();
-          const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
-          const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
-          btn.style.setProperty('--bx', `${dx.toFixed(1)}px`);
-          btn.style.setProperty('--by', `${dy.toFixed(1)}px`);
-        });
-        btn.addEventListener('pointerleave', () => {
-          btn.style.setProperty('--bx', '0px');
-          btn.style.setProperty('--by', '0px');
-        });
-      });
+      // Motion toolkit (GSAP, src/scripts/motion.ts): loaded after first paint, only when motion is
+      // allowed and data saver is off. Pages keep working without it; it only adds choreography.
+      let motionBooted = false;
+      const bootMotion = () => {
+        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+        if (motionBooted || nav.connection?.saveData || !isMotionAllowed()) return;
+        motionBooted = true;
+        void import('../scripts/motion').then((m) => m.init());
+      };
+      if (document.readyState === 'complete') bootMotion();
+      else window.addEventListener('load', bootMotion, { once: true });
+      window.addEventListener('portfolio:motionchange', bootMotion);
+
+      // Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
+      // after first paint; renders one still frame under reduced motion; skipped with data saver or no
+      // WebGL. The canvas persists across page navigations, so the WebGL context is created once.
+      const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
+      const bootField = () => {
+        const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
+        if (!fieldCanvas || nav.connection?.saveData) return;
+        void import('../scripts/field').then((f) => f.init(fieldCanvas));
+      };
+      if (document.readyState === 'complete') bootField();
+      else window.addEventListener('load', bootField, { once: true });
 
       // 4. Custom Tactical Cursor Reticle (fine pointer only)
       const reticle = document.getElementById('cursor-reticle');
@@ -229,7 +279,57 @@ const jsonLd = schema ?? defaultSchema;
         });
       }
 
-      // 5. Privacy-first, cookieless telemetry dispatcher for outbound & portfolio actions
+      // 5. Retro micro-interactions, site-wide: every control answers a click with a phosphor ripple
+      // and, when the visitor has turned sound on, a short synth click. Sound is opt-in and off by
+      // default; the switch lives on the Telegraph Recall cabinet and is remembered per browser.
+      const RIPPLE_HOSTS = '[data-crt-ripple], .btn, .pill, .proj, .crt-stage3-node';
+      let audio: AudioContext | null = null;
+      const clickTone = () => {
+        try {
+          audio = audio ?? new AudioContext();
+          const t = audio.currentTime;
+          const osc = audio.createOscillator();
+          const gain = audio.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(1760, t);
+          osc.frequency.exponentialRampToValueAtTime(880, t + 0.04);
+          gain.gain.setValueAtTime(0.035, t);
+          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
+          osc.connect(gain).connect(audio.destination);
+          osc.start(t);
+          osc.stop(t + 0.06);
+        } catch {
+          /* AudioContext unavailable or blocked */
+        }
+      };
+      window.setPortfolioSound = (on) => {
+        if (on) root.setAttribute('data-sound', 'on');
+        else root.removeAttribute('data-sound');
+        try {
+          localStorage.setItem('portfolio-sound', on ? 'on' : 'off');
+        } catch {
+          /* storage unavailable */
+        }
+        window.dispatchEvent(new Event('portfolio:soundchange'));
+      };
+      document.addEventListener('click', (e) => {
+        const host = (e.target as HTMLElement | null)?.closest<HTMLElement>(RIPPLE_HOSTS);
+        if (!host) return;
+        if (root.getAttribute('data-sound') === 'on') clickTone();
+        if (!isMotionAllowed()) return;
+        const rect = host.getBoundingClientRect();
+        const x = e.detail === 0 ? rect.width / 2 : e.clientX - rect.left;
+        const y = e.detail === 0 ? rect.height / 2 : e.clientY - rect.top;
+        const ripple = document.createElement('span');
+        ripple.className = 'crt-click-ripple';
+        ripple.style.left = `${x}px`;
+        ripple.style.top = `${y}px`;
+        host.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+        setTimeout(() => ripple.remove(), 650);
+      });
+
+      // 6. Privacy-first, cookieless telemetry dispatcher for outbound & portfolio actions
       document.addEventListener('click', (e) => {
         const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-track]');
         if (!target) return;

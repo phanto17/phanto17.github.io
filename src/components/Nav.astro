@@ -2,7 +2,8 @@
 import { site, nav } from '../data/site';
 ---
 
-<nav class="nav" aria-label="Main">
+<!-- The nav persists across client-side page navigations: its state and listeners survive the swap. -->
+<nav class="nav" aria-label="Main" transition:persist="site-nav">
   <div class="wrap bar">
     <a class="brand" href="/">{site.name} <em>— field notes</em></a>
     <ul id="nav-links" class="nav-list">
@@ -45,7 +46,7 @@ import { site, nav } from '../data/site';
         <span class="menu-icon" aria-hidden="true">☰</span>
         <span class="menu-text">Menu</span>
       </button>
-      <a class="btn cv" href={site.cv} download data-track="download-cv" data-track-meta="nav">
+      <a class="btn cv" href={site.cv} download data-track="download-cv" data-track-meta="nav" data-astro-prefetch="false">
         <span class="long">Download CV</span><span class="short">CV</span>
       </a>
     </div>
@@ -53,7 +54,8 @@ import { site, nav } from '../data/site';
 </nav>
 
 <script>
-  document.documentElement.classList.add('js-nav');
+  const root = document.documentElement;
+  root.classList.add('js-nav');
   const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
   const list = document.querySelector<HTMLUListElement>('#nav-links');
   const navEl = document.querySelector<HTMLElement>('.nav');
@@ -61,6 +63,8 @@ import { site, nav } from '../data/site';
   const themeLabel = document.querySelector<HTMLElement>('#theme-label');
   const motionButtons = document.querySelectorAll<HTMLButtonElement>('[data-motion-switcher]');
   const motionLabels = document.querySelectorAll<HTMLElement>('[data-motion-label]');
+  const isMotionAllowed = () =>
+    root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // 1. Dynamic Theme Switcher (Prism Dark -> Daylight Paper -> CRT Phosphor)
   const themes = ['prism', 'paper', 'crt'] as const;
@@ -71,35 +75,65 @@ import { site, nav } from '../data/site';
   };
 
   const getCurrentTheme = (): (typeof themes)[number] => {
-    const attr = document.documentElement.getAttribute('data-theme');
+    const attr = root.getAttribute('data-theme');
     if (attr === 'paper' || attr === 'crt' || attr === 'prism') return attr;
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'prism';
+  };
+
+  /** The browser chrome (address bar, task switcher) takes the theme's page background. */
+  const applyThemeColor = () => {
+    const meta = document.getElementById('theme-color');
+    const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+    if (meta && bg) meta.setAttribute('content', bg);
   };
 
   const syncThemeUi = () => {
     const cur = getCurrentTheme();
     if (themeLabel) themeLabel.textContent = themeNames[cur];
     themeBtn?.setAttribute('aria-label', `Current theme: ${themeNames[cur]}. Change theme`);
+    applyThemeColor();
   };
   syncThemeUi();
+  // The OS scheme changing live: the tokens follow it in CSS when no theme is saved; keep the UI in step.
   window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', syncThemeUi);
+  document.addEventListener('astro:page-load', applyThemeColor);
+
+  /**
+   * A theme change is a CRT power-cycle: surfaces and text cross-fade for one lift duration while
+   * the page flickers once (360ms), both skipped under reduced motion.
+   */
+  let flickerTimer: number | null = null;
+  let switchTimer: number | null = null;
+  const flickerTheme = () => {
+    if (!isMotionAllowed()) return;
+    root.classList.add('is-theme-switching');
+    root.classList.remove('is-theme-flicker');
+    void root.offsetWidth;
+    root.classList.add('is-theme-flicker');
+    if (flickerTimer !== null) window.clearTimeout(flickerTimer);
+    if (switchTimer !== null) window.clearTimeout(switchTimer);
+    flickerTimer = window.setTimeout(() => root.classList.remove('is-theme-flicker'), 400);
+    switchTimer = window.setTimeout(() => root.classList.remove('is-theme-switching'), 320);
+  };
 
   themeBtn?.addEventListener('click', () => {
     const cur = getCurrentTheme();
     const next = themes[(themes.indexOf(cur) + 1) % themes.length];
-    document.documentElement.setAttribute('data-theme', next);
+    flickerTheme();
+    root.setAttribute('data-theme', next);
     try {
       localStorage.setItem('portfolio-theme', next);
     } catch {
       /* storage unavailable */
     }
     syncThemeUi();
+    window.dispatchEvent(new Event('portfolio:themechange'));
   });
 
   // 2. Accessibility Motion Switcher (Full vs Reduced)
   const systemMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const syncMotionUi = () => {
-    const isReduced = systemMotion.matches || document.documentElement.getAttribute('data-motion') === 'reduced';
+    const isReduced = systemMotion.matches || root.getAttribute('data-motion') === 'reduced';
     motionButtons.forEach((button) => {
       button.setAttribute('aria-pressed', String(!isReduced));
       button.disabled = systemMotion.matches;
@@ -114,10 +148,10 @@ import { site, nav } from '../data/site';
   });
 
   motionButtons.forEach((button) => button.addEventListener('click', () => {
-    const isReduced = document.documentElement.getAttribute('data-motion') === 'reduced';
+    const isReduced = root.getAttribute('data-motion') === 'reduced';
     if (isReduced) {
-      document.documentElement.removeAttribute('data-motion');
-      document.documentElement.classList.add('js-motion');
+      root.removeAttribute('data-motion');
+      root.classList.add('js-motion');
       document.querySelectorAll<HTMLElement>('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
       try {
         localStorage.setItem('portfolio-motion', 'full');
@@ -125,8 +159,8 @@ import { site, nav } from '../data/site';
         /* ignore */
       }
     } else {
-      document.documentElement.setAttribute('data-motion', 'reduced');
-      document.documentElement.classList.remove('js-motion');
+      root.setAttribute('data-motion', 'reduced');
+      root.classList.remove('js-motion');
       try {
         localStorage.setItem('portfolio-motion', 'reduced');
       } catch {
@@ -169,11 +203,23 @@ import { site, nav } from '../data/site';
     });
 
     window.matchMedia('(max-width: 980px)').addEventListener('change', () => setOpen(false));
+    document.addEventListener('astro:after-swap', () => setOpen(false));
   }
 
-  // 4. Active section scroll-spy on home page
-  if (window.location.pathname === '/' || window.location.pathname === '/index.html') {
-    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+  // 4. Active section scroll-spy on the home page (re-armed after every page navigation)
+  let spy: IntersectionObserver | null = null;
+  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+  const armScrollSpy = () => {
+    spy?.disconnect();
+    spy = null;
+    const onHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
+    if (!onHome) {
+      links.forEach((l) => {
+        l.classList.remove('active');
+        l.removeAttribute('aria-current');
+      });
+      return;
+    }
     const sections = links
       .map((l) => {
         const hash = l.getAttribute('href')?.replace(/^\//, '');
@@ -182,7 +228,7 @@ import { site, nav } from '../data/site';
       .filter((s): s is HTMLElement => Boolean(s));
 
     if ('IntersectionObserver' in window && sections.length > 0) {
-      const obs = new IntersectionObserver(
+      spy = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
@@ -197,9 +243,11 @@ import { site, nav } from '../data/site';
         },
         { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
       );
-      sections.forEach((s) => obs.observe(s));
+      sections.forEach((s) => spy?.observe(s));
     }
-  }
+  };
+  armScrollSpy();
+  document.addEventListener('astro:page-load', armScrollSpy);
 </script>
 
 <style>

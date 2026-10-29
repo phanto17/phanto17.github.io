@@ -179,3 +179,60 @@ component.
 Not measured: GPU cost on a phone. The shader is cheap (five octaves of value noise at half
 resolution, 30 fps cap) but it should be profiled on a representative device before the next
 release; `field-edge` and the 0.5 resolution scale are the knobs if it runs hot.
+
+### Phase 2, navigation slice (2026-10-29)
+
+Four plan tasks landed together: view transitions, dynamic theming polish, stage deep links and
+the retro micro-interactions site-wide.
+
+**View transitions.** `Base.astro` renders Astro's `<ClientRouter />`, so moving between the home
+page and a project page is a client-side swap wrapped in the View Transitions API. The root
+animation in `global.css` is a CRT power-cycle: the old page collapses bright in 160ms, the new one
+flickers in over 420ms with the popup's stage-flicker curve. Each project row's cover and title
+carry `transition:name` (`cover-<id>`, `title-<id>`) and morph into the subpage hero; the hero
+figure lost its `data-reveal` so the morph lands on a visible element. The nav, the signal-field
+canvas, the cursor reticle and the `theme-color` meta persist across navigations (`transition:persist`),
+so the WebGL context is created once per session and the nav keeps its state and listeners. Astro
+rebuilds the `<html>` attributes from the new page, which never ran the theme script, so a
+`astro:before-swap` handler copies `class`, `data-theme`, `data-motion`, `data-sound` and `data-crt`
+onto the incoming document. Everything that binds to page elements now runs on `astro:page-load`
+(reveals, tilt, magnetic buttons, the hero canvas, the project page's copy buttons and CRT toggle,
+the scroll-spy); listeners on `window` and `document` are registered once. `motion.ts` reverts its
+GSAP context before a swap and rebuilds it after; `telegraph-ui.ts` became an `init()` that the lazy
+loader calls on every arrival at the home page, with its global listeners on an `AbortController`
+that is aborted before the page leaves (timers, sequences and the popup are cancelled too). Reduced
+motion disables the transition animations through both switches; the CV link opts out of the
+router's hover prefetch and keeps its native download.
+
+**Theming polish.** A theme change now cross-fades background, text and border colours for one lift
+duration and flickers the page once (360ms), both skipped under reduced motion; the signal field
+eases its palette toward the new theme over a few frames instead of snapping. The `theme-color`
+meta follows the theme's `bg` (set before paint by the inline script, updated by the switch, kept
+across navigations). With no saved theme the tokens already follow `prefers-color-scheme` live;
+the nav label and the field follow it too.
+
+**Stage deep links.** `/#lab?stage=welcome|animation-sequence|title-intro` scrolls to the lab and
+opens the popup on that stage, on first load, on `hashchange` and after a client-side navigation
+(the lazy loader imports the script at once when the hash targets the lab). While the popup is
+open the URL follows the stage with `replaceState` (no history entries); closing restores the hash
+the visitor arrived with, or leaves `#lab` after a deep link. Stage tabs carry `aria-keyshortcuts`
+(`1`, `2`, `3`) and the close button `aria-keyshortcuts="Escape"`.
+
+**Retro micro-interactions.** The phosphor click ripple is site-wide: one delegated listener in
+`Base.astro` answers clicks on `.btn`, `.pill`, project cards, stage nodes and every `data-crt-ripple`
+surface; the Telegraph section keeps only the telemetry (the PULSES counter). Sound is a site-wide,
+opt-in switch (`html[data-sound="on"]`, `localStorage['portfolio-sound']`, default off): the cabinet's
+Sound button sets it, and with it on every ripple also plays a 50ms synth click. The theme change
+flicker is the scanline flicker the plan asked for.
+
+Verified in headless Chrome (a 43-check script over the Chrome DevTools Protocol, run against the
+dev server and the production build, since the built-in browser pane cannot complete a view
+transition while hidden): the swap carries the html attributes, the nav and canvas are the same
+nodes after navigation, the project page scripts re-run, going back re-binds the game and the hero
+canvas, deep links open the right stage on load and across a navigation, the theme survives a
+navigation with the correct `theme-color`, sound and ripple work, no console errors, and the CV PDF
+is never prefetched. Screenshots of a mid-transition frame show the cover and title morphing.
+
+Sizes after this step (production build, gzip): the router 5.7 KB, the layout script 1.9 KB, the nav
+script 1.5 KB, the Telegraph loader 0.5 KB on every page; the lazy Telegraph chunk 6.7 KB, the field
+2.5 KB, GSAP unchanged at 48 KB. Not measured: mobile LCP, INP and CLS, and the GPU cost of the field.

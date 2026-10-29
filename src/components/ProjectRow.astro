@@ -41,7 +41,7 @@ const numStr = String(index + 1).padStart(2, '0');
         <span class="genre-badge">{d.genre}</span>
         <span class="date-badge">{d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</span>
       </div>
-      <h3><a href={href}>{d.title}</a></h3>
+      <h3><a href={href} transition:name={`title-${project.id}`}>{d.title}</a></h3>
       <p class="muted">{d.summary}</p>
       {d.highlights.length > 0 && <p class="meta"><b>{d.highlights.join(' · ')}</b></p>}
       {
@@ -81,7 +81,8 @@ const numStr = String(index + 1).padStart(2, '0');
         }
       </div>
     </div>
-    <a class="cover" href={href} aria-label={`${d.title} write-up`}>
+    <!-- transition:name pairs this cover with the subpage hero figure: it morphs across the page change. -->
+    <a class="cover" href={href} aria-label={`${d.title} write-up`} transition:name={`cover-${project.id}`}>
       <Figure
         type={cover?.type}
         src={cover?.src}

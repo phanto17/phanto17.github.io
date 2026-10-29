@@ -107,6 +107,10 @@ Scale (desktop → mobile):
 - Hover: translateY(−1…−3 px) + glow box-shadow, 200–250 ms ease.
 - Prism band: slow drift (`transform` over 28 s), paused offscreen and disabled under
   `prefers-reduced-motion` or the site motion setting, as is every transition.
+- Page transitions (2026-10-29): Astro's ClientRouter with a CRT power-cycle root animation (160ms out, 420ms in),
+  project covers and titles morphing into the subpage hero (`transition:name`), nav / signal field / reticle persisted.
+  A theme change cross-fades colours for one lift and flickers the page once (360ms); the `theme-color` meta follows
+  the theme. Stage deep links: `/#lab?stage=<id>`. The click ripple and the opt-in click sound answer every control.
 - No parallax, no autoplaying video with sound.
 
 The site offers Prism, Paper and CRT themes. `--action-text` supplies readable link text
