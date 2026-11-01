@@ -123,6 +123,10 @@ foreground and background pairs in each state rather than assuming the Prism rat
 apply to all themes. The manual-cue option in Telegraph Recall lets players advance
 each signal at their own pace, and game sound starts off.
 
+A fourth theme, **Signal** (plum night `#0d0a14`, the glass keys' cyan `#5fd7ff` and magenta `#ff4fa3` as accents),
+is hidden until Telegraph Recall is cleared in that browser; the theme key then cycles into it after CRT
+(2026-11-01, `src/scripts/signal-reward.ts`). Its inks keep the same ≥ 4.5:1 rule on `bg` and `surface`.
+
 ## 7. Imagery rules & CRT viewport
 
 Screenshots/GIFs sit in `--r-md` frames on `--surface` with a 1 px `--umber` border, a faint

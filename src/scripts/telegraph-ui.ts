@@ -7,6 +7,7 @@ import {
   type PortalNodeId,
   type StageId,
 } from './telegraph-engine';
+import { readReward, recordClear, saveReward } from './signal-reward';
 
 const ARROW: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
 const BEST_KEY = 'portfolio-tg-best';
@@ -294,7 +295,12 @@ export function init(): void {
     playTone(220, 'sine', 0.1);
     replaceHash(hashBeforeOpen !== null && !parseLabHash(hashBeforeOpen).stage ? hashBeforeOpen : '#lab');
     hashBeforeOpen = null;
-    lastFocusedBeforeModal?.focus();
+    // Back to the element that opened the popup; if it cannot take focus any more (the signal landing's
+    // key is hidden once it has been used, a deep link had none), the lab's own key stands in.
+    const back = lastFocusedBeforeModal;
+    lastFocusedBeforeModal = null;
+    back?.focus();
+    if (!back || document.activeElement !== back) openPopupBtn?.focus();
   }
 
   const applyLabHash = () => {
@@ -591,9 +597,22 @@ export function init(): void {
         best = outcome.score;
         saveBest(best);
       }
+      // The reward (hero stamp + Signal theme, src/scripts/signal-reward.ts): recorded per browser and
+      // announced to the page; the stamp and the theme key listen.
+      let storage: Storage | null = null;
+      try {
+        storage = localStorage;
+      } catch {
+        storage = null;
+      }
+      const firstUnlock = !document.documentElement.classList.contains('has-signal');
+      const reward = recordClear(readReward(storage), outcome.score, new Date());
+      saveReward(storage, reward);
+      window.dispatchEvent(new CustomEvent('portfolio:signalcleared', { detail: { reward, score: outcome.score } }));
       if (statusEl) {
         const record = newBest ? 'a new best' : `best ${best}`;
-        statusEl.textContent = `All ${outcome.totalWaves} waves cleared! Last wave ${seconds(outcome.waveMs)} (+${outcome.waveScore}). Score ${outcome.score}, ${record}.`;
+        const unlock = firstUnlock ? ' Signal cleared: the hero stamp and the Signal theme are unlocked.' : '';
+        statusEl.textContent = `All ${outcome.totalWaves} waves cleared! Last wave ${seconds(outcome.waveMs)} (+${outcome.waveScore}). Score ${outcome.score}, ${record}.${unlock}`;
       }
       if (startBtn) startBtn.textContent = '↻ Play Again';
       window.dispatchEvent(

@@ -429,3 +429,177 @@ the site. The owner decides.
 | R8 | Reference sites, properly | Open dontlookup.app, yaas-energy.com and mecha-xyz.webflow.io in a real browser and note the concrete patterns (a text-only fetch on 2026-11-01 got only the loading screens of the first two). | Ground R2, R4 and R5 in what the owner actually liked. | 1 |
 
 Lenis smooth scroll, the WebGL hero and the performance gate stay blocked on the phone trace below.
+
+#### R8 — the reference sites in a real browser (2026-11-01)
+
+Opened in the desktop app's browser pane at 1024×768 (Chromium), with the analytics prompts declined.
+The pane renders WebGL and CSS animation, but it runs `requestAnimationFrame` only while visible, so
+scroll-driven work was checked by scrolling from script and reading the DOM, not by eye. "Unknown" marks
+what the pane could not show.
+
+**dontlookup.app** (a browser game, not a portfolio; the site the owner's "climactic panel" most
+resembles)
+
+- *First five seconds.* A cream page with a loader: a small coin mark and the word LOADING, while eight
+  coins drop in a 5 s CSS keyframe loop (`coindrop-0…7`, `pilewipe`). Then, in one shot: the hand-drawn
+  title image drops in (`dropIn`, 900 ms), a single sentence fades up after 500 ms ("You are very rich,
+  very tall, and standing on quite a lot of people."), and two pill keys rise after 900 ms: START and
+  TUTORIAL. Nothing else on screen except a one-line font credit at the foot. Behind the title, the crowd
+  scene (tall legs, little people) is already drawn. The analytics consent is a small card under the keys,
+  two keys, "Count me" / "No thanks", in the same voice.
+- *How the climactic panel is staged.* One image, one sentence, one primary key, one quiet secondary key,
+  no explanation. Start drops straight into play; Tutorial is a five-card deck (1 OF 5 counter, one
+  illustration, a two-line heading, three lines of body, SKIP / NEXT), so the explanation lives behind the
+  secondary key, never on the landing. In play, a yellow coaching card with a pointed corner sits next to
+  the first control ("RAISE THE FEE — Use +. …") and a one-line key legend sits at the foot:
+  `SPACE MENU · 1–9 PICK · ESC CANCEL · ↑↓ FEE`.
+- *Hover and click.* Paper-cut keys: hard 3–5 px ink offset shadow; hover rotates the key by about a
+  degree and pushes it 3 px toward the shadow while the shadow shrinks to 2×3 px; `:active` pushes it the
+  full way and the shadow goes to zero (`#intro-start:hover { transform: rotate(-1.2deg)
+  translate(3px,3px) }`). Secondary keys invert to ink on hover. Transitions 120–150 ms ease-out. Menu rows
+  expand in place on hover (`max-height` 420 ms with a 120 ms delay, inner content fading 280 ms after).
+- *Sections.* Not applicable: one screen, a HUD (money top-left, fee dial top-right, pause and "at your
+  feet" bottom-left, distraction keys bottom-right). The visual language is the thing to borrow: one
+  typeface pair (a rounded display face and Nunito), one ink colour, every control the same object.
+- Unknown: the crowd simulation's motion (a 0×0 canvas in the pane; the people were static).
+
+**yaas-energy.com** (a drinks brand site by DVIGA; GSAP + three.js)
+
+- *First five seconds.* A loader screen: a huge "LOADING ENERGY" wordmark over a pink-orange-violet
+  gradient, the five can characters in a row, and a percentage counter at the foot (seen at 90%). Then the
+  hero: a full-viewport three.js gradient canvas (1009×768) with the "YAAS" wordmark filling the width,
+  pill nav top-left (Flavors, About us, FAQ) and a Contacts pill top-right. The cookie card arrives last,
+  bottom-right, with "Cool, got it" / "No thanks".
+- *Climactic panel.* None as such; the hero itself is the moment. Its scroll is pinned: the intro wrapper
+  is 2458 px tall for a 768 px viewport, so the first three screens of scrolling play one scene (the cans
+  fly in and tumble over the wordmark, the tagline "Zero-sugar energy for people who move at their own
+  speed…" and "See the Flavors →" arrive under it).
+- *Sections, and how they differ.* Four GSAP pin spacers on the page (17,624 px tall in all). Each section
+  is a different object: the pinned hero scene; a "screen2" arc (6611 px) where the three cans hang in
+  space over a flat coral field while copy lines swap; a photo card deck ("scenario cards": full-bleed
+  photos of people with a can, a display-face caption and one sub-line each, e.g. "LATE-NIGHT GAMING
+  SESSION — When one more round decides everything"); the "advantages" section as five numbered white cards
+  (02 REAL INGREDIENTS, 03 ENERGY, NO CRASH …) sliding across a gradient; an FAQ accordion on plain
+  cream; an "about" screen that fades up from blur ("Not For Everyone. / For Our People."); a contact
+  block with a single e-mail link. The gradient background is per section, not a page-wide field.
+- *Hover and click.* Small and few: nav pills fill white on hover; CTAs invert and lift 1 px; flavour
+  thumbnails un-rotate and lift 4 px; gallery cards scale the can 1.12 and rotate it 10°. The slider stage
+  shows a grab cursor. No cursor-following element.
+- Unknown: the pinned scenes' intermediate frames (the pane only shows the state after each scroll jump)
+  and the loader's real duration.
+
+**mecha-xyz.webflow.io** (a VC firm site; Webflow + GSAP 3.15 with ScrollTrigger, SplitText,
+CustomEase, DrawSVG, ScrollTo, and Lenis 1.3)
+
+- *First five seconds.* A pale grey page and the MECHA logotype top-left; nothing else for the first
+  seven seconds in the pane. The hero line ("Robotics will knock over the global economy. Mecha deploys
+  physical automation into legacy industries") sits in a clipped box and is revealed line by line
+  (SplitText + mask) on the first scroll, so the first screen's reveal depends on scroll position, not a
+  timer. A tiny "┣━" progress mark and a page counter sit bottom-left.
+- *Climactic panel.* None. The page is a scrolled dossier.
+- *Sections, and how they differ.* A persistent left sidebar lists INVESTMENTS 01 / 02 / 03 with a
+  progress line under the active entry (`section-navi`), and a top-right pill group (INVESTMENTS, TEAM,
+  CONTACT, BLOG) hovers over an isometric line drawing; a "Join the revolution" plum CTA stays pinned
+  bottom-right the whole way. Each investment is one long section (1,400–1,950 px) built from the same
+  parts in a different arrangement: a tags row (`TOMORROWRECYCLING.COM · WASTE MANAGEMENT · ROBOTICS &
+  AI`), a two-line serif heading, one paragraph ending "Read more.", three stat tiles ("INCREASE IN
+  MATERIAL RECOVERY RATE 25%"), and WebM loops in offset frames (an isometric part drawing, a gripper, a
+  massage robot with a play key). The team section is a grid of portrait cards with a bulleted "career
+  tag" list each; the contact section is a three-field form. The page background changes colour between
+  sections via a `change-bg-element`.
+- *Hover and click.* Nav links swap their text upward (`translateY(-100%)`) on hover; in a list, hovering
+  one item dims the rest to 15–45% opacity (`:has(li:hover) li { opacity }`); link underlines grow from
+  0 to 100% width; the hamburger bars squeeze; buttons darken on `:active`. Smooth scroll is Lenis.
+- Unknown: the hero reveal's timing and any entrance animation on the cards (no running animations were
+  listed; GSAP tweens are not Web Animations).
+
+**What R2 and R3 take from this**
+
+- The landing panel copies dontlookup's economy: one line, one primary key, one quiet secondary key, the
+  explanation left to the thing the key opens (our intro popup is the "tutorial"). Entrance in three
+  beats (line, key, secondary) over about a second, not a loader. A one-line key legend
+  (`ESC CLOSE · ENTER PLAY`) is the one piece of instruction allowed, in the same mono as the site's labels.
+- The reward stamp borrows mecha's dossier tags (`SIGNAL CLEARED · 1200 PTS` as a tags row in the hero)
+  and dontlookup's single-object language (it is a glass key that cannot be pressed, not a new shape).
+- For later tasks: yaas's "every section a different object on its own ground" is the brief for R4;
+  mecha's sidebar index with a progress line and "same parts, rearranged" sections is the brief for R5;
+  the dim-the-siblings hover is a cheap win for the project rows.
+
+### Redesign, first slice: R8, R2 and R3 (2026-11-01)
+
+Built in one evening session on the owner's "reward, not a lock" decision. Nothing is committed; the
+owner reviews, then asks for the commit and the push.
+
+**R2 — Signal landing** (`src/components/SignalLanding.astro`, rules in `src/scripts/signal-reward.ts`)
+
+- On the document a visitor arrives on, if it is the home page with no hash, motion is allowed (OS
+  and the site switch), the panel has never been shown in this browser and the visitor is still idle
+  after 4 s (no scroll past 80 px, no click, no key), a viewport-fixed glass scrim (blur 6 px over the
+  hero, under the nav) shows one line, "The signal is live.", in Fraunces italic with the hero's own
+  word-rise, then the primary glass key "▶ Play Telegraph Recall" (480 ms) and a quiet key
+  "Not now · esc" (760 ms). No other text. A two-note chime plays only with the site sound on.
+- Focus moves to the primary key when it appears and goes back to the previously focused element (or
+  nowhere, if it was the page) on dismiss. Escape, scrolling 80 px, a click outside the panel, the
+  quiet key, the site motion switch turning off and a page swap all dismiss it. `localStorage
+  portfolio-landing = seen` is written when it appears, so it shows once per browser; a visitor who
+  was active before the 4 s is not marked and may see it on a later arrival.
+- The key sets `location.hash = '#lab?stage=welcome'`. `TelegraphMiniGame.astro`'s lazy loader now
+  also loads the game script on a `hashchange` to `#lab…` (it only checked the hash at page load), and
+  the script's existing deep-link handling scrolls to the lab and opens the intro popup on the Welcome
+  stage. When that popup closes, `closeCrtPopup` now falls back to the lab's own key if the element
+  that opened it cannot take focus (the landing key is hidden by then).
+- Without JavaScript the panel is `hidden` markup; under `data-motion='reduced'` CSS also hides it.
+- The line "The signal is live." is the plan's wording, not the owner's: a draft the owner can change
+  in the component's `words` array.
+
+**R3 — Clear-the-signal reward** (`src/components/SignalStamp.astro`, `signal-reward.ts`, the
+fourth theme in `design/tokens.json`)
+
+- Clearing wave 5 (`campaign-cleared` in `telegraph-ui.ts`) records `{ best, clears, since }` in
+  `localStorage portfolio-signal` and dispatches `portfolio:signalcleared`. The game's older best-score
+  key (`portfolio-tg-best`, only ever written on a clear) also counts, so a visitor who cleared the game
+  before today is unlocked too. The status line gains "Signal cleared: the hero stamp and the Signal
+  theme are unlocked." on the first clear in a browser (draft wording).
+- **The stamp**: `SIGNAL CLEARED · <best>` above the hero title, a mono glass key that cannot be pressed
+  (`.key` dome and ring, gold text, a pulsing gold dot, the cards' hard umber offset `--btn-depth`),
+  `aria-label="Signal cleared. Best score N."`. It is shown by `html.has-signal`, which the head script
+  sets before first paint from storage (no layout shift for players) and the game sets on the clear
+  (with a 640 ms rubber-stamp entrance under motion). Without JavaScript nothing changes.
+- **The hidden theme "Signal (afterglow)"**: a plum night (`bg #0d0a14`, surface `#1a1426`, umber
+  `#4a2d6b`) with the glass keys' own cyan `#5fd7ff` and magenta `#ff4fa3` as the accents, field
+  colours cyan / magenta / plum / navy / violet, and matching glows. Every themed token and shadow has
+  a value; `tools/build-tokens.mjs` writes `color-scheme: dark` for it and now generates the
+  OS-light exclusion list from the theme list (`global.css`'s hand-written exclusion got
+  `:not([data-theme='signal'])`). The theme key cycles Prism → Paper → CRT → Signal → Prism only
+  while unlocked (`nextTheme` in `signal-reward.ts`); a saved Signal theme is restored before paint only
+  where it was earned (`Base.astro` head script; `themeBg.signal = '#0d0a14'` matches `bg`). Measured
+  contrast on `bg` / `surface`: text 16.7 / 15.2, text-2 10.2 / 9.3, text-3 7.0 / 6.4, steel 7.5 / 6.9,
+  action-text 8.4 / 7.7, gold 13.5 / 12.4, coral 6.4 / 5.9.
+- The design system artifact (Prism CRT) does not know the fourth theme yet; `design/tokens.json` is
+  ahead of it. Sync when the owner approves the theme.
+
+**Tests and gates.** `tests/signal.test.ts` (16 cases: reward parsing and repair, the legacy key,
+`recordClear`, storage round-trip and a throwing storage, the stamp label, the theme cycle locked and
+unlocked, the landing rules). `npm test` 55 passed, `astro check` 0 errors, build 8 pages, link check
+56 internal / 41 external, none broken. Behaviour verified in headless Chrome over the DevTools
+protocol against the dev server (scratchpad `vt/verify-signal.mjs`, 57 checks, all passing): hidden at
+1 s and open at 4.8 s with focus on the key; Escape, the quiet key, scrolling and a scroll before 4 s
+(not marked seen); never on a deep link, under OS reduced motion, with the site switch off, or twice;
+the key opens the popup on `#lab?stage=welcome` and closing it focuses the lab key; the landing in
+Paper and CRT; the stamp from storage, from the legacy key and from the live event; the cycle
+`paper,crt,signal,prism,paper` unlocked and `paper,crt,prism,paper` locked; the saved Signal theme
+restored (and ignored when locked); theme and class carried over a client-side navigation and back;
+375 px fit. Seen in the pane: the panel over the Prism hero. Not done: an actual five-wave clear by hand
+(the live path was exercised by dispatching the game's event) and the screen-reader pass.
+
+**Owner decisions still open**
+
+1. The landing line ("The signal is live.") and the quiet key's "Not now": keep, or the owner's words.
+2. The reward's form: both the stamp and the hidden theme shipped, since the theme fit the budget. If
+   one is enough, the other is a small removal (the theme = `tokens.json` entry + the cycle; the stamp
+   = the component).
+3. The Signal theme's palette (plum night, cyan/magenta) is a first proposal; the owner may want it
+   derived from a reference image like the other three.
+
+**Hours against the plan** (wall clock in this session): R8 0.25 h of 1 h; R2 0.4 h of 3 h; R3 0.3 h of
+2 h. The remaining plan hours are for the owner's review round and the design-system sync.

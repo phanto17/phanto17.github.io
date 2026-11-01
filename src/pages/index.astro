@@ -4,6 +4,8 @@ import Base from '../layouts/Base.astro';
 import Prism from '../components/Prism.astro';
 import ProjectRow from '../components/ProjectRow.astro';
 import TelegraphMiniGame from '../components/TelegraphMiniGame.astro';
+import SignalLanding from '../components/SignalLanding.astro';
+import SignalStamp from '../components/SignalStamp.astro';
 import { site } from '../data/site';
 import { activities, experience, education } from '../data/activities';
 
@@ -22,6 +24,7 @@ const systemSpecs = [
     <Prism />
     <div class="wrap grid">
       <div>
+        <SignalStamp />
         <h1>
           <span class="kinetic-word" style="--word-idx:0">Junior</span>{' '}
           <span class="kinetic-word" style="--word-idx:1">Gameplay</span>{' '}
@@ -60,6 +63,7 @@ const systemSpecs = [
         }
       </dl>
     </div>
+    <SignalLanding />
   </header>
 
   <section id="about" class="section">

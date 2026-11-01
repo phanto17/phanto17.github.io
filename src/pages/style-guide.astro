@@ -9,7 +9,7 @@ import Prism from '../components/Prism.astro';
 import Figure from '../components/Figure.astro';
 import tokens from '../../design/tokens.json';
 
-type ThemeId = 'prism' | 'paper' | 'crt';
+type ThemeId = 'prism' | 'paper' | 'crt' | 'signal';
 const themes = tokens.color.themes as { id: ThemeId; name: string }[];
 const colourTokens = tokens.color.tokens as { name: string; value: string | Record<string, string>; usage: string }[];
 
@@ -73,7 +73,7 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
       <h1>Prism <em>CRT</em></h1>
       <p class="lead">
         Warm darkroom grain, Cooper/Windsor-inspired variable serif display type, tactile 80s/90s CRT viewport frames,
-        and accessible theme and motion controls. Three themes, one token file.
+        and accessible theme and motion controls. Four themes (Signal is unlocked by clearing Telegraph Recall), one token file.
       </p>
     </div>
   </header>

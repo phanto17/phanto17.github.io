@@ -54,6 +54,8 @@ import { site, nav } from '../data/site';
 </nav>
 
 <script>
+  import { isThemeId, nextTheme, readReward, type ThemeId } from '../scripts/signal-reward';
+
   const root = document.documentElement;
   root.classList.add('js-nav');
   const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
@@ -67,16 +69,24 @@ import { site, nav } from '../data/site';
     root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   // 1. Dynamic Theme Switcher (Prism Dark -> Daylight Paper -> CRT Phosphor)
-  const themes = ['prism', 'paper', 'crt'] as const;
-  const themeNames: Record<(typeof themes)[number], string> = {
+  // Prism -> Paper -> CRT, and -> Signal once the visitor has cleared Telegraph Recall in this browser.
+  const themeNames: Record<ThemeId, string> = {
     prism: 'Prism',
     paper: 'Paper',
     crt: 'CRT',
+    signal: 'Signal',
+  };
+  const signalUnlocked = () => {
+    try {
+      return readReward(localStorage) !== null;
+    } catch {
+      return false;
+    }
   };
 
-  const getCurrentTheme = (): (typeof themes)[number] => {
+  const getCurrentTheme = (): ThemeId => {
     const attr = root.getAttribute('data-theme');
-    if (attr === 'paper' || attr === 'crt' || attr === 'prism') return attr;
+    if (isThemeId(attr, true)) return attr;
     return window.matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'prism';
   };
 
@@ -118,7 +128,7 @@ import { site, nav } from '../data/site';
 
   themeBtn?.addEventListener('click', () => {
     const cur = getCurrentTheme();
-    const next = themes[(themes.indexOf(cur) + 1) % themes.length];
+    const next = nextTheme(cur, signalUnlocked());
     flickerTheme();
     root.setAttribute('data-theme', next);
     try {

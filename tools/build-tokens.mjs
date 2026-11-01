@@ -10,7 +10,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const tokens = JSON.parse(readFileSync(join(root, 'design/tokens.json'), 'utf8'));
 const themes = tokens.color.themes;
 const first = themes[0].id;
-const scheme = { prism: 'dark', paper: 'light', crt: 'dark' };
+const scheme = { prism: 'dark', paper: 'light', crt: 'dark', signal: 'dark' };
 
 const value = (t, theme) => (typeof t.value === 'string' ? t.value : (t.value[theme] ?? t.value[first]));
 const colour = (v) => (/^\{[^}]+\}$/.test(v) ? `var(--${v.slice(1, -1)})` : v);
@@ -29,7 +29,8 @@ for (const th of themes) {
   out += themeBlock(th.id) + `}\n\n`;
 }
 // Paper follows the OS when nothing is stored (the site's Nav stores an explicit choice).
-out += `@media (prefers-color-scheme: light) {\n  :root:not([data-theme='prism']):not([data-theme='crt']) {\n`;
+const notDark = themes.filter((th) => th.id !== 'paper').map((th) => `:not([data-theme='${th.id}'])`).join('');
+out += `@media (prefers-color-scheme: light) {\n  :root${notDark} {\n`;
 out += themeBlock('paper').replace(/^/gm, '  ').replace(/\s+$/, '') + `\n  }\n}\n\n`;
 
 out += `:root {\n`;

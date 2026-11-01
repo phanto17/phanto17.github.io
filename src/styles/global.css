@@ -1090,10 +1090,10 @@ html[data-theme='paper'] .tg-cell {
     0 0 0 1px rgba(43, 33, 24, 0.2);
 }
 @media (prefers-color-scheme: light) {
-  html:not([data-theme='prism']):not([data-theme='crt']) .btn:not(.primary),
-  html:not([data-theme='prism']):not([data-theme='crt']) .crt-stage-tab,
-  html:not([data-theme='prism']):not([data-theme='crt']) .crt-close-btn,
-  html:not([data-theme='prism']):not([data-theme='crt']) .tg-cell {
+  html:not([data-theme='prism']):not([data-theme='crt']):not([data-theme='signal']) .btn:not(.primary),
+  html:not([data-theme='prism']):not([data-theme='crt']):not([data-theme='signal']) .crt-stage-tab,
+  html:not([data-theme='prism']):not([data-theme='crt']):not([data-theme='signal']) .crt-close-btn,
+  html:not([data-theme='prism']):not([data-theme='crt']):not([data-theme='signal']) .tg-cell {
     border-color: rgba(43, 33, 24, 0.35);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.8),

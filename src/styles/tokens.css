@@ -172,8 +172,65 @@ html[data-theme='crt'] {
   color-scheme: dark;
 }
 
+html[data-theme='signal'] {
+  --bg-0: #06040c;
+  --bg: #0d0a14;
+  --surface: #1a1426;
+  --surface-2: #241b33;
+  --umber: #4a2d6b;
+  --hairline: rgba(120, 80, 180, 0.5);
+  --nav-bg: rgba(13, 10, 20, 0.84);
+  --scanline: rgba(5, 3, 10, 0.22);
+  --text: #f1e9ff;
+  --text-2: #c3b4de;
+  --text-3: #a393c2;
+  --steel: #9aa0b4;
+  --coral: #ff4fa3;
+  --on-accent: #0d0a14;
+  --action-text: #ff7ec1;
+  --peach: #5fd7ff;
+  --gold: #f6d370;
+  --brick: #b0407a;
+  --teal: #4e6367;
+  --pink: #faa193;
+  --mint: #9fd3a8;
+  --sky: #8fc3df;
+  --lavender: #cab5ce;
+  --prism-1: #e95c3a;
+  --prism-2: var(--coral);
+  --prism-3: var(--gold);
+  --prism-4: #9fd3a8;
+  --prism-5: var(--sky);
+  --prism-6: #cab5ce;
+  --prism-7: var(--pink);
+  --field-1: #1fb6e6;
+  --field-2: #e0338f;
+  --field-3: #1a0f2a;
+  --field-4: #0d2340;
+  --field-5: #3b2a5a;
+  --key-cyan: #5fd7ff;
+  --key-magenta: #ff4fa3;
+  --key-glass: rgba(8, 5, 14, 0.64);
+  --cell-telegraph: rgba(255, 79, 163, 0.28);
+  --cell-hit: rgba(95, 215, 255, 0.22);
+  --cell-miss: rgba(233, 92, 58, 0.35);
+  --glow-ink: rgba(255, 79, 163, 0.5);
+  --backdrop: rgba(6, 4, 10, 0.86);
+  --glow: 0 0 14px rgba(255, 79, 163, 0.5), 0 0 48px rgba(95, 215, 255, 0.28);
+  --glow-soft: 0 0 24px rgba(95, 215, 255, 0.25);
+  --glow-amber: 0 0 14px rgba(246, 211, 112, 0.35);
+  --card-depth: 5px 5px 0 rgba(74, 45, 107, 0.8);
+  --card-depth-hover: 8px 8px 0 #ff4fa3;
+  --btn-depth: 3px 3px 0 #4a2d6b;
+  --btn-depth-hover: 5px 5px 0 #ff4fa3;
+  --monitor-depth: 0 24px 80px rgba(0, 0, 0, 0.85), 0 0 42px rgba(95, 215, 255, 0.22);
+  --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
+  --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: light) {
-  :root:not([data-theme='prism']):not([data-theme='crt']) {
+  :root:not([data-theme='prism']):not([data-theme='crt']):not([data-theme='signal']) {
     --bg-0: #dfd3be;
     --bg: #f4ede1;
     --surface: #e9decb;

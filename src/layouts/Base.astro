@@ -91,10 +91,20 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       (function () {
         var root = document.documentElement;
         // Page background per theme; must match `bg` in design/tokens.json.
-        var themeBg = { prism: '#1a1713', paper: '#f4ede1', crt: '#070b09' };
+        var themeBg = { prism: '#1a1713', paper: '#f4ede1', crt: '#070b09', signal: '#0d0a14' };
         try {
           var savedTheme = localStorage.getItem('portfolio-theme');
-          if (savedTheme === 'prism' || savedTheme === 'paper' || savedTheme === 'crt') {
+          // The Signal theme and the hero stamp are the reward for clearing Telegraph Recall
+          // (src/scripts/signal-reward.ts): honoured only in the browser where it was earned.
+          var signalUnlocked =
+            Boolean(localStorage.getItem('portfolio-signal')) || Number(localStorage.getItem('portfolio-tg-best')) > 0;
+          if (signalUnlocked) root.classList.add('has-signal');
+          if (
+            savedTheme === 'prism' ||
+            savedTheme === 'paper' ||
+            savedTheme === 'crt' ||
+            (savedTheme === 'signal' && signalUnlocked)
+          ) {
             root.setAttribute('data-theme', savedTheme);
           }
           var savedMotion = localStorage.getItem('portfolio-motion');

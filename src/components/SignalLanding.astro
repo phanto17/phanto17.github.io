@@ -1,0 +1,343 @@
+---
+/**
+ * Signal landing (R2): on the first idle seconds of a visit to the home page, one line and one glass
+ * key over the hero, inviting the visitor into Telegraph Recall. Escape, scrolling, a click outside
+ * or the quiet key dismiss it; it shows once per browser and never under reduced motion, on a deep
+ * link, or without JavaScript. The rules live in src/scripts/signal-reward.ts.
+ */
+const words = ['The', 'signal', 'is', 'live.'];
+---
+
+<div
+  id="signal-landing"
+  class="signal-landing"
+  role="dialog"
+  aria-modal="false"
+  aria-labelledby="signal-landing-line"
+  hidden
+>
+  <div class="signal-landing-panel">
+    <p id="signal-landing-line" class="signal-landing-line">
+      {words.map((w, i) => (
+        <>
+          <span class="kinetic-word" style={`--word-idx:${i}`}>{w}</span>
+          {i < words.length - 1 ? ' ' : ''}
+        </>
+      ))}
+    </p>
+    <div class="signal-landing-keys">
+      <button type="button" id="signal-landing-play" class="btn primary" data-track="signal-landing" data-track-meta="play">
+        ▶ Play Telegraph Recall
+      </button>
+      <button type="button" id="signal-landing-dismiss" class="btn signal-landing-quiet" aria-keyshortcuts="Escape">
+        Not now <kbd aria-hidden="true">esc</kbd>
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import {
+    LANDING_DELAY_MS,
+    LANDING_KEY,
+    LANDING_SCROLL_THRESHOLD,
+    shouldShowLanding,
+  } from '../scripts/signal-reward';
+
+  const root = document.documentElement;
+  const isMotionAllowed = () =>
+    root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Only the document the visitor arrived on gets the panel; a client-side return to the home page
+  // (this module runs once per session under the ClientRouter) does not.
+  let firstLoad = true;
+
+  /** A short two-note cue, only when the visitor has turned the site sound on. */
+  const chime = () => {
+    if (root.getAttribute('data-sound') !== 'on') return;
+    try {
+      const ctx = new AudioContext();
+      if (ctx.state !== 'running') {
+        void ctx.close();
+        return;
+      }
+      const t = ctx.currentTime;
+      [660, 990].forEach((freq, i) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(freq, t + i * 0.12);
+        gain.gain.setValueAtTime(0.0001, t + i * 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.05, t + i * 0.12 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.12 + 0.16);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(t + i * 0.12);
+        osc.stop(t + i * 0.12 + 0.18);
+      });
+      window.setTimeout(() => void ctx.close(), 600);
+    } catch {
+      /* no audio */
+    }
+  };
+
+  document.addEventListener('astro:page-load', () => {
+    const wasFirst = firstLoad;
+    firstLoad = false;
+    const panel = document.getElementById('signal-landing');
+    const playKey = document.getElementById('signal-landing-play') as HTMLButtonElement | null;
+    const quietKey = document.getElementById('signal-landing-dismiss') as HTMLButtonElement | null;
+    if (!panel || !playKey || !quietKey) return;
+
+    let seen = false;
+    try {
+      seen = localStorage.getItem(LANDING_KEY) === 'seen';
+    } catch {
+      /* storage unavailable: treat as a first visit */
+    }
+    if (
+      !shouldShowLanding({
+        seen,
+        reducedMotion: !isMotionAllowed(),
+        hash: location.hash,
+        pathname: location.pathname,
+        firstLoad: wasFirst,
+      })
+    ) {
+      return;
+    }
+
+    const page = new AbortController();
+    const { signal } = page;
+    let timer: number | null = null;
+    let open = false;
+    let openY = 0;
+    let previousFocus: HTMLElement | null = null;
+    const startY = window.scrollY;
+
+    const markSeen = () => {
+      try {
+        localStorage.setItem(LANDING_KEY, 'seen');
+      } catch {
+        /* private mode: shows again next time, which is fine */
+      }
+    };
+    const cancel = () => {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = null;
+    };
+
+    const show = () => {
+      if (open || signal.aborted || !isMotionAllowed()) return;
+      open = true;
+      openY = window.scrollY;
+      markSeen();
+      const active = document.activeElement;
+      previousFocus = active instanceof HTMLElement && active !== document.body ? active : null;
+      panel.hidden = false;
+      panel.classList.add('is-open');
+      playKey.focus({ preventScroll: true });
+      chime();
+      window.dispatchEvent(
+        new CustomEvent('portfolio:track', { detail: { event: 'signal-landing', meta: 'shown', ts: Date.now() } }),
+      );
+    };
+
+    const dismiss = (restoreFocus = true) => {
+      if (!open) return;
+      open = false;
+      panel.classList.add('is-closing');
+      window.setTimeout(() => {
+        panel.hidden = true;
+        panel.classList.remove('is-open', 'is-closing');
+      }, 260);
+      if (restoreFocus) {
+        if (previousFocus && previousFocus.isConnected) previousFocus.focus({ preventScroll: true });
+        else (document.activeElement as HTMLElement | null)?.blur?.();
+      }
+      previousFocus = null;
+    };
+
+    const fire = () => {
+      timer = null;
+      if (document.hidden) {
+        document.addEventListener(
+          'visibilitychange',
+          () => {
+            if (!document.hidden) show();
+          },
+          { once: true, signal },
+        );
+        return;
+      }
+      show();
+    };
+    timer = window.setTimeout(fire, LANDING_DELAY_MS);
+
+    // Any real activity before the panel appears means the visitor is not idle: skip it this time.
+    // Scrolling away after it appears dismisses it.
+    window.addEventListener(
+      'scroll',
+      () => {
+        if (timer !== null && Math.abs(window.scrollY - startY) > LANDING_SCROLL_THRESHOLD) cancel();
+        else if (open && Math.abs(window.scrollY - openY) > LANDING_SCROLL_THRESHOLD) dismiss();
+      },
+      { passive: true, signal },
+    );
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (!open) {
+          cancel();
+          return;
+        }
+        const target = event.target as Node | null;
+        if (target && !panel.querySelector('.signal-landing-panel')?.contains(target)) dismiss();
+      },
+      { signal },
+    );
+    document.addEventListener(
+      'keydown',
+      (event) => {
+        if (!open) {
+          cancel();
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          dismiss();
+        }
+      },
+      { signal },
+    );
+    window.addEventListener('hashchange', () => cancel(), { signal });
+    window.addEventListener(
+      'portfolio:motionchange',
+      () => {
+        if (isMotionAllowed()) return;
+        cancel();
+        dismiss();
+      },
+      { signal },
+    );
+
+    playKey.addEventListener('click', () => {
+      dismiss(false);
+      // The mini-game section loads its script on this hash and opens the intro popup on the stage;
+      // when the popup closes it hands focus to the lab's own key, since this one is hidden by then.
+      location.hash = '#lab?stage=welcome';
+    });
+    quietKey.addEventListener('click', () => dismiss());
+
+    document.addEventListener(
+      'astro:before-swap',
+      () => {
+        cancel();
+        if (open) {
+          open = false;
+          panel.hidden = true;
+          panel.classList.remove('is-open', 'is-closing');
+        }
+        page.abort();
+      },
+      { once: true, signal },
+    );
+  });
+</script>
+
+<style>
+  /* Fixed to the viewport (under the nav): the idle visitor has not scrolled, so the viewport is the hero. */
+  .signal-landing {
+    position: fixed;
+    inset: 0;
+    z-index: 15;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px;
+    background: color-mix(in srgb, var(--bg) 62%, transparent);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+  .signal-landing[hidden] {
+    display: none;
+  }
+  .signal-landing.is-open {
+    animation: signal-landing-in 320ms ease backwards;
+  }
+  .signal-landing.is-closing {
+    animation: signal-landing-out 240ms ease forwards;
+    pointer-events: none;
+  }
+  @keyframes signal-landing-in {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes signal-landing-out {
+    to {
+      opacity: 0;
+    }
+  }
+  .signal-landing-panel {
+    display: grid;
+    justify-items: center;
+    gap: 26px;
+    text-align: center;
+    max-width: 680px;
+  }
+  .signal-landing-line {
+    margin: 0;
+    font-family: var(--display);
+    font-style: italic;
+    font-weight: 400;
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 1,
+      'opsz' 72;
+    font-size: clamp(32px, 6vw, 60px);
+    line-height: 1.05;
+    letter-spacing: -0.01em;
+    color: var(--text);
+  }
+  /* The three beats: the words rise one by one (the hero's own .kinetic-word rule), then the key, then the quiet key. */
+  .signal-landing-keys {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+  }
+  .signal-landing-keys .btn {
+    animation: crt-fade-rise 0.55s var(--ease-out-expo) backwards;
+  }
+  .signal-landing-keys .btn.primary {
+    animation-delay: 480ms;
+    font-size: 17px;
+    padding: 14px 26px;
+  }
+  .signal-landing-quiet {
+    animation-delay: 760ms;
+    padding: 8px 14px;
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .signal-landing-quiet kbd {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-left: 6px;
+  }
+  html[data-motion='reduced'] .signal-landing {
+    display: none; /* the script never shows it under reduced motion; this covers a switch mid-visit */
+  }
+  @media (max-width: 520px) {
+    .signal-landing-panel {
+      gap: 20px;
+    }
+    .signal-landing-keys .btn.primary {
+      font-size: 15px;
+      padding: 12px 20px;
+    }
+  }
+</style>
