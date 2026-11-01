@@ -353,8 +353,8 @@ dialog at 200% and 400% in a maximised desktop browser: the owner reported every
   fixed to the viewport. The reduced-motion scroll re-draw went with it.
 - The hairline between sections (`.section { border-top }`) is removed.
 - The hero's CRT_MONITOR card (wireframe octahedron canvas and its ~150-line script) is removed; the
-  owner's field-note quote stays as a card on the right. The CRT_TERM stamp line is kept until the
-  owner says whether the whole line or only the label should go.
+  owner's field-note quote stays as a card on the right. The CRT_TERM stamp line (coordinates,
+  location, "Open to Junior Roles") went entirely on the owner's word, with its styles.
 
 Checked in the dev server at 1280×900: the Education row wraps between words on hover, the Taskscape
 title keeps "(remote)" on hover, the hero lays out with the note card. `npm test` 39 passed,
@@ -363,7 +363,7 @@ title keeps "(remote)" on hover, the hero lays out with the note card. `npm test
 **Phone: passed (owner, 2026-11-01).** Samsung Galaxy S20 FE (SM-G781B), Brave 156, on the live site:
 menu open/close and every link, the theme cycle, a Push Comes to Shove note with Previous/Next and
 "Read as one page", one game turn by touch, scrolling and the background: all reported fine. The one
-remark, "navigation mapping should be better", is awaiting the owner's clarification (which navigation).
+remark, "navigation mapping should be better", was withdrawn by the owner ("never mind").
 
 **Mobile performance (measured 2026-11-01).** Same phone and browser, driven over USB with the
 DevTools protocol (`tools/phone-trace.mjs`, `tools/phone-field-cost.mjs`; adb from winget's

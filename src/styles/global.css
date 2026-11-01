@@ -725,40 +725,6 @@ html.js-motion [data-reveal].is-visible {
   transition: opacity 0.3s ease;
 }
 
-/* ---- Neo-Brutalist Raw Structural Stamps & Anti-Grid Badges ---- */
-.coord-stamp {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--steel);
-  border: 1px solid var(--umber);
-  background: var(--surface);
-  padding: 4px 9px;
-  box-shadow: 3px 3px 0 var(--umber);
-}
-.coord-stamp .pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--mint);
-  box-shadow: 0 0 8px var(--mint);
-  animation: live-pulse 2s ease-in-out infinite;
-}
-@keyframes live-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.35);
-    opacity: 0.55;
-  }
-}
 
 .section-head-bar {
   display: flex;
@@ -1110,13 +1076,6 @@ html.has-field .prism-wrap {
 }
 .tg-cell {
   --key-radius: var(--r-sm);
-}
-.coord-stamp {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(0, 0, 0, 0.2)),
-    var(--key-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 html[data-theme='paper'] .btn:not(.primary),
 html[data-theme='paper'] .key,
