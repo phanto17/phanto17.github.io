@@ -24,3 +24,4 @@ Thumbs.db
 
 # local-only material (design references, not part of the site)
 references/
+phone-*-result.json

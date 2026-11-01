@@ -5,7 +5,8 @@
  * theme's five `field-*` colours (sunset ochre / red / plum / teal in Prism), the cursor pulls and
  * brightens the field around itself, a per-pixel hash adds film grain, and everything is mixed
  * toward `bg` so text on the page keeps its contrast: the centre lane under the content column stays
- * darkest, the page edges glow. Under reduced motion (OS or site switch) it renders one still
+ * darkest, the page edges glow. The field is fixed to the viewport and does not drift with the
+ * scroll position (owner, 2026-11-01). Under reduced motion (OS or site switch) it renders one still
  * frame; with no WebGL it does nothing and the CSS gradient on <body> stays.
  */
 
@@ -13,7 +14,7 @@ const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 
 const FRAG = `
 precision highp float;
-uniform vec2 u_res; uniform float u_time; uniform vec2 u_mouse; uniform float u_scroll;
+uniform vec2 u_res; uniform float u_time; uniform vec2 u_mouse;
 uniform vec3 u_c0, u_c1, u_c2, u_c3, u_c4, u_bg; uniform float u_lane, u_edge, u_bloom, u_half, u_feather;
 float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(p, p + 45.32); return fract(p.x * p.y); }
 float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f * f * (3. - 2. * f);
@@ -30,7 +31,7 @@ vec3 ramp(float t){
 void main(){
   vec2 uv = gl_FragCoord.xy / u_res;
   float aspect = u_res.x / u_res.y;
-  vec2 p = vec2(uv.x * aspect, uv.y + u_scroll * 0.00012);
+  vec2 p = vec2(uv.x * aspect, uv.y);
   float t = u_time * 0.028;
   vec2 m = vec2(u_mouse.x * aspect, u_mouse.y);
   float d = distance(p, m);
@@ -92,7 +93,7 @@ export function init(canvas: HTMLCanvasElement): void {
   gl.enableVertexAttribArray(a);
   gl.vertexAttribPointer(a, 2, gl.FLOAT, false, 0, 0);
   const u: Uniforms = {};
-  ['u_res', 'u_time', 'u_mouse', 'u_scroll', 'u_c0', 'u_c1', 'u_c2', 'u_c3', 'u_c4', 'u_bg', 'u_lane', 'u_edge', 'u_bloom', 'u_half', 'u_feather'].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
+  ['u_res', 'u_time', 'u_mouse', 'u_c0', 'u_c1', 'u_c2', 'u_c3', 'u_c4', 'u_bg', 'u_lane', 'u_edge', 'u_bloom', 'u_half', 'u_feather'].forEach((n) => (u[n] = gl.getUniformLocation(program, n)));
 
   // Theme colours: the six palette uniforms ease toward the new theme over a few frames instead of
   // snapping, so a theme change is a cross-fade in the field too (a still frame just takes the target).
@@ -161,7 +162,6 @@ export function init(canvas: HTMLCanvasElement): void {
     if (settling) settling = settleColours(still);
     gl.uniform1f(u.u_time, still ? 40 : (now - start) / 1000);
     gl.uniform2f(u.u_mouse, mouse.x, mouse.y);
-    gl.uniform1f(u.u_scroll, window.scrollY);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if ((!still || settling) && !document.hidden) raf = requestAnimationFrame(draw);
   };
@@ -173,6 +173,5 @@ export function init(canvas: HTMLCanvasElement): void {
   document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
   window.addEventListener('portfolio:motionchange', kick);
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', kick);
-  if (isReducedMotion()) window.addEventListener('scroll', () => kick(), { passive: true });
   root.classList.add('has-field');
 }

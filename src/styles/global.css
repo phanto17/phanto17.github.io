@@ -205,12 +205,16 @@ h4 {
   letter-spacing: -0.01em;
   line-height: 1.1;
   margin: 0 0 0.3em;
+  /* The growth origin lives here, not only on :hover, so the way back shrinks from the same corner
+     (2026-11-01: it used to snap to the centre on mouse-out and look like a jolt). The return eases
+     evenly; the spring is only on the way in. */
+  transform-origin: left center;
   transition:
-    font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    font-variation-settings 0.3s ease,
+    letter-spacing 0.3s ease,
     text-shadow 0.35s ease,
     color 0.25s ease,
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    transform 0.3s ease;
 }
 /* Hover grows the heading (owner rule 2026-10-29): heavier optical size, wider tracking, a slight
    scale-up from the left. Never sharper or tighter. */
@@ -219,7 +223,19 @@ h3:hover {
   font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
   letter-spacing: 0.02em;
   transform: scale(1.02);
-  transform-origin: left center;
+  transition:
+    font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    text-shadow 0.35s ease,
+    color 0.25s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Entry titles sit in cards with no spare width: wider glyphs would re-wrap the line mid-hover
+   ("Intern - Taskscape Ltd (remote)" lost its last word, 2026-11-01). They grow by transform only. */
+h3.entry:hover {
+  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 72;
+  letter-spacing: -0.01em;
+  transform: scale(1.03);
 }
 h1 {
   font-size: clamp(44px, 6.6vw, 80px);
@@ -320,7 +336,7 @@ th {
 }
 .section {
   padding: var(--section) 0;
-  border-top: var(--line);
+  /* No rule between sections (owner, 2026-11-01): the field and the spacing do the separating. */
   position: relative;
   overflow-x: clip; /* decorative prism bands must not widen the page */
 }
@@ -449,7 +465,7 @@ th {
 .dl dd {
   margin: 0;
   color: var(--text);
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word; /* only a word that cannot fit at all is broken, never one that could wrap */
 }
 
 .skip-link {
@@ -799,15 +815,18 @@ html.js-motion [data-reveal].is-visible {
 /* Interactive Definition List rows in #about and #contact */
 .dl > div {
   position: relative;
+  /* Static side padding (pulled back out by the margin) gives the hover background its inset without
+     changing the row's width on hover: a hover-time padding used to narrow the value column and
+     re-wrap the long Education line mid-word (2026-11-01). */
+  padding-inline: 8px;
+  margin-inline: -8px;
   transition:
     transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
-    background 0.22s ease,
-    padding-left 0.22s ease;
+    background 0.22s ease;
   border-radius: var(--r-xs);
 }
 .dl > div:hover {
   background: var(--surface-2);
-  padding-left: 10px;
   transform: translateX(4px);
 }
 .dl > div:hover dt {

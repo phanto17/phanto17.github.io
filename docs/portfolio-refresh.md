@@ -317,7 +317,7 @@ shove cue which way it was shoved.
 
 **Design notes.** Six numbered notes under the board (reading over memorising, shoves as prediction,
 manual pace, misses that explain themselves, the score, quiet by default). The text is a draft in
-the owner's voice and waits for the owner's approval.
+the owner's voice; the owner approved it on 2026-10-29.
 
 Verified in headless Chrome against the production build (44 checks: a full five-wave campaign with
 manual cues, times and points per wave, the running score, shove cues in waves 4 and 5, a plain miss
@@ -325,3 +325,107 @@ and a shove miss, best score saved and shown, design notes at 1280/375/320px, no
 the earlier 52 notes/scroll checks and 43 navigation checks; `astro check` 0 errors; link check
 clean; no sideways overflow at 320/375/640px. `tools/check-browser.cjs` reads shove cues too
 (Playwright is not installed locally, so it was not run).
+
+### Hands-on verification sitting (2026-10-31 → 2026-11-01)
+
+The owner operated the devices; nothing below is marked as passed without the owner saying so.
+
+**Screen reader and keyboard: not done.** NVDA is not installed on the owner's PC; the owner chose
+to skip the check on 2026-11-01. The protocol above still stands as the open item.
+
+**Browser zoom: passed (owner, 2026-11-01).** Home page, the Push Comes to Shove page and the game
+dialog at 200% and 400% in a maximised desktop browser: the owner reported everything looked fine
+(reflow, text, focus, the dialog's controls and board).
+
+**Owner findings on desktop (2026-11-01) and the fixes:**
+
+- The Experience title "Intern — Taskscape Ltd (remote)" lost its last word on hover. Cause: the hover
+  rule widened the glyphs (`opsz` 9) and the tracking, so the line re-wrapped inside its card.
+  `h3.entry:hover` now grows by `transform: scale(1.03)` only; section H2s keep the full owner rule.
+- Every growing heading "shrank weirdly" on mouse-out. Cause: `transform-origin: left center` was set
+  only inside `:hover`, so the way back scaled from the centre, and the spring easing ran in reverse.
+  The origin now sits on the base rule and the return uses a plain 0.3s ease.
+- The Education row in the About list broke mid-word on hover. Cause: the hover added 10px of
+  padding, narrowing the value column, and `overflow-wrap: anywhere` let the browser split a word.
+  Rows now keep a static 8px inset (margin pulls it back out), hover only translates and recolours,
+  and `dd` uses `overflow-wrap: break-word`.
+- The signal field drifted with the scroll position (`u_scroll` in `field.ts`). Removed: the field is
+  fixed to the viewport. The reduced-motion scroll re-draw went with it.
+- The hairline between sections (`.section { border-top }`) is removed.
+- The hero's CRT_MONITOR card (wireframe octahedron canvas and its ~150-line script) is removed; the
+  owner's field-note quote stays as a card on the right. The CRT_TERM stamp line is kept until the
+  owner says whether the whole line or only the label should go.
+
+Checked in the dev server at 1280×900: the Education row wraps between words on hover, the Taskscape
+title keeps "(remote)" on hover, the hero lays out with the note card. `npm test` 39 passed,
+`astro check` 0 errors, build 8 pages, link check 54 internal / 41 external, none broken.
+
+**Phone: passed (owner, 2026-11-01).** Samsung Galaxy S20 FE (SM-G781B), Brave 156, on the live site:
+menu open/close and every link, the theme cycle, a Push Comes to Shove note with Previous/Next and
+"Read as one page", one game turn by touch, scrolling and the background: all reported fine. The one
+remark, "navigation mapping should be better", is awaiting the owner's clarification (which navigation).
+
+**Mobile performance (measured 2026-11-01).** Same phone and browser, driven over USB with the
+DevTools protocol (`tools/phone-trace.mjs`, `tools/phone-field-cost.mjs`; adb from winget's
+`Google.PlatformTools`, `adb forward tcp:9222 localabstract:chrome_devtools_remote`). The owner had
+the Paper theme selected; the field runs in every theme. The S20 FE is a 2020 flagship (6 cores, 8 GB,
+120 Hz panel), so these numbers are a best case among phones, not a budget-phone result.
+
+- *Cold load* (browser cache cleared, home page, h2): TTFB 57 ms, first contentful paint 308 ms,
+  DOMContentLoaded 273 ms, load 315 ms, largest contentful paint 980 ms (the last hero word of the
+  kinetic title; candidates at 308 / 372 / 916 / 980 ms as the words appear), CLS 0, one long task of
+  54 ms at 397 ms. 18 requests, 407 KB transferred, of which fonts are 331 KB (Fraunces italic 79 KB,
+  DM Sans 63 KB, Fraunces 63 KB + 54 KB latin-ext, …) and the GSAP chunk 48 KB.
+- *Idle at the top of the page*, 4 s samples: requestAnimationFrame steady at 60 fps with the field
+  running and without it (p95 frame 16.7 ms, no frame over 33 ms, no long tasks either way). Thread
+  busy share from a trace: field running → renderer main 8%, compositor 19%, viz compositor 16%, GPU
+  main 2%; field stopped (reduced motion) → 4% / 8% / 5% / 0%; running again → 9% / 20% / 17% / 2%.
+  So the field costs about 4 points of main thread and 11 of each compositor thread at idle on this
+  phone: roughly a tenth of a core, continuous, which is battery rather than smoothness.
+- *Touch scroll* through two and a half screens, field on: 84 fps (the panel switched up from 60 Hz),
+  p95 frame 16.7 ms, no frame over 33 ms, no long tasks. Trace over a 2 s scroll: renderer main 59%,
+  compositor 51%, GPU main 49%, longest main-thread task 9.2 ms. Busy, but nothing dropped.
+- *One game turn by touch*: the Start tap's event duration was 104 ms (pointerup/click), the three
+  tile taps 72–80 ms; the wave was cleared ("Wave 1 resolved in 4.5s (+300)"). That is inside the
+  200 ms INP target but not small for a flagship: the click ripple, the tilt glare and the status
+  update all run on the tap. Worth a look before adding more per-tap work.
+
+Decisions for the blocked Phase 2 items: a **WebGL hero** can go ahead only if it draws at most 30
+fps, pauses out of view and shares the budget with the field (on this phone a second field-sized
+canvas would about double the ~10% compositor load); **Lenis smooth scroll** should not run on touch
+devices — the native scroll already keeps the main thread 59% busy, and Lenis moves scrolling onto
+it — at most desktop only, behind the motion switch; the **performance gate** is the three targets
+above (LCP ≤ 2.5 s, INP ≤ 200 ms, CLS ≤ 0.1) measured with the two scripts on this phone before a
+release, plus "no frame over 33 ms during a scroll". Fonts are the biggest lever if load time ever
+matters: 331 KB of the 407 KB.
+
+#### Redesign requests (owner, 2026-11-01) — plan
+
+The owner asked for: a decode ("uncoding") reveal instead of the fade-in, a home page and project pages
+that are not one column read top to bottom but a set of distinct, expandable sections, and the
+Telegraph Recall panel as the entry point: a climactic one-line call to action after a few seconds,
+with the rest of the site unlocked by finishing the game. The owner also pasted an external audit of
+the site with a blueprint (hero canvas, bento grid with hover video, sticky split-screen case studies,
+Lenis smooth scroll). Parts of that audit are stale: the site already has Astro, view transitions
+between pages, a sitemap, Open Graph and JSON-LD, GSAP + ScrollTrigger + SplitText, scroll choreography
+and the NotesExplorer. What it does not have is the per-section distinctness, hover video, and a
+pinned split layout on project pages.
+
+A full gate is not recommended: the audit's own first line says reviewers skim in 10–15 seconds, the
+course brief needs About, Experience, projects and the CV reachable, keyboard and screen-reader users
+and search crawlers cannot play, and reduced-motion visitors would meet a wall. The plan therefore
+treats the entry panel as an invitation and the game's reward as an unlock of something extra, not of
+the site. The owner decides.
+
+| # | Title | Description | Objective | Hours |
+|---|---|---|---|---:|
+| R1 | Decode reveal | Section sub-heads, kickers and the hero lead resolve from scrambled glyphs left to right when they enter the viewport (GSAP in `motion.ts`); paragraphs keep the rise; reduced motion = plain text; the real text stays in the DOM for assistive tech. | Replace the fade-in with the "uncoding" the owner asked for, without hurting readability. | 1.5 |
+| R2 | Signal landing | On the first visit, after ~4 s idle, a climactic one-line panel ("The signal is live." + one key: Play Telegraph Recall) over the hero; Escape or scrolling dismisses it; remembered in `localStorage`; never shown under reduced motion or to a visitor arriving on a deep link. | The owner's entry moment, without blocking anyone. | 3 |
+| R3 | Clear-the-signal reward | Finishing wave 5 unlocks a reward the owner picks: a hidden fourth theme, a "SIGNAL CLEARED · score" stamp in the hero, or the design notes; stored per visitor; the stamp also shows the best score. | Give the game a payoff that makes the hero change for players, instead of gating the site. | 2 |
+| R4 | Home sections as modules | Each section gets its own interaction: About as a dossier with expandable facets, Projects as a bento grid whose covers crossfade to a WebM loop on hover (needs R7), Activities keeps the tip-up timeline, Experience as cards that expand to the full entry, Contact as a terminal card with the copy key. | A home page that is not one column read top to bottom; every section distinct. | 8 |
+| R5 | Project pages as sticky split | Notes become numbered steps in a scrolling left column; a pinned right pane swaps the visual (screenshot, snippet or widget) per step with ScrollTrigger; under 860px it collapses to the current NotesExplorer. | The 50/50 scrollytelling case study the blueprint describes, on the existing notes data. | 8 |
+| R6 | Shove visualiser | A small interactive grid in the Push Comes to Shove pinned pane: click a unit and a direction, watch the one-tile shove resolve with pits and rams, reusing the Telegraph engine's shove rules. | Let the reader try the mechanic instead of reading about it. | 4 |
+| R7 | Gameplay clips (owner) | Three 4–6 s WebM loops at the impact moments (a shove into a pit, a Horde Hours weapon proc, a Cinderhold dodge), 720p, no audio. | Hover previews on the project grid; also usable on itch. | 2 |
+| R8 | Reference sites, properly | Open dontlookup.app, yaas-energy.com and mecha-xyz.webflow.io in a real browser and note the concrete patterns (a text-only fetch on 2026-11-01 got only the loading screens of the first two). | Ground R2, R4 and R5 in what the owner actually liked. | 1 |
+
+Lenis smooth scroll, the WebGL hero and the performance gate stay blocked on the phone trace below.
