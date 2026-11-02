@@ -682,6 +682,21 @@ details.changelog ul {
   animation-delay: calc(var(--word-idx, 0) * 75ms);
 }
 
+/* ---- Smooth scroll (Lenis, motion.ts, desktop only): the library's own rules ---- */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+html.lenis {
+  scroll-behavior: auto !important; /* Lenis animates the scroll itself; CSS smoothing on top would fight it */
+}
+html.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
 /* ---- Decode reveal (motion.ts): glyphs still scrambled read dim; resolved ones take the element's ink ---- */
 .decode-char {
   display: inline-block;
@@ -689,6 +704,15 @@ details.changelog ul {
 .decode-char.is-scrambled {
   color: var(--text-3);
   opacity: 0.75;
+}
+/* The real text, for assistive tech, while the glyphs scramble. */
+.decode-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* ---- Scroll-Triggered Fade-In & Stagger Choreography ---- */

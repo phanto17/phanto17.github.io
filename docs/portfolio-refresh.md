@@ -729,3 +729,61 @@ screenshotted in headless Chrome on the real GPU shows none.
 - *Lenis smooth scroll*: decided against on touch after the phone trace; on desktop it would move the
   native scroll onto the main thread for a stylistic gain the owner has not asked for. Not built; the
   decision is recorded, and the item is closed unless the owner asks for it.
+
+### Closing the Phase 2 leftovers: Lenis, an accessibility audit, a local performance gate (2026-11-02)
+
+**Lenis smooth scroll, desktop only.** `lenis` 1.3.23 (pinned) is created in `motion.ts` after the
+motion toolkit boots, only when the device has a fine pointer that can hover (never on touch, the
+phone trace's decision) and motion is allowed (never under the OS setting or the site switch, which
+destroys it live). It runs from GSAP's ticker, ScrollTrigger reads its scroll, in-page `#section`
+links glide to their target under the nav (Lenis applies the root's `scroll-padding-top` itself;
+the handler runs in the capture phase so the router does not also navigate), the Telegraph popup
+holds it while open (a wheel over the dialog no longer moves the page behind it), and the pinned
+pane's code blocks carry `data-lenis-prevent`. The library's CSS (`html.lenis { scroll-behavior:
+auto !important }`) makes native smooth scrolling instant while Lenis is on, so the lab deep link
+scrolls through Lenis too. Headless checks: on with a fine pointer, wheel moves and eases over
+several frames, the landing dismisses on a wheel, anchors land at 88 px under the nav, the sticky
+Projects head still marks itself, the popup is left alone, OS reduced motion gives no Lenis, the
+site switch removes it, and it survives a client-side page swap. Cost: 52 KB gzipped for the whole
+motion chunk (GSAP + SplitText + Lenis), loaded after `load`; 77 KB gzipped of script on the home
+page in all.
+
+**Accessibility audit in place of the screen-reader session.** axe-core 4.10 (WCAG 2.0/2.1 A and AA
+plus best practice) over the home page with the landing open and closed in Prism, Paper and Signal,
+and over the Push Comes to Shove page with the split: no serious or critical violation left, 44–51
+rules passing per run. What it found and what changed:
+- The GSAP reveal hid waiting sections with `visibility: hidden` (`autoAlpha`), which drops them from
+  the tab order: a keyboard user at the top of the page could not reach the dossier, the bento or the
+  terminal until they scrolled. Reveals now hide with `opacity` only; focusing a hidden element
+  scrolls it into view, which reveals it. 82 focusable controls on the home page, none unfocusable.
+- SplitText's `aria: 'auto'` put `aria-label` on paragraphs (sub-heads, the lead), which ARIA forbids.
+  The decode now splits with `aria: 'hidden'`, keeps the real text in a visually hidden span while
+  the glyphs scramble, and leaves no attribute behind.
+- The shove lab used `role="grid"` without rows; it is a labelled `group` of buttons now.
+- The two field notes were `aside` landmarks inside `main`; they are `role="note"` now.
+Keyboard walk: the landing focuses its key and Tab reaches the quiet key; facets open with Enter, one
+at a time; a glass key shows the 2 px gold outline on keyboard focus; the shove lab works by keyboard
+(Enter picks a unit, arrow keys shove). Still not done: listening to the pages with NVDA, which is
+not installed; the protocol in "Accessibility review checklist" stands for that.
+
+**Performance gate, measured here.** Headless Chrome, 1280 × 900, the production build served
+locally (no gzip, so transfer sizes are raw).
+- 4 × CPU throttle, no network throttle: FCP 0.71 s, LCP 1.42 s, CLS 0.003, two long tasks (longest
+  0.51 s, the motion and field boot after `load`), no interaction over 16 ms (landing key, facet,
+  tile hover, pill click).
+- 4 × CPU plus a fast-3G-like network (1.6 Mb/s, 150 ms): FCP 2.2 s, LCP 2.8 s, CLS 0.004; the
+  difference is the 313 KB of fonts on the critical path, as the phone trace already noted.
+- Script on the home page: 77 KB gzipped in all (gate 150 KB); the first measurement of this slice
+  showed CLS 0.29, caused by the decode reveal reflowing the lead; each scrambled character now keeps
+  its real glyph's width, and CLS is back under 0.01.
+So CLS and INP pass, the script budget passes, and LCP passes at 4 × CPU on this machine; the plan's
+gate is the owner's phone over USB (`tools/phone-trace.mjs`), which measured LCP 0.98 s before this
+slice and should be rerun once the site is published.
+
+**WebGL hero.** Superseded, not built: the WebGL signal field is the hero's scene, the owner removed
+the hero's canvas card on 2026-11-01, and the phone trace showed a second field-sized canvas would
+double the compositor load. The implementation plan's item is closed with this reasoning.
+
+**Publishing.** Pushing `main`, and pushing a branch for a pull request, were both refused by the
+Claude Code permission classifier in this session. The commits are local on `main`:
+`git -C D:/Portfolio push origin main` publishes them.

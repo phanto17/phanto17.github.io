@@ -11,6 +11,7 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
+import Lenis from 'lenis';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -18,6 +19,8 @@ declare global {
   interface Window {
     portfolioReveal?: { io: IntersectionObserver; els: HTMLElement[] };
     portfolioMotion?: boolean;
+    /** The Lenis instance while smooth scroll is on (desktop, motion allowed); pages may scrollTo through it. */
+    portfolioLenis?: Lenis;
   }
 }
 
@@ -59,38 +62,40 @@ function takeOverReveals() {
   const plain = pending.filter((el) => !el.matches(tipUpSelector));
   if (tipUps.length > 0) {
     tipUps.forEach((el) =>
-      gsap.set(el, { autoAlpha: 0, y: 12, rotateX: -tiltOf(el) * 4, transformPerspective: 900, transformOrigin: '50% 0%' }),
+      gsap.set(el, { opacity: 0, y: 12, rotateX: -tiltOf(el) * 4, transformPerspective: 900, transformOrigin: '50% 0%' }),
     );
     ScrollTrigger.batch(tipUps, {
       start: 'top 92%',
       once: true,
       onEnter: (batch) =>
         gsap.to(batch, {
-          autoAlpha: 1,
+          opacity: 1,
           y: 0,
           rotateX: 0,
           duration: timing.reveal * 1.3,
           ease: timing.ease,
           stagger: timing.staggerReveal * 1.5,
           overwrite: true,
-          clearProps: 'transform,opacity,visibility',
+          clearProps: 'transform,opacity',
         }),
     });
   }
   if (plain.length === 0) return;
-  gsap.set(plain, { autoAlpha: 0, y: 20 });
+  // Opacity, not autoAlpha: an element waiting to be revealed must stay focusable (visibility: hidden
+  // would skip it in the tab order); focusing it scrolls it into view, which reveals it.
+  gsap.set(plain, { opacity: 0, y: 20 });
   ScrollTrigger.batch(plain, {
     start: 'top 92%',
     once: true,
     onEnter: (batch) =>
       gsap.to(batch, {
-        autoAlpha: 1,
+        opacity: 1,
         y: 0,
         duration: timing.reveal,
         ease: timing.ease,
         stagger: timing.staggerReveal,
         overwrite: true,
-        clearProps: 'transform,opacity,visibility',
+        clearProps: 'transform,opacity',
       }),
   });
 }
@@ -179,15 +184,28 @@ function decodeReveals() {
   const glyph = () => DECODE_GLYPHS[Math.floor(Math.random() * DECODE_GLYPHS.length)];
   els.forEach((el) => {
     el.dataset.decoded = '1';
-    const split = SplitText.create(el, { type: 'chars', charsClass: 'decode-char', aria: 'auto' });
+    const text = el.textContent ?? '';
+    const hadLabel = el.hasAttribute('aria-label');
+    const split = SplitText.create(el, { type: 'chars', charsClass: 'decode-char', aria: 'hidden' });
     const chars = split.chars as HTMLElement[];
     if (chars.length === 0) {
       split.revert();
       return;
     }
     splits.push(split);
+    // The glyph spans are aria-hidden; the real text stays readable in a visually hidden span until the
+    // element is reverted (an aria-label is not permitted on a paragraph).
+    const sr = document.createElement('span');
+    sr.className = 'decode-sr';
+    sr.textContent = text;
+    el.appendChild(sr);
     const originals = chars.map((c) => c.textContent ?? '');
-    chars.forEach((c) => {
+    // Each span keeps its real glyph's width while it shows a random one, so the text never reflows
+    // (the scramble must not move the layout under the reader: zero layout shift).
+    const widths = chars.map((c) => c.getBoundingClientRect().width);
+    chars.forEach((c, i) => {
+      c.style.width = `${widths[i].toFixed(2)}px`;
+      c.style.textAlign = 'center';
       c.classList.add('is-scrambled');
       c.textContent = glyph();
     });
@@ -200,7 +218,9 @@ function decodeReveals() {
       });
       const idx = splits.indexOf(split);
       if (idx >= 0) splits.splice(idx, 1);
+      sr.remove();
       split.revert();
+      if (!hadLabel) el.removeAttribute('aria-label');
     };
     const tween = gsap.to(state, {
       progress: 1,
@@ -229,6 +249,62 @@ function decodeReveals() {
   });
 }
 
+/**
+ * Smooth scroll (Lenis), desktop only: a fine pointer that can hover, motion allowed. Never on touch
+ * (the phone trace of 2026-11-01: the native scroll already keeps the main thread busy there) and
+ * never under reduced motion. Lenis drives the window scroll from GSAP's ticker, ScrollTrigger reads
+ * it, and in-page anchor links glide to their section under the nav. Wheel events inside the
+ * Telegraph dialog and over `[data-lenis-prevent]` elements are left to the browser.
+ */
+let lenis: Lenis | null = null;
+let lenisTick: ((time: number) => void) | null = null;
+// Lenis already subtracts the root's scroll-padding-top (the 88px under the sticky nav) from an element target.
+const NAV_OFFSET = 0;
+
+function smoothScroll() {
+  if (lenis || !window.matchMedia('(pointer: fine) and (hover: hover)').matches) return;
+  lenis = new Lenis({
+    lerp: 0.1,
+    smoothWheel: true,
+    syncTouch: false,
+    autoRaf: false,
+    anchors: false,
+    prevent: (node) => node.closest('dialog') !== null,
+  });
+  lenis.on('scroll', ScrollTrigger.update);
+  lenisTick = (time) => lenis?.raf(time * 1000);
+  gsap.ticker.add(lenisTick);
+  gsap.ticker.lagSmoothing(0);
+  window.portfolioLenis = lenis;
+}
+
+function stopSmoothScroll() {
+  if (lenisTick) gsap.ticker.remove(lenisTick);
+  lenisTick = null;
+  lenis?.destroy();
+  lenis = null;
+  window.portfolioLenis = undefined;
+  const dropClasses = () => root.classList.remove('lenis', 'lenis-smooth', 'lenis-scrolling', 'lenis-stopped');
+  dropClasses();
+  requestAnimationFrame(dropClasses); // Lenis touches the classes once more from its own frame
+
+}
+
+/** Same-page `#section` links glide through Lenis; everything else stays with the browser and the router. */
+function onAnchorClick(event: MouseEvent) {
+  if (!lenis || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+  const link = (event.target as HTMLElement | null)?.closest<HTMLAnchorElement>('a[href]');
+  if (!link) return;
+  const url = new URL(link.href, location.href);
+  if (url.origin !== location.origin || url.pathname !== location.pathname || !url.hash || url.hash.includes('?')) return;
+  const target = document.getElementById(decodeURIComponent(url.hash.slice(1)));
+  if (!target) return;
+  event.preventDefault();
+  event.stopPropagation();
+  lenis.scrollTo(target, { offset: NAV_OFFSET });
+  history.pushState(history.state, '', url.hash);
+}
+
 /** Timeline cards: a 3D tip-up on entry instead of the plain rise (they keep the shared batch timing). */
 const tipUpSelector = '.tl > article[data-reveal]';
 const tiltOf = (el: HTMLElement): number => Number(el.dataset.tiltMax ?? 3);
@@ -254,6 +330,7 @@ export function riseTitle(el: HTMLElement): void {
 
 /** Tear everything down: inline styles revert, split headings and decoded text are restored, reveals are shown. */
 function teardown() {
+  stopSmoothScroll();
   splits.forEach((s) => s.revert());
   splits.length = 0;
   ctx?.revert();
@@ -277,8 +354,10 @@ export function init(): void {
       decodeReveals();
       scrollChoreography();
     });
+    smoothScroll();
   };
   build();
+  document.addEventListener('click', onAnchorClick, { capture: true });
   window.addEventListener('portfolio:motionchange', () => (isReducedMotion() ? teardown() : build()));
   window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => (isReducedMotion() ? teardown() : build()));
   // ClientRouter navigations: release the old page's tweens and triggers before the swap, choreograph
@@ -291,6 +370,7 @@ export function init(): void {
   });
   document.addEventListener('astro:page-load', () => {
     if (!isReducedMotion()) build();
+    lenis?.resize();
   });
   // Watchdog: if requestAnimationFrame stalls (throttled background pane, some embedded browsers),
   // tick GSAP by hand four times a second so nothing it faded out stays hidden.

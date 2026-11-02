@@ -29,13 +29,12 @@ const label = (i: number): string => {
     <b>SHOVE LAB</b> · pick a unit, then a direction · <span aria-hidden="true">▲</span> ally · <span aria-hidden="true">●</span> foe ·
     <span aria-hidden="true">≈</span> pit · <span aria-hidden="true">▰</span> rock
   </p>
-  <div class="shove-board" role="grid" aria-label="Shove lab board" style={`--side:${SIDE}`} data-shove-board>
+  <div class="shove-board" role="group" aria-label="Shove lab board" style={`--side:${SIDE}`} data-shove-board>
     {
       cells.map((i) => (
         <button
           type="button"
           class="key shove-cell"
-          role="gridcell"
           data-cell={i}
           data-terrain={board.terrain[i]}
           data-side={board.pieces[i]?.side ?? ''}

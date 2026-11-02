@@ -281,6 +281,7 @@ export function init(): void {
     lastFocusedBeforeModal = document.activeElement as HTMLElement | null;
     hashBeforeOpen = location.hash;
     stageCtrl.setPopupOpen(true);
+    (window as Window & { portfolioLenis?: { stop: () => void } }).portfolioLenis?.stop();
     popupBackdrop.showModal();
     renderStage(initialStage);
     closePopupBtn?.focus();
@@ -291,6 +292,7 @@ export function init(): void {
     stopStage2PreviewLoop();
     stageCtrl.setPopupOpen(false);
     popupBackdrop.close();
+    (window as Window & { portfolioLenis?: { start: () => void } }).portfolioLenis?.start();
     syncTelemetryHud();
     playTone(220, 'sine', 0.1);
     replaceHash(hashBeforeOpen !== null && !parseLabHash(hashBeforeOpen).stage ? hashBeforeOpen : '#lab');
@@ -306,8 +308,11 @@ export function init(): void {
   const applyLabHash = () => {
     const { lab: isLab, stage } = parseLabHash(location.hash);
     if (!isLab || !stage) return;
-    // No element has the id `lab?stage=…`, so the browser could not scroll there itself.
-    lab.scrollIntoView({ behavior: isReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+    // No element has the id `lab?stage=…`, so the browser could not scroll there itself. Through Lenis
+    // when smooth scroll is on (its CSS makes native smooth scrolling instant).
+    const lenis = (window as Window & { portfolioLenis?: { scrollTo: (el: HTMLElement, o: { offset: number }) => void } }).portfolioLenis;
+    if (lenis && !isReducedMotion()) lenis.scrollTo(lab, { offset: 0 }); // Lenis applies the root scroll-padding itself
+    else lab.scrollIntoView({ behavior: isReducedMotion() ? 'auto' : 'smooth', block: 'start' });
     if (popupBackdrop?.open) {
       if (stageCtrl.getStage() !== stage) renderStage(stage, true);
       return;
@@ -714,7 +719,10 @@ export function init(): void {
       stopStage2PreviewLoop();
       if (nextWaveTimer !== null) window.clearTimeout(nextWaveTimer);
       nextWaveTimer = null;
-      if (popupBackdrop?.open) popupBackdrop.close();
+      if (popupBackdrop?.open) {
+        popupBackdrop.close();
+        (window as Window & { portfolioLenis?: { start: () => void } }).portfolioLenis?.start();
+      }
       controller?.abort();
     },
     { signal },

@@ -69,7 +69,7 @@ const { notes, title, visuals = [] } = Astro.props;
     visuals.length === notes.length && (
       <div class="notes-visuals" data-notes-visuals hidden>
         {visuals.map((v, i) => (
-          <figure class="visual" data-visual={notes[i].id} data-visual-kind={v.kind}>
+          <figure class="visual" data-visual={notes[i].id} data-visual-kind={v.kind} data-lenis-prevent>
             {v.kind === 'code' && <Fragment set:html={v.html ?? ''} />}
             {v.kind === 'image' && <Figure type="image" src={v.src} alt={v.alt ?? ''} caption={v.caption} />}
             {v.kind === 'widget' && <slot name="widget" />}
