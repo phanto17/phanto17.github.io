@@ -1,0 +1,336 @@
+---
+/**
+ * Shove visualiser (R6): a five-by-five board from the Telegraph engine's geometry with pits, rocks and
+ * units. Pick a unit, then a direction, and watch the one-tile shove resolve the way Push Comes to
+ * Shove's write-up describes it (src/scripts/shove-sim.ts holds the rules). Keyboard: Tab to a unit,
+ * Enter to pick it, arrow keys to shove. Rendered into the project page's pinned pane (NotesExplorer).
+ */
+import { SIDE, demoBoard } from '../scripts/shove-sim';
+
+const board = demoBoard();
+const cells = Array.from({ length: SIDE * SIDE }, (_, i) => i);
+const glyph = (i: number): string => {
+  const p = board.pieces[i];
+  if (p) return p.side === 'ally' ? '▲' : '●';
+  return board.terrain[i] === 'pit' ? '≈' : board.terrain[i] === 'rock' ? '▰' : '';
+};
+const label = (i: number): string => {
+  const p = board.pieces[i];
+  const t = board.terrain[i];
+  const row = Math.floor(i / SIDE) + 1;
+  const col = (i % SIDE) + 1;
+  const what = p ? `${p.name}, ${p.side === 'ally' ? 'ally' : 'foe'}` : t === 'pit' ? 'pit' : t === 'rock' ? 'rock' : 'floor';
+  return `Row ${row}, column ${col}: ${what}`;
+};
+---
+
+<div class="shove-lab" data-shove-lab>
+  <p class="meta shove-lab-head">
+    <b>SHOVE LAB</b> · pick a unit, then a direction · <span aria-hidden="true">▲</span> ally · <span aria-hidden="true">●</span> foe ·
+    <span aria-hidden="true">≈</span> pit · <span aria-hidden="true">▰</span> rock
+  </p>
+  <div class="shove-board" role="grid" aria-label="Shove lab board" style={`--side:${SIDE}`} data-shove-board>
+    {
+      cells.map((i) => (
+        <button
+          type="button"
+          class="key shove-cell"
+          role="gridcell"
+          data-cell={i}
+          data-terrain={board.terrain[i]}
+          data-side={board.pieces[i]?.side ?? ''}
+          aria-label={label(i)}
+          aria-pressed="false"
+          tabindex={board.pieces[i] ? 0 : -1}
+          disabled={!board.pieces[i]}
+        >
+          <span class="shove-glyph">{glyph(i)}</span>
+        </button>
+      ))
+    }
+  </div>
+  <div class="shove-pad" role="group" aria-label="Shove direction">
+    <button type="button" class="key shove-dir" data-dir="up" aria-label="Shove up" disabled>↑</button>
+    <button type="button" class="key shove-dir" data-dir="left" aria-label="Shove left" disabled>←</button>
+    <button type="button" class="key shove-dir" data-dir="down" aria-label="Shove down" disabled>↓</button>
+    <button type="button" class="key shove-dir" data-dir="right" aria-label="Shove right" disabled>→</button>
+    <button type="button" class="key shove-reset" data-shove-reset>reset</button>
+  </div>
+  <p class="shove-log meta" data-shove-log aria-live="polite">Pick a unit on the board.</p>
+</div>
+
+<script>
+  import { demoBoard, previewShoves, resolveShove, type ShoveBoard } from '../scripts/shove-sim';
+  import type { Direction } from '../scripts/telegraph-engine';
+
+  const isReduced = () =>
+    document.documentElement.getAttribute('data-motion') === 'reduced' ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function setup(lab: HTMLElement) {
+    if (lab.dataset.ready) return;
+    lab.dataset.ready = '1';
+    const cells = Array.from(lab.querySelectorAll<HTMLButtonElement>('[data-cell]'));
+    const dirs = Array.from(lab.querySelectorAll<HTMLButtonElement>('[data-dir]'));
+    const log = lab.querySelector<HTMLElement>('[data-shove-log]');
+    const reset = lab.querySelector<HTMLButtonElement>('[data-shove-reset]');
+    let board: ShoveBoard = demoBoard();
+    let selected: number | null = null;
+    let busy = false;
+
+    const glyph = (i: number) => {
+      const p = board.pieces[i];
+      if (p) return p.side === 'ally' ? '▲' : '●';
+      return board.terrain[i] === 'pit' ? '≈' : board.terrain[i] === 'rock' ? '▰' : '';
+    };
+    const name = (i: number) => {
+      const p = board.pieces[i];
+      const t = board.terrain[i];
+      const row = Math.floor(i / board.side) + 1;
+      const col = (i % board.side) + 1;
+      const what = p ? `${p.name}, ${p.side === 'ally' ? 'ally' : 'foe'}` : t === 'pit' ? 'pit' : t === 'rock' ? 'rock' : 'floor';
+      return `Row ${row}, column ${col}: ${what}`;
+    };
+
+    const paint = () => {
+      const preview = selected !== null ? previewShoves(board, selected) : null;
+      cells.forEach((c, i) => {
+        const p = board.pieces[i];
+        c.querySelector('.shove-glyph')!.textContent = glyph(i);
+        c.dataset.side = p?.side ?? '';
+        c.dataset.hits = String(p?.hits ?? 0);
+        c.disabled = !p;
+        c.tabIndex = p ? 0 : -1;
+        c.setAttribute('aria-label', name(i));
+        c.setAttribute('aria-pressed', String(i === selected));
+        c.classList.toggle('is-selected', i === selected);
+        c.classList.remove('is-landing', 'is-ram', 'is-pit', 'is-edge');
+      });
+      if (preview && selected !== null) {
+        (Object.keys(preview) as Direction[]).forEach((dir) => {
+          const { events } = resolveShove(board, selected!, dir);
+          const ev = events[0];
+          if (!ev) return;
+          if (ev.kind === 'moved') cells[ev.to].classList.add('is-landing');
+          else if (ev.kind === 'pit') cells[ev.pit].classList.add('is-pit');
+          else if (ev.kind === 'ram') cells[ev.other].classList.add('is-ram');
+          else if (ev.kind === 'rock') cells[ev.rock].classList.add('is-ram');
+        });
+      }
+      dirs.forEach((d) => (d.disabled = selected === null || busy));
+    };
+
+    const select = (i: number) => {
+      if (busy || !board.pieces[i]) return;
+      selected = selected === i ? null : i;
+      paint();
+      if (log) {
+        const p = selected !== null ? board.pieces[selected] : null;
+        log.textContent = p ? `${p.name} selected. Choose a direction: amber tiles are where it lands, red is a ram, blue a pit.` : 'Pick a unit on the board.';
+      }
+    };
+
+    const shove = (dir: Direction) => {
+      if (busy || selected === null) return;
+      const from = selected;
+      const result = resolveShove(board, from, dir);
+      const ev = result.events[0];
+      if (!ev) return;
+      busy = true;
+      const wait = isReduced() ? 0 : 320;
+      // Play the blow on the old board, then commit the new one.
+      if (ev.kind === 'moved') {
+        const dx = (ev.to % board.side) - (from % board.side);
+        const dy = Math.floor(ev.to / board.side) - Math.floor(from / board.side);
+        cells[from].style.setProperty('--dx', String(dx));
+        cells[from].style.setProperty('--dy', String(dy));
+        cells[from].classList.add('is-sliding');
+      } else if (ev.kind === 'pit') {
+        cells[from].classList.add('is-sinking');
+      } else if (ev.kind === 'ram') {
+        cells[from].classList.add('is-hit');
+        cells[ev.other].classList.add('is-hit');
+      } else {
+        cells[from].classList.add('is-hit');
+      }
+      if (log) log.textContent = result.summary;
+      window.setTimeout(() => {
+        cells.forEach((c) => {
+          c.classList.remove('is-sliding', 'is-sinking', 'is-hit');
+          c.style.removeProperty('--dx');
+          c.style.removeProperty('--dy');
+        });
+        board = result.board;
+        selected = ev.kind === 'moved' ? ev.to : ev.kind === 'pit' ? null : from;
+        busy = false;
+        paint();
+        if (selected !== null) cells[selected].focus({ preventScroll: true });
+        else dirs[0].closest<HTMLElement>('.shove-pad')?.querySelector<HTMLButtonElement>('[data-shove-reset]')?.focus({ preventScroll: true });
+      }, wait);
+    };
+
+    cells.forEach((c, i) => c.addEventListener('click', () => select(i)));
+    dirs.forEach((d) => d.addEventListener('click', () => shove(d.dataset.dir as Direction)));
+    lab.addEventListener('keydown', (e) => {
+      const map: Record<string, Direction> = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' };
+      const dir = map[e.key];
+      if (!dir || selected === null) return;
+      e.preventDefault();
+      shove(dir);
+    });
+    reset?.addEventListener('click', () => {
+      board = demoBoard();
+      selected = null;
+      busy = false;
+      paint();
+      if (log) log.textContent = 'Board reset. Pick a unit on the board.';
+    });
+    paint();
+  }
+
+  document.addEventListener('astro:page-load', () => {
+    document.querySelectorAll<HTMLElement>('[data-shove-lab]').forEach(setup);
+  });
+</script>
+
+<style>
+  .shove-lab {
+    display: grid;
+    gap: 10px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--umber);
+    border-radius: var(--r-md);
+    box-shadow: var(--card-depth);
+  }
+  .shove-lab-head {
+    margin: 0;
+    line-height: 1.6;
+  }
+  .shove-board {
+    display: grid;
+    grid-template-columns: repeat(var(--side, 5), minmax(0, 1fr));
+    gap: 6px;
+    max-width: 320px;
+  }
+  .shove-cell {
+    --key-radius: var(--r-cell);
+    aspect-ratio: 1;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-size: 20px;
+    line-height: 1;
+    color: var(--text-2);
+    cursor: pointer;
+    transition:
+      transform 0.3s var(--ease-out-expo),
+      opacity 0.3s ease,
+      box-shadow 0.2s ease;
+  }
+  .shove-cell:disabled {
+    cursor: default;
+  }
+  .shove-cell[data-terrain='pit'] {
+    color: var(--sky);
+    background: color-mix(in srgb, var(--sky) 18%, var(--key-glass));
+  }
+  .shove-cell[data-terrain='rock'] {
+    color: var(--text-3);
+    background: color-mix(in srgb, var(--umber) 55%, var(--key-glass));
+  }
+  .shove-cell[data-side='ally'] {
+    color: var(--mint);
+  }
+  .shove-cell[data-side='enemy'] {
+    color: var(--coral);
+  }
+  .shove-cell[data-hits='1'] .shove-glyph,
+  .shove-cell[data-hits='2'] .shove-glyph,
+  .shove-cell[data-hits='3'] .shove-glyph {
+    text-decoration: underline;
+    text-decoration-color: var(--coral);
+    text-underline-offset: 3px;
+  }
+  .shove-glyph {
+    position: relative;
+    z-index: 3;
+    transition: transform 0.3s var(--ease-out-expo), opacity 0.3s ease;
+  }
+  .shove-cell.is-selected {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      inset 0 -3px 0 rgba(0, 0, 0, 0.38),
+      0 0 0 2px var(--coral),
+      0 0 18px var(--glow-ink);
+  }
+  .shove-cell.is-landing {
+    background: var(--cell-telegraph);
+  }
+  .shove-cell.is-ram {
+    background: var(--cell-miss);
+  }
+  .shove-cell.is-pit {
+    background: color-mix(in srgb, var(--sky) 45%, var(--key-glass));
+  }
+  .shove-cell.is-sliding .shove-glyph {
+    transform: translate(calc(var(--dx, 0) * (100% + 6px)), calc(var(--dy, 0) * (100% + 6px)));
+  }
+  .shove-cell.is-sinking .shove-glyph {
+    transform: scale(0.3) rotate(25deg);
+    opacity: 0;
+  }
+  .shove-cell.is-hit {
+    animation: shove-hit 320ms ease;
+  }
+  @keyframes shove-hit {
+    30% {
+      transform: translateX(-3px);
+      background: var(--cell-miss);
+    }
+    60% {
+      transform: translateX(3px);
+    }
+  }
+  .shove-pad {
+    display: grid;
+    grid-template-columns: repeat(4, 44px) auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .shove-dir,
+  .shove-reset {
+    --key-radius: var(--r-xs);
+    font-family: var(--mono);
+    font-size: 15px;
+    padding: 8px 0;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .shove-reset {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 9px 12px;
+    color: var(--gold);
+    justify-self: end;
+  }
+  .shove-dir:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+  .shove-dir > *,
+  .shove-reset > * {
+    position: relative;
+    z-index: 3;
+  }
+  .shove-log {
+    margin: 0;
+    min-height: 2.4em;
+    line-height: 1.5;
+    color: var(--text-2);
+  }
+  :global(html[data-motion='reduced']) .shove-cell.is-hit {
+    animation: none;
+  }
+</style>

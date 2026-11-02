@@ -4,8 +4,9 @@ import Base from '../../layouts/Base.astro';
 import Prism from '../../components/Prism.astro';
 import Figure from '../../components/Figure.astro';
 import NotesExplorer from '../../components/NotesExplorer.astro';
+import ShoveLab from '../../components/ShoveLab.astro';
 import { site, PERSON_ID } from '../../data/site';
-import { splitWriteUp } from '../../lib/notes';
+import { planVisuals, splitWriteUp } from '../../lib/notes';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -17,6 +18,10 @@ const d = project.data;
 const { Content } = await render(project);
 // The technical breakdown becomes nonlinear notes when the write-up has one (see src/lib/notes.ts).
 const writeUp = project.rendered?.html ? splitWriteUp(project.rendered.html) : null;
+// The sticky split (R5): one visual per note for the pinned pane; Push Comes to Shove's first note gets
+// the shove visualiser (R6) instead of a screenshot.
+const hasShoveLab = project.id === 'push-comes-to-shove';
+const visuals = writeUp ? planVisuals(writeUp.notes, d.media, hasShoveLab ? 0 : undefined) : [];
 const hero = d.media[0];
 const gallery = d.media.slice(1);
 const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
@@ -143,18 +148,56 @@ const projectSchema = [
       </section>
 
       <section class="content" data-reveal>
-        {
-          writeUp ? (
-            <>
-              <Fragment set:html={writeUp.before + writeUp.intro} />
-              <NotesExplorer notes={writeUp.notes} title={d.title} />
-            </>
-          ) : (
-            <Content />
-          )
-        }
+        {writeUp ? <Fragment set:html={writeUp.before + writeUp.intro} /> : <Content />}
       </section>
+    </article>
 
+    <aside class="side">
+      <div class="box" data-reveal data-tilt data-tilt-max="3">
+        <dl>
+          <dt>Status</dt>
+          <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
+          <dt>{d.kind === 'tool' ? 'Download' : 'Play'}</dt>
+          <dd>
+            {
+              d.kind === 'tool' ? (
+                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="muted">Not released yet</span>
+              ) : d.itchUrl ? (
+                <a href={d.itchUrl}>itch.io ↗</a>
+              ) : (
+                <span class="muted">Not published yet</span>
+              )
+            }
+          </dd>
+          <dt>Source</dt>
+          <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="muted">Private repository</span>}</dd>
+          <dt>Role</dt>
+          <dd>{d.role}</dd>
+          <dt>Period</dt>
+          <dd>{period}</dd>
+          <dt>Tools</dt>
+          <dd>{d.tools.join(', ')}</dd>
+          <dt>Viewport</dt>
+          <dd>
+            <button type="button" id="crt-toggle" class="crt-toggle-btn" aria-pressed="true">
+              CRT Scanlines: ON
+            </button>
+          </dd>
+        </dl>
+      </div>
+    </aside>
+
+    {
+      writeUp && (
+        <section class="content notes-row" data-reveal>
+          <NotesExplorer notes={writeUp.notes} title={d.title} visuals={visuals}>
+            <Fragment slot="widget">{hasShoveLab && <ShoveLab />}</Fragment>
+          </NotesExplorer>
+        </section>
+      )
+    }
+
+    <article class="prose prose-tail">
       {
         gallery.length > 0 && (
           <section data-reveal>
@@ -197,41 +240,6 @@ const projectSchema = [
         }
       </section>
     </article>
-
-    <aside class="side">
-      <div class="box" data-reveal data-tilt data-tilt-max="3">
-        <dl>
-          <dt>Status</dt>
-          <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
-          <dt>{d.kind === 'tool' ? 'Download' : 'Play'}</dt>
-          <dd>
-            {
-              d.kind === 'tool' ? (
-                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="muted">Not released yet</span>
-              ) : d.itchUrl ? (
-                <a href={d.itchUrl}>itch.io ↗</a>
-              ) : (
-                <span class="muted">Not published yet</span>
-              )
-            }
-          </dd>
-          <dt>Source</dt>
-          <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="muted">Private repository</span>}</dd>
-          <dt>Role</dt>
-          <dd>{d.role}</dd>
-          <dt>Period</dt>
-          <dd>{period}</dd>
-          <dt>Tools</dt>
-          <dd>{d.tools.join(', ')}</dd>
-          <dt>Viewport</dt>
-          <dd>
-            <button type="button" id="crt-toggle" class="crt-toggle-btn" aria-pressed="true">
-              CRT Scanlines: ON
-            </button>
-          </dd>
-        </dl>
-      </div>
-    </aside>
   </div>
 
   <script>
@@ -330,6 +338,18 @@ const projectSchema = [
   .prose section {
     margin-top: 56px;
   }
+  /* The notes (R5) and the tail of the write-up span both columns; the sidebar keeps the first row. */
+  .notes-row,
+  .prose-tail {
+    grid-column: 1 / -1;
+  }
+  .notes-row {
+    margin-top: 8px;
+    min-width: 0;
+  }
+  .prose-tail > section:first-child {
+    margin-top: 48px;
+  }
   .prose h2 {
     font-size: 30px;
   }
@@ -357,11 +377,14 @@ const projectSchema = [
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 20px;
   }
+  /* The sidebar's box sticks only within the first row (the aside stretches to the row's height), so it
+     never rides over the notes' pinned pane below. */
   .side {
+    font-size: 14px;
+  }
+  .side .box {
     position: sticky;
     top: 88px;
-    align-self: start;
-    font-size: 14px;
   }
   .box {
     background: var(--surface);
@@ -405,7 +428,7 @@ const projectSchema = [
     .layout {
       grid-template-columns: minmax(0, 1fr);
     }
-    .side {
+    .side .box {
       position: static;
     }
   }
@@ -415,9 +438,6 @@ const projectSchema = [
     }
     .gallery {
       grid-template-columns: minmax(0, 1fr);
-    }
-    .side {
-      position: static;
     }
   }
 </style>

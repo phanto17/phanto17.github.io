@@ -1,21 +1,25 @@
 ---
 /**
- * Nonlinear notes: a project's technical breakdown as an explorable grid of cards (InteractivePanel)
- * with a reading pane (the inspector pattern from the Telegraph Recall lab).
+ * Nonlinear notes: a project's technical breakdown.
  *
- * Progressive enhancement: the server renders every note as a plain section, so without JavaScript
- * the write-up reads top to bottom. The script switches to "explore" mode (one note in the pane at a
- * time) unless the reader chose "one page", which is remembered in localStorage. Deep links to any
- * heading inside a note open that note.
+ * Wide screens (≥ 861px, R5 "sticky split"): the notes are numbered steps in a scrolling left column
+ * and a pinned right pane shows one visual per step (a screenshot, the note's first code block, or
+ * the shove visualiser), swapped as the reader scrolls. Narrow screens: the explorable grid of cards
+ * (InteractivePanel) with a reading pane, one note at a time, as before; the visuals move into their
+ * notes. Progressive enhancement: the server renders every note as a plain section, so without
+ * JavaScript the write-up reads top to bottom. Deep links to any heading inside a note open that note.
  */
 import InteractivePanel from './InteractivePanel.astro';
-import type { Note } from '../lib/notes';
+import Figure from './Figure.astro';
+import type { Note, NoteVisual } from '../lib/notes';
 
 interface Props {
   notes: Note[];
   title: string;
+  /** One per note, in order (src/lib/notes.ts planVisuals). */
+  visuals?: NoteVisual[];
 }
-const { notes, title } = Astro.props;
+const { notes, title, visuals = [] } = Astro.props;
 ---
 
 <div class="notes" data-notes>
@@ -60,10 +64,28 @@ const { notes, title } = Astro.props;
       ))
     }
   </div>
+
+  {
+    visuals.length === notes.length && (
+      <div class="notes-visuals" data-notes-visuals hidden>
+        {visuals.map((v, i) => (
+          <figure class="visual" data-visual={notes[i].id} data-visual-kind={v.kind}>
+            {v.kind === 'code' && <Fragment set:html={v.html ?? ''} />}
+            {v.kind === 'image' && <Figure type="image" src={v.src} alt={v.alt ?? ''} caption={v.caption} />}
+            {v.kind === 'widget' && <slot name="widget" />}
+            <figcaption class="visual-cap meta">
+              <b>{notes[i].code}</b> · {notes[i].title}
+            </figcaption>
+          </figure>
+        ))}
+      </div>
+    )
+  }
 </div>
 
 <script>
   const STORE = 'portfolio-notes';
+  const WIDE = '(min-width: 861px)';
   let controller: AbortController | null = null;
 
   const readMode = (): 'explore' | 'page' => {
@@ -84,19 +106,47 @@ const { notes, title } = Astro.props;
   function setup(root: HTMLElement) {
     if (root.dataset.notesReady) return;
     root.dataset.notesReady = 'true';
+    const signal = controller!.signal;
     const notes = Array.from(root.querySelectorAll<HTMLElement>('[data-note]'));
     const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-note-tab]'));
     const modeBtn = root.querySelector<HTMLButtonElement>('[data-notes-mode]');
     const progress = root.querySelector<HTMLElement>('[data-notes-progress]');
+    const visualsBox = root.querySelector<HTMLElement>('[data-notes-visuals]');
+    const visuals = Array.from(root.querySelectorAll<HTMLElement>('[data-visual]'));
+    const wide = window.matchMedia(WIDE);
     const explored = new Set<string>();
     let mode = readMode();
+    let layout: 'split' | 'stack' = wide.matches && visuals.length > 0 ? 'split' : 'stack';
     let active = notes[0]?.id ?? '';
+    let io: IntersectionObserver | null = null;
 
     root.querySelectorAll<HTMLElement>('[data-notes-ui]').forEach((el) => (el.hidden = false));
 
+    // The visuals live in the pinned pane on wide screens and inside their notes (after the heading)
+    // on narrow ones, so the shove lab and the figures are reachable either way.
+    const placeVisuals = () => {
+      if (!visualsBox) return;
+      visuals.forEach((v) => {
+        if (layout === 'split') {
+          visualsBox.appendChild(v);
+          return;
+        }
+        const note = document.getElementById(v.dataset.visual ?? '');
+        const h3 = note?.querySelector('h3');
+        if (h3 && v.parentElement !== note) h3.insertAdjacentElement('afterend', v);
+      });
+      visualsBox.hidden = layout !== 'split';
+    };
+
+    const setVisual = (id: string) => {
+      visuals.forEach((v) => v.classList.toggle('is-active', v.dataset.visual === id));
+      notes.forEach((n) => n.classList.toggle('is-current', n.id === id));
+    };
+
     const paint = () => {
-      const exploring = mode === 'explore';
+      const exploring = layout === 'stack' && mode === 'explore';
       root.classList.toggle('is-explorer', exploring);
+      root.classList.toggle('is-split', layout === 'split');
       notes.forEach((note) => (note.hidden = exploring && note.id !== active));
       tabs.forEach((tab) => {
         const id = tab.dataset.noteTab ?? '';
@@ -112,6 +162,27 @@ const { notes, title } = Astro.props;
         modeBtn.setAttribute('aria-pressed', String(!exploring));
         modeBtn.textContent = exploring ? 'Read as one page' : 'Explore as notes';
       }
+      if (layout === 'split') setVisual(active);
+    };
+
+    // Split layout: the note under the upper third of the viewport drives the pane.
+    const watchSteps = () => {
+      io?.disconnect();
+      io = null;
+      if (layout !== 'split' || !('IntersectionObserver' in window)) return;
+      io = new IntersectionObserver(
+        (entries) => {
+          const hit = entries
+            .filter((e) => e.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+          if (!hit) return;
+          active = hit.target.id;
+          explored.add(active);
+          setVisual(active);
+        },
+        { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
+      );
+      notes.forEach((n) => io!.observe(n));
     };
 
     const heading = (id: string) => document.getElementById(id)?.querySelector<HTMLElement>('h3') ?? null;
@@ -126,7 +197,7 @@ const { notes, title } = Astro.props;
       explored.add(id);
       paint();
       const target = document.getElementById(id);
-      if (target && mode === 'explore') {
+      if (target && layout === 'stack' && mode === 'explore') {
         target.classList.remove('is-entering');
         void target.offsetWidth;
         target.classList.add('is-entering');
@@ -136,7 +207,9 @@ const { notes, title } = Astro.props;
         h.tabIndex = -1;
         h.focus({ preventScroll: true });
       }
-      if (opts.scroll) (mode === 'explore' ? root : target)?.scrollIntoView({ block: 'start' });
+      if (opts.scroll || layout === 'split') {
+        (layout === 'stack' && mode === 'explore' ? root : target)?.scrollIntoView({ block: 'start' });
+      }
     };
 
     /** Open the note that holds the element the URL hash points at; true when one was found. */
@@ -151,17 +224,24 @@ const { notes, title } = Astro.props;
       return true;
     };
 
-    explored.add(active);
-    paint();
-    fromHash();
+    const applyLayout = () => {
+      layout = wide.matches && visuals.length > 0 ? 'split' : 'stack';
+      placeVisuals();
+      paint();
+      watchSteps();
+    };
 
-    const signal = controller!.signal;
+    explored.add(active);
+    applyLayout();
+    fromHash();
+    wide.addEventListener('change', applyLayout, { signal });
+
     tabs.forEach((tab) =>
       tab.addEventListener(
         'click',
         () => {
           const id = tab.dataset.noteTab ?? '';
-          if (mode === 'explore') {
+          if (layout === 'stack' && mode === 'explore') {
             open(id);
             replaceHash(id);
           } else {
@@ -192,12 +272,13 @@ const { notes, title } = Astro.props;
         mode = mode === 'explore' ? 'page' : 'explore';
         saveMode(mode);
         paint();
-        if (mode === 'explore') open(active);
+        if (mode === 'explore' && layout === 'stack') open(active);
         modeBtn.focus();
       },
       { signal },
     );
     window.addEventListener('hashchange', fromHash, { signal });
+    signal.addEventListener('abort', () => io?.disconnect());
   }
 
   document.addEventListener('astro:page-load', () => {
@@ -293,13 +374,100 @@ const { notes, title } = Astro.props;
       transform: translateY(8px);
     }
   }
+
+  /* ---- Visuals: in a note (narrow) they sit under the heading as a figure ---- */
+  .visual {
+    margin: 16px 0 20px;
+    min-width: 0;
+  }
+  .visual :global(pre.astro-code) {
+    margin: 0;
+    max-height: min(60vh, 520px);
+  }
+  .visual-cap {
+    display: none;
+  }
+
+  /* ---- Sticky split (≥ 861px): steps left, pinned pane right ---- */
+  .notes.is-split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 44%);
+    gap: 40px;
+    align-items: start;
+  }
+  .notes.is-split .notes-head,
+  .notes.is-split .notes-grid,
+  .notes.is-split .note-nav {
+    display: none;
+  }
+  .notes.is-split .notes-pane {
+    min-width: 0;
+  }
+  .notes.is-split .note {
+    scroll-margin-top: 96px;
+    padding-bottom: 8px;
+  }
+  .notes.is-split .note-bar {
+    margin-top: 40px;
+    border-bottom-color: transparent;
+    transition: color 0.3s ease;
+  }
+  .notes.is-split .note:first-child .note-bar {
+    margin-top: 0;
+  }
+  .notes.is-split .note.is-current .note-bar b {
+    color: var(--coral);
+  }
+  .notes.is-split .note:not(.is-current) {
+    opacity: 0.82;
+    transition: opacity 0.4s ease;
+  }
+  /* The note's own copy of a code block that the pane shows. */
+  .notes.is-split .note :global([data-in-pane]),
+  .notes.is-split .note :global(.code-block-wrap:has([data-in-pane])) {
+    display: none;
+  }
+  .notes.is-split .notes-visuals {
+    position: sticky;
+    top: 92px;
+    display: grid;
+    min-width: 0;
+  }
+  .notes.is-split .visual {
+    grid-area: 1 / 1;
+    margin: 0;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition:
+      opacity 0.45s ease,
+      transform 0.5s var(--ease-out-expo, cubic-bezier(0.22, 1, 0.36, 1));
+  }
+  .notes.is-split .visual.is-active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .notes.is-split .visual-cap {
+    display: block;
+    margin-top: 10px;
+  }
+  .notes.is-split .visual :global(pre.astro-code) {
+    max-height: calc(100vh - 200px);
+    overflow: auto;
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .note.is-entering {
+    .note.is-entering,
+    .notes.is-split .visual {
       animation: none;
+      transition: none;
     }
   }
-  :global(html[data-motion='reduced']) .note.is-entering {
+  :global(html[data-motion='reduced']) .note.is-entering,
+  :global(html[data-motion='reduced']) .notes.is-split .visual {
     animation: none;
+    transition: none;
   }
   @media (max-width: 700px) {
     .notes-grid {

@@ -682,6 +682,15 @@ details.changelog ul {
   animation-delay: calc(var(--word-idx, 0) * 75ms);
 }
 
+/* ---- Decode reveal (motion.ts): glyphs still scrambled read dim; resolved ones take the element's ink ---- */
+.decode-char {
+  display: inline-block;
+}
+.decode-char.is-scrambled {
+  color: var(--text-3);
+  opacity: 0.75;
+}
+
 /* ---- Scroll-Triggered Fade-In & Stagger Choreography ---- */
 html.js-motion [data-reveal] {
   opacity: 0;

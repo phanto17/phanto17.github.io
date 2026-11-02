@@ -127,6 +127,11 @@ A fourth theme, **Signal** (plum night `#0d0a14`, the glass keys' cyan `#5fd7ff`
 is hidden until Telegraph Recall is cleared in that browser; the theme key then cycles into it after CRT
 (2026-11-01, `src/scripts/signal-reward.ts`). Its inks keep the same ≥ 4.5:1 rule on `bg` and `surface`.
 
+Since 2026-11-02 sub-heads, eyebrows and the hero lead decode from scrambled glyphs (left to right, the
+real text kept as the accessible name), every home section is its own module (dossier, bento, expandable
+cards, terminal) and project write-ups read as a sticky split at 861px and up (steps left, a pinned visual
+per step right, the shove lab on Push Comes to Shove). All of it stops or flattens under reduced motion.
+
 ## 7. Imagery rules & CRT viewport
 
 Screenshots/GIFs sit in `--r-md` frames on `--surface` with a 1 px `--umber` border, a faint

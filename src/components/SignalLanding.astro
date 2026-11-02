@@ -183,15 +183,12 @@ const words = ['The', 'signal', 'is', 'live.'];
       },
       { passive: true, signal },
     );
+    // A press before the panel appears means the visitor is busy; once it is up, clicks on the scrim
+    // do nothing (only Escape, scrolling and the quiet key dismiss it), so a stray click cannot lose it.
     document.addEventListener(
       'pointerdown',
-      (event) => {
-        if (!open) {
-          cancel();
-          return;
-        }
-        const target = event.target as Node | null;
-        if (target && !panel.querySelector('.signal-landing-panel')?.contains(target)) dismiss();
+      () => {
+        if (!open) cancel();
       },
       { signal },
     );

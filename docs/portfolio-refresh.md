@@ -603,3 +603,80 @@ restored (and ignored when locked); theme and class carried over a client-side n
 
 **Hours against the plan** (wall clock in this session): R8 0.25 h of 1 h; R2 0.4 h of 3 h; R3 0.3 h of
 2 h. The remaining plan hours are for the owner's review round and the design-system sync.
+
+### Redesign, second slice: the dismissal fix, R1, R4, R5, R6 (2026-11-02)
+
+Done on the owner's "go on with your recommendations, work until the whole plan is finished".
+
+**Landing dismissal.** The owner saw the panel vanish on a click: the click-outside dismissal was mine, not
+the brief's, and it cut against the moment. Removed. Escape, scrolling, the quiet key and the motion switch
+dismiss it; a press before it appears still counts as "not idle" and skips it.
+
+**R1 — Decode reveal** (`decodeReveals()` in `src/scripts/motion.ts`). Sub-heads (`.sub-h`), eyebrows
+(`.kicker`), the hero lead and anything with `data-decode` are split into characters (SplitText, `aria:
+'auto'`, so the element keeps its text as the accessible name), shown as scrambled glyphs from
+`#%&@$0-9<>/\|=+*-_~^:;!?` and resolved left to right over 0.5 s + 4 ms per character (capped at 1.1 s),
+reshuffling the unresolved tail every 45 ms, the first time they enter the viewport; the split is reverted
+when done and the element marked `data-decoded`. Scrambled glyphs read dim (`.decode-char.is-scrambled`,
+`text-3` at 0.75). Elements holding a link, button or input, and anything inside a dialog, keep the plain
+reveal. Under reduced motion the module never loads, so the text is plain.
+
+**R4 — Home sections as modules** (`src/pages/index.astro`, `src/components/ProjectTile.astro`).
+- About: a dossier of four native `<details name="about-facet">` facets (Who I am / Specialisation /
+  Interests / Goals), one open at a time (the exclusive-accordion attribute; it reads without JavaScript),
+  each with the owner's existing paragraph and the related definition rows; nothing was written anew except
+  the specialisation line, which is the site title. Facet titles grow on hover (owner rule).
+- Projects: a bento, six columns with spans 4 / 2 / 3 / 3, cover filling the tile (16:9, 4:3 on the small
+  one), the project numeral on the cover, meta, title, summary, highlights and the pills. Hover lifts the
+  cover 4% and dims the sibling tiles to 0.74 (`:has()`); a tile whose project has a `clip` (new optional
+  frontmatter field, an R7 WebM loop) crossfades to it on hover or focus, muted and looping, never under
+  reduced motion or on touch. The cover and title keep their transition names, so the morph into the
+  project page still works. `/projects/` keeps the old rows (ProjectRow).
+- Activities: unchanged (tip-up timeline).
+- Experience: `<details class="exp">` cards, closed on the first sentence of the entry, open to the full
+  text with `[ + READ ]` / `[ − CLOSE ]`.
+- Contact: a terminal card (`.tty`, window bar `CONTACT // TTY_01`) with `$ mail` / `$ github` /
+  `$ youtube` / `$ cv` lines, a glass `copy` key for the address (clipboard, "copied ✓") and a blinking
+  caret; the "Write to me" panel stays beside it.
+
+**R5 — Project pages as a sticky split** (`NotesExplorer.astro`, `src/lib/notes.ts`, `[id].astro`).
+At 861px and up the technical notes are numbered steps in a scrolling left column with a pinned right pane
+(sticky under the nav) that shows one visual per step: `planVisuals()` gives each note the page's widget
+where it asks for one, else the note's first code block (copied into the pane; the note's own copy is
+tagged `data-in-pane` and hidden in the split), else the gallery images in turn, else the cover. The active
+step is the note under the upper third of the viewport, picked by an IntersectionObserver (not
+ScrollTrigger: it needs no GSAP and works under reduced motion, where the crossfade is simply off); the
+pane crossfades 0.45 s. Under 861px the component is the explorer it was, and the visuals move into their
+notes under the heading, so phones get the figures and the lab too. The notes now sit in a full-width
+row of the page grid under the article and the sidebar, and the sidebar's box sticks only within its own
+row (it used to ride over everything below).
+
+**R6 — Shove visualiser** (`src/scripts/shove-sim.ts`, `src/components/ShoveLab.astro`,
+`tests/shove-sim.test.ts`). A pure model on the Telegraph engine's 4 × 4 board (`GRID_SIZE`,
+`shoveTarget`): two pits, a rock, Soldier and Archer, two Goblins and an Orc Brute. `resolveShove(board,
+cell, dir)` applies the write-up's rules: into the map edge or a rock, collision damage and no move; into
+another unit, both hit and neither moves; onto a pit, destroyed; else one tile. No hit-point numbers are
+claimed (the lab counts hits as an underline). The widget: a grid of glass keys, a direction pad and a
+log line (`aria-live`); pick a unit (amber = where it lands, red = ram, blue = pit, from `previewShoves`),
+then a direction key or an arrow key; the glyph slides, shakes or sinks (320 ms, none under reduced
+motion), focus follows the unit; `reset` restores the board. It is the pinned visual of Push Comes to
+Shove's first note, and sits inside that note on narrow screens.
+
+**Gates.** `npm test` 69 passed (16 new: `shove-sim.test.ts`, `notes-visuals.test.ts`), `astro check`
+0 errors, build 8 pages, links 57 internal / 41 external, none broken. Headless Chrome against the built
+site: the landing/reward script still 57/57; a new script with 36 checks: lead and sub-heads decode and
+revert (none under reduced motion); dossier exclusive open; bento spans, covers, sibling dimming;
+experience open/close; terminal lines and the copy key; split layout, sticky pane, first visual the lab,
+pane swap on scrolling to step 2, hidden in-note code copies, the sidebar box kept in its row; the lab's
+preview, a pit shove, an arrow-key shove with focus kept, reset; Cinderhold's split with code and image
+visuals; the narrow fallback with the lab inside the note; no sideways overflow at 600 and 375 px.
+
+**Not verified.** The built-in browser pane was hidden during this slice (zero-width viewport), so nothing
+was seen with a real GPU. One headless screenshot showed a grey raster block over the top of the notes
+column when the notes sit exactly at the viewport top; no element exists there (checked by geometry,
+including `pointer-events: none` layers) and it is absent at any other scroll offset, so it is most likely
+a software-GPU tile artefact. Worth one glance on the owner's screen: the Push Comes to Shove page,
+scrolled to the "N-01" step. R7 (the clips) is still the owner's; the `clip` field is ready for them.
+
+**Hours against the plan** (wall clock): R1 0.2 h of 1.5; R4 0.3 h of 8; R5 0.3 h of 8; R6 0.2 h of 4;
+dismissal fix and verification 0.3 h.

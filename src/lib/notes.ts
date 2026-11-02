@@ -127,3 +127,52 @@ export function splitWriteUp(html: string): SplitWriteUp | null {
 
   return { before: html.slice(0, breakdownEnd), intro: body.slice(0, heads[0].index!), notes };
 }
+
+/* ---- Visuals for the sticky split (R5) ------------------------------------------------------- */
+
+export interface NoteVisual {
+  kind: 'code' | 'image' | 'widget';
+  /** code: the note's first <pre> block, copied; the note's own copy is tagged `data-in-pane`. */
+  html?: string;
+  src?: string;
+  alt?: string;
+  caption?: string;
+}
+
+export interface MediaItem {
+  type: string;
+  src: string;
+  alt: string;
+  caption?: string;
+}
+
+const PRE = /<pre\b[^>]*>[\s\S]*?<\/pre>/i;
+
+/** Tag a note's first code block so the split layout can hide it there and show the copy in the pane. */
+export function tagFirstCode(html: string): { html: string; code: string } | null {
+  const m = PRE.exec(html);
+  if (!m) return null;
+  const tagged = m[0].replace(/^<pre\b/i, '<pre data-in-pane');
+  return { code: m[0], html: html.slice(0, m.index) + tagged + html.slice(m.index + m[0].length) };
+}
+
+/**
+ * One visual per note for the pinned pane: the page's widget where it asks for one (`widgetAt`), else
+ * the note's first code block, else the gallery images in turn, else the cover. Notes whose code block
+ * moves to the pane get it tagged in place (the note array is updated).
+ */
+export function planVisuals(notes: Note[], media: readonly MediaItem[], widgetAt?: number): NoteVisual[] {
+  const images = media.filter((m) => m.type === 'image');
+  const gallery = images.slice(1);
+  let next = 0;
+  return notes.map((note, i) => {
+    if (i === widgetAt) return { kind: 'widget' };
+    const code = tagFirstCode(note.html);
+    if (code) {
+      note.html = code.html;
+      return { kind: 'code', html: code.code };
+    }
+    const img = gallery.length > 0 ? gallery[next++ % gallery.length] : images[0];
+    return img ? { kind: 'image', src: img.src, alt: img.alt, caption: img.caption } : { kind: 'image' };
+  });
+}

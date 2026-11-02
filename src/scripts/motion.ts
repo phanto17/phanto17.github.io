@@ -163,6 +163,72 @@ function scrollChoreography() {
   });
 }
 
+/**
+ * Decode reveal (R1): sub-heads, kickers and the hero lead resolve from scrambled glyphs, left to
+ * right, the first time they scroll into view (the "uncoding" the owner asked for). The real text
+ * stays in the DOM: SplitText's aria option keeps it as the accessible name while the fragments are
+ * hidden from assistive tech, and the split is reverted as soon as the text has resolved. Elements
+ * holding links or controls, and anything inside a dialog, keep their plain reveal.
+ */
+const DECODE_GLYPHS = '#%&@$0123456789<>/\\|=+*-_~^:;!?';
+const decodeSelector = '.sub-h, .kicker, .hero .lead, [data-decode]';
+function decodeReveals() {
+  const els = Array.from(document.querySelectorAll<HTMLElement>(decodeSelector)).filter(
+    (el) => !el.dataset.decoded && !el.closest('dialog') && !el.querySelector('a, button, input'),
+  );
+  const glyph = () => DECODE_GLYPHS[Math.floor(Math.random() * DECODE_GLYPHS.length)];
+  els.forEach((el) => {
+    el.dataset.decoded = '1';
+    const split = SplitText.create(el, { type: 'chars', charsClass: 'decode-char', aria: 'auto' });
+    const chars = split.chars as HTMLElement[];
+    if (chars.length === 0) {
+      split.revert();
+      return;
+    }
+    splits.push(split);
+    const originals = chars.map((c) => c.textContent ?? '');
+    chars.forEach((c) => {
+      c.classList.add('is-scrambled');
+      c.textContent = glyph();
+    });
+    const state = { progress: 0 };
+    let lastShuffle = 0;
+    const settle = () => {
+      chars.forEach((c, i) => {
+        c.textContent = originals[i];
+        c.classList.remove('is-scrambled');
+      });
+      const idx = splits.indexOf(split);
+      if (idx >= 0) splits.splice(idx, 1);
+      split.revert();
+    };
+    const tween = gsap.to(state, {
+      progress: 1,
+      duration: Math.min(1.1, 0.5 + chars.length * 0.004),
+      ease: 'none',
+      paused: true,
+      onUpdate: () => {
+        const resolved = Math.floor(state.progress * chars.length);
+        const now = performance.now();
+        const shuffle = now - lastShuffle > 45;
+        if (shuffle) lastShuffle = now;
+        chars.forEach((c, i) => {
+          if (i < resolved) {
+            if (c.classList.contains('is-scrambled')) {
+              c.textContent = originals[i];
+              c.classList.remove('is-scrambled');
+            }
+          } else if (shuffle) {
+            c.textContent = glyph();
+          }
+        });
+      },
+      onComplete: settle,
+    });
+    ScrollTrigger.create({ trigger: el, start: 'top 92%', once: true, onEnter: () => tween.play() });
+  });
+}
+
 /** Timeline cards: a 3D tip-up on entry instead of the plain rise (they keep the shared batch timing). */
 const tipUpSelector = '.tl > article[data-reveal]';
 const tiltOf = (el: HTMLElement): number => Number(el.dataset.tiltMax ?? 3);
@@ -186,7 +252,7 @@ export function riseTitle(el: HTMLElement): void {
   );
 }
 
-/** Tear everything down: inline styles revert, split headings are restored, reveals are shown. */
+/** Tear everything down: inline styles revert, split headings and decoded text are restored, reveals are shown. */
 function teardown() {
   splits.forEach((s) => s.revert());
   splits.length = 0;
@@ -208,6 +274,7 @@ export function init(): void {
     ctx = gsap.context(() => {
       takeOverReveals();
       kineticHeadings();
+      decodeReveals();
       scrollChoreography();
     });
   };
