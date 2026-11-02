@@ -1,4 +1,5 @@
 ---
+import WinBar from './WinBar.astro';
 /**
  * One tile of the home page's project bento (R4). The cover fills the tile; when the project has a
  * `clip` (an R7 WebM loop) the tile crossfades to it on hover or focus, otherwise the cover just
@@ -29,10 +30,7 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
 ---
 
 <article class="tile" data-reveal data-tilt data-tilt-max="2" data-tile style={`--reveal-delay:${index};--span:${span}`}>
-  <div class="crt-win-bar" aria-hidden="true">
-    <span>[■] CH_{numStr} // {project.id.toUpperCase()}.{d.kind === 'tool' ? 'JAR' : 'WASM'}</span>
-    <span class="win-status">● {d.status.toUpperCase()}</span>
-  </div>
+  <WinBar size="tile" label={`[■] CH_${numStr} // ${project.id.toUpperCase()}.${d.kind === 'tool' ? 'JAR' : 'WASM'}`} status={d.status.toUpperCase()} />
   <!-- transition:name pairs this cover with the subpage hero figure: it morphs across the page change. -->
   <a class="tile-cover crt-frame" href={href} aria-label={`${d.title} write-up`} transition:name={`cover-${project.id}`}>
     {
@@ -97,24 +95,6 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
   .tile:focus-within {
     border-color: var(--coral);
     box-shadow: var(--card-depth-hover);
-  }
-  .crt-win-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 14px;
-    background: var(--surface-2);
-    border-bottom: 1px solid var(--umber);
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--steel);
-    white-space: nowrap;
-    overflow: hidden;
-  }
-  .win-status {
-    color: var(--mint);
   }
   .tile-cover {
     display: block;

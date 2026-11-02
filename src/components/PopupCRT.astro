@@ -28,7 +28,7 @@ const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
           TELEGRAPH_STAGES.map((stg, idx) => (
             <button
               type="button"
-              class={`crt-stage-tab ${idx === 0 ? 'is-active' : ''}`}
+              class={`key crt-stage-tab ${idx === 0 ? 'is-active' : ''}`}
               data-stage-target={stg.id}
               aria-pressed={idx === 0 ? 'true' : 'false'}
               aria-keyshortcuts={idx < 9 ? String(idx + 1) : undefined}
@@ -39,7 +39,7 @@ const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
           ))
         }
       </div>
-      <button type="button" id="tg-close-popup" class="crt-close-btn" aria-label="Close CRT terminal (Escape)" aria-keyshortcuts="Escape" data-crt-ripple>
+      <button type="button" id="tg-close-popup" class="key crt-close-btn" aria-label="Close CRT terminal (Escape)" aria-keyshortcuts="Escape" data-crt-ripple>
         [ESC ×]
       </button>
     </div>
@@ -157,14 +157,6 @@ const intro = TELEGRAPH_STAGES.find((stage) => stage.id === 'title-intro')!;
 </dialog>
 
 <style>
-  .crt-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--coral);
-    box-shadow: 0 0 10px var(--coral);
-    display: inline-block;
-  }
   /* PopupCRT Modal & StageRouter */
   .crt-popup-backdrop {
     position: fixed;

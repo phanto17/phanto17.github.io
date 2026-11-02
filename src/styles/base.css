@@ -1,0 +1,612 @@
+/* Prism design system — base styles: aliases, reset, typography, layout, pills, lists, figures,
+   CRT helpers, chips, tables and the signal field. Part of global.css. */
+
+/* Tokens: src/styles/tokens.css is generated from design/tokens.json (the Prism CRT design system)
+   by tools/build-tokens.mjs. Colours, shadows, spacing, radii, timing and the three themes live there.
+   The names below are aliases the site's rules were written against. */
+:root {
+  --display: var(--font-display);
+  --sans: var(--font-sans);
+  --mono: var(--font-mono);
+  --soft: 'SOFT' 100, 'WONK' 1;
+  --line: 1px solid var(--hairline);
+  --section: var(--space-10);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into bg. */
+  background:
+    radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-1) 38%, var(--bg)), transparent 70%),
+    radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-2) 30%, var(--bg)), transparent 70%),
+    radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-4) 45%, var(--bg)), transparent 72%),
+    radial-gradient(45% 40% at 85% 95%, color-mix(in srgb, var(--field-5) 40%, var(--bg)), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 17px;
+  line-height: 1.6;
+  position: relative;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+/* film grain + vignette */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(11, 7, 11, 0.75) 100%);
+}
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.14;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+a {
+  color: var(--action-text);
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+[hidden] {
+  display: none !important;
+}
+p a,
+li a,
+td a,
+dd a {
+  text-decoration: underline;
+  text-decoration-color: var(--glow-ink);
+  text-underline-offset: 3px;
+}
+a:hover {
+  color: var(--peach);
+  text-shadow: 0 0 10px var(--glow-ink);
+}
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+pre:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: var(--r-xs);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 72;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0 0 0.3em;
+  /* The growth origin lives here, not only on :hover, so the way back shrinks from the same corner
+     (2026-11-01: it used to snap to the centre on mouse-out and look like a jolt). The return eases
+     evenly; the spring is only on the way in. */
+  transform-origin: left center;
+  transition:
+    font-variation-settings 0.3s ease,
+    letter-spacing 0.3s ease,
+    text-shadow 0.35s ease,
+    color 0.25s ease,
+    transform 0.3s ease;
+}
+/* Hover grows the heading (owner rule 2026-10-29): heavier optical size, wider tracking, a slight
+   scale-up from the left. Never sharper or tighter. */
+h2:hover,
+h3:hover {
+  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
+  letter-spacing: 0.02em;
+  transform: scale(1.02);
+  transition:
+    font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    text-shadow 0.35s ease,
+    color 0.25s ease,
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+/* Entry titles sit in cards with no spare width: wider glyphs would re-wrap the line mid-hover
+   ("Intern - Taskscape Ltd (remote)" lost its last word, 2026-11-01). They grow by transform only. */
+h3.entry:hover {
+  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 72;
+  letter-spacing: -0.01em;
+  transform: scale(1.03);
+}
+h1 {
+  font-size: clamp(44px, 6.6vw, 80px);
+  line-height: 0.98;
+  letter-spacing: -0.015em;
+  text-shadow: var(--glow);
+}
+h2 {
+  font-size: 36px;
+  text-shadow: var(--glow-soft);
+}
+h3 {
+  font-size: 30px;
+}
+h4,
+h3.entry {
+  font-size: 22px;
+}
+p {
+  margin: 0 0 16px;
+}
+img,
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+code,
+pre {
+  font-family: var(--mono);
+  font-size: 0.88em;
+}
+pre {
+  background: var(--surface);
+  border: var(--line);
+  border-radius: var(--r-sm);
+  padding: 16px 18px;
+  overflow-x: auto;
+  line-height: 1.5;
+}
+:not(pre) > code {
+  background: var(--surface-2);
+  border-radius: var(--r-xs);
+  padding: 1px 6px;
+  color: var(--peach);
+}
+blockquote {
+  margin: 24px 0;
+  padding-left: 18px;
+  border-left: 2px solid var(--coral);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--lavender);
+  font-variation-settings: 'SOFT' 60;
+}
+hr {
+  border: 0;
+  border-top: var(--line);
+  margin: 40px 0;
+}
+ul,
+ol {
+  padding-left: 22px;
+}
+li {
+  margin-bottom: 6px;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 15px;
+}
+th,
+td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: var(--line);
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+th {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--steel);
+  font-weight: 500;
+}
+
+/* layout helpers */
+.wrap {
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+  position: relative;
+  z-index: 1;
+}
+.section {
+  padding: var(--section) 0;
+  /* No rule between sections (owner, 2026-11-01): the field and the spacing do the separating. */
+  position: relative;
+  overflow-x: clip; /* decorative prism bands must not widen the page */
+}
+.kicker {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+.sub-h {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--steel);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 32px;
+}
+.lead {
+  font-size: 19px;
+  color: var(--text-2);
+  max-width: 56ch;
+}
+.muted {
+  color: var(--text-2);
+}
+.meta {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--steel);
+}
+.meta b {
+  color: var(--gold);
+  font-weight: 500;
+}
+.todo {
+  background: rgba(246, 211, 112, 0.18);
+  color: var(--gold);
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 2px 6px;
+  border-radius: var(--r-xs);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.two {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
+  gap: 48px;
+}
+
+/* pills */
+.pill {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--umber);
+  color: var(--text-2);
+  margin: 8px 6px 0 0;
+}
+.pill.play {
+  border-color: var(--coral);
+  color: var(--action-text);
+  box-shadow: 0 0 12px rgba(242, 124, 82, 0.25);
+}
+.pill.wip {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+/* definition lists (About, Contact, project sidebar) */
+.dl {
+  border-top: 1px solid var(--umber);
+  font-size: 15px;
+  margin: 0;
+}
+.dl > div {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: var(--line);
+}
+.dl dt {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--steel);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0;
+  padding-top: 3px;
+}
+.dl dd {
+  margin: 0;
+  color: var(--text);
+  overflow-wrap: break-word; /* only a word that cannot fit at all is broken, never one that could wrap */
+}
+
+.skip-link {
+  position: absolute;
+  left: 16px;
+  top: -60px;
+  z-index: 100;
+  background: var(--coral);
+  color: var(--on-accent);
+  padding: 10px 16px;
+  border-radius: var(--r-pill);
+}
+.skip-link:focus {
+  top: 16px;
+}
+
+@media (max-width: 860px) {
+  :root {
+    --gutter: var(--gutter-mobile);
+    --section: var(--space-7);
+  }
+  body {
+    font-size: 16px;
+  }
+  h2 {
+    font-size: 30px;
+  }
+  h3 {
+    font-size: 26px;
+  }
+  .two {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 32px;
+  }
+}
+
+/* ---- Write-up figures: inline SVG diagrams and code excerpts ---------------------------- */
+.diagram {
+  margin: 28px 0;
+}
+.diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--surface);
+  border: var(--line);
+  border-radius: var(--r-md);
+  font-family: var(--sans);
+}
+.diagram svg .mono {
+  font-family: var(--mono);
+}
+.diagram figcaption,
+.excerpt-caption {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 10px;
+}
+.excerpt-caption {
+  margin: -6px 0 24px;
+}
+pre.astro-code {
+  border: var(--line);
+  border-radius: var(--r-sm);
+  padding: 16px 18px;
+  font-size: 13px;
+  position: relative;
+}
+
+/* ---- Retro CRT viewport, boxed-manual depth & interactive UI helpers ---- */
+.crt-frame {
+  position: relative;
+  box-shadow:
+    var(--card-depth),
+    inset 0 0 24px rgba(11, 7, 11, 0.6);
+}
+.crt-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      var(--scanline) 0px,
+      var(--scanline) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(circle at 50% 50%, transparent 64%, rgba(11, 7, 11, 0.52) 100%);
+  mix-blend-mode: multiply;
+  transition: opacity 0.2s;
+}
+html[data-crt="off"] .crt-frame::before,
+.crt-frame.crt-off::before {
+  opacity: 0;
+}
+
+/* Telemetry / metric chips */
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 12px;
+}
+.stat-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: var(--r-xs);
+  background: var(--surface-2);
+  border: 1px solid rgba(246, 211, 112, 0.32);
+  color: var(--gold);
+  letter-spacing: 0.03em;
+}
+.stat-chip::before {
+  content: '◆';
+  font-size: 8px;
+  color: var(--coral);
+}
+
+/* Collapsible version history / patch notes on project subpages */
+details.changelog {
+  margin-top: 20px;
+  background: var(--surface);
+  border: 1px solid var(--umber);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+  box-shadow: var(--card-depth);
+}
+details.changelog summary {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+details.changelog summary::-webkit-details-marker {
+  display: none;
+}
+details.changelog summary::after {
+  content: '[ + EXPAND LOG ]';
+  color: var(--coral);
+  font-size: 11px;
+}
+details[open].changelog summary::after {
+  content: '[ − COLLAPSE LOG ]';
+}
+details.changelog ul {
+  margin: 14px 0 4px;
+  padding-top: 12px;
+  border-top: var(--line);
+}
+
+/* Code snippet copy button */
+.code-block-wrap {
+  position: relative;
+}
+/* A glass key (class `key`, added by the script that creates it); only its placement is here. */
+.copy-code-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 3;
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 4px 9px;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.copy-code-btn:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+
+/* Responsive table wrapper */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--r-sm);
+}
+
+/* Projects: the head bar stays under the nav while the rows scroll beneath it (native sticky, no
+   pinning). index.astro adds .is-stuck while it is held, which only changes paint, never height. */
+@media (min-width: 861px) and (min-height: 700px) {
+  #projects .section-head-bar {
+    position: sticky;
+    top: 70px;
+    z-index: 6;
+    margin-left: -16px;
+    margin-right: -16px;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-top: 12px;
+    border-radius: 0 0 var(--r-sm) var(--r-sm);
+    transition:
+      background-color var(--t-lift, 250ms) ease,
+      box-shadow var(--t-lift, 250ms) ease;
+  }
+  #projects .section-head-bar.is-stuck {
+    /* Opaque: rows scroll right under the title; any see-through ghosts their light text. */
+    background: var(--bg);
+    box-shadow: 0 10px 24px -14px rgba(0, 0, 0, 0.7);
+  }
+}
+
+/* Interactive Definition List rows in #about and #contact */
+.dl > div {
+  position: relative;
+  /* Static side padding (pulled back out by the margin) gives the hover background its inset without
+     changing the row's width on hover: a hover-time padding used to narrow the value column and
+     re-wrap the long Education line mid-word (2026-11-01). */
+  padding-inline: 8px;
+  margin-inline: -8px;
+  transition:
+    transform 0.22s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.22s ease;
+  border-radius: var(--r-xs);
+}
+.dl > div:hover {
+  background: var(--surface-2);
+  transform: translateX(4px);
+}
+.dl > div:hover dt {
+  color: var(--gold);
+}
+
+@media (max-width: 560px) {
+  table {
+    font-size: 13px;
+  }
+  th,
+  td {
+    padding: 8px 6px;
+  }
+}
+
+/* The power LED on CRT frames (the lab cabinet, the popup monitor). */
+.crt-led {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--coral);
+  box-shadow: 0 0 10px var(--coral);
+  display: inline-block;
+}
+
+/* ---- Signal field: the animated, grainy, cursor-reactive colour field (src/scripts/field.ts) ---- */
+.signal-field {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  display: block;
+  opacity: 0;
+}
+html.has-field .signal-field {
+  opacity: 1;
+}
+html.has-field .prism-wrap {
+  display: none; /* the field replaces the blurred prism band */
+}

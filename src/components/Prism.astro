@@ -117,18 +117,17 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
       transform: translate3d(-22px, 16px, 0) rotate(-8deg) scale(0.95);
     }
   }
-  @media (prefers-reduced-motion: no-preference) {
-    .prism {
-      animation: prism-drift 28s ease-in-out infinite;
-      will-change: transform;
-    }
-    .orb-a {
-      animation: orb-morph 18s ease-in-out infinite;
-      will-change: transform;
-    }
-    .orb-b {
-      animation: orb-morph 23s ease-in-out infinite reverse;
-      will-change: transform;
-    }
+  /* The drift. motion.css stops every animation under reduced motion, by media query or by the switch. */
+  .prism {
+    animation: prism-drift 28s ease-in-out infinite;
+    will-change: transform;
+  }
+  .orb-a {
+    animation: orb-morph 18s ease-in-out infinite;
+    will-change: transform;
+  }
+  .orb-b {
+    animation: orb-morph 23s ease-in-out infinite reverse;
+    will-change: transform;
   }
 </style>

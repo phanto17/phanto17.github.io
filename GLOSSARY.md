@@ -66,6 +66,18 @@ conversation finds it fuzzy.
 - **Write-up rules** — `WRITE_UP_RULES` and `checkWriteUpSource`: the conventions above, checked over
   every write-up by `tests/write-ups.test.ts`.
 
+## Glass keys (`src/styles/keys.css`)
+
+- **Glass key** — the look of every control: a dark polished keycap (`key-glass` fill, top gloss,
+  bottom bevel, backdrop blur) with an iridescent `key-cyan`/`key-magenta` ring. **The class is the
+  seam**: `class="key"` on any control, `.btn` for the pill-shaped CTA; nothing else selects the look.
+- **Key chrome** — the border and shadows of a key, five theme tokens in `design/tokens.json`:
+  `key-border`, `key-border-hover`, `key-rest`, `key-hover`, `key-active`. Paper draws them in ink.
+- **Window bar** — `WinBar.astro`: the CRT title strip over a card (label left, status right), in a
+  `row` and a tighter `tile` size.
+- **Stylesheet parts** — `global.css` imports `tokens.css` (generated), `fonts.css`, `base.css`,
+  `keys.css` and `motion.css`, in that order.
+
 ## Themes and the Signal
 
 - **Theme** — one of `prism` (darkroom), `paper` (daylight), `crt` (phosphor) or `signal`

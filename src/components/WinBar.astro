@@ -1,0 +1,43 @@
+---
+/**
+ * The CRT window bar over a card: a mono label on the left ("[■] CH_01 // CINDERHOLD.WASM") and a
+ * status readout on the right ("● PLAYABLE"). Decorative; the card's own text carries the meaning.
+ * `size="tile"` is the tighter bar of the home-page bento.
+ */
+interface Props {
+  label: string;
+  status: string;
+  size?: 'row' | 'tile';
+}
+const { label, status, size = 'row' } = Astro.props;
+---
+
+<div class:list={['crt-win-bar', size]} aria-hidden="true">
+  <span>{label}</span>
+  <span class="win-status">● {status}</span>
+</div>
+
+<style>
+  .crt-win-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 18px;
+    background: var(--surface-2);
+    border-bottom: 1px solid var(--umber);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--steel);
+  }
+  .crt-win-bar.tile {
+    gap: 8px;
+    padding: 7px 14px;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .win-status {
+    color: var(--mint);
+  }
+</style>

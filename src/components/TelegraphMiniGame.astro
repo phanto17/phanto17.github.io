@@ -112,7 +112,7 @@ const designNotes = [
               return (
                 <button
                   type="button"
-                  class="tg-cell"
+                  class="key tg-cell"
                   data-idx={idx}
                   data-crt-ripple
                   aria-label={`Row ${r}, Column ${c}`}
@@ -240,14 +240,6 @@ const designNotes = [
     border-radius: 999px;
     background: var(--bg);
     border: 1px solid var(--umber);
-  }
-  .crt-led {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--coral);
-    box-shadow: 0 0 10px var(--coral);
-    display: inline-block;
   }
 
   /* The click ripple (.crt-click-ripple) is site-wide now: global.css. */

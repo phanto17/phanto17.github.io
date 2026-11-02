@@ -1,0 +1,147 @@
+/* Prism design system — glass keys. Part of global.css.
+   Every control is a dark polished keycap with an iridescent refraction edge (reference: the "esc."
+   key). The seam is the class: `.key` on any control (stage tabs, [ESC ×], board cells, the copy
+   buttons, the shove lab, the stamp), `.btn` for the pill-shaped CTA. The chrome (border, bevel,
+   shadows) comes from the theme tokens key-border / key-border-hover / key-rest / key-hover /
+   key-active (design/tokens.json), so Paper's ink-drawn keys need no override here. */
+.key,
+.btn {
+  --key-radius: var(--r-sm);
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--key-radius);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03) 38%, rgba(0, 0, 0, 0.22) 100%),
+    var(--key-glass);
+  border: 1px solid var(--key-border);
+  box-shadow: var(--key-rest);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+/* The iridescent ring: a conic gradient masked to a 1px edge, turned a little on hover. */
+.key::before,
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: conic-gradient(
+    from 200deg,
+    transparent 0 14%,
+    var(--key-cyan) 24%,
+    rgba(255, 255, 255, 0.9) 30%,
+    transparent 38% 56%,
+    var(--key-magenta) 66%,
+    rgba(255, 255, 255, 0.8) 72%,
+    transparent 80% 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  opacity: 0.55;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity var(--t-hover) ease, transform 600ms var(--ease-out-expo);
+}
+/* The top gloss. */
+.key::after,
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 2px 3px auto 3px;
+  height: 42%;
+  border-radius: calc(var(--key-radius) - 3px) calc(var(--key-radius) - 3px) 6px 6px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0));
+  pointer-events: none;
+  z-index: 1;
+}
+.btn > *,
+.tg-cell > * {
+  position: relative;
+  z-index: 3;
+}
+.key:hover::before,
+.btn:not(:disabled):hover::before {
+  opacity: 1;
+  transform: rotate(18deg);
+}
+.key:active,
+.btn:not(:disabled):active {
+  box-shadow: var(--key-active);
+}
+
+/* .btn: the pill-shaped CTA. Its silhouette, spacing and the magnetic offset (Base.astro sets --bx/--by)
+   are here; the glass chrome comes from the rule above. */
+.btn {
+  --key-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  font-weight: 500;
+  font-size: 15px;
+  color: var(--text);
+  cursor: pointer;
+  overflow: hidden;
+  transform: translate3d(var(--bx, 0px), var(--by, 0px), 0);
+  transition:
+    transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+.btn:not(:disabled):hover {
+  transform: translate3d(var(--bx, 0px), calc(var(--by, 0px) - 2px), 0);
+  color: var(--text);
+  text-shadow: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.05) 38%, rgba(0, 0, 0, 0.18) 100%),
+    var(--key-glass);
+  border-color: var(--key-border-hover);
+  box-shadow: var(--key-hover);
+}
+.btn:not(:disabled):active {
+  transform: translate3d(var(--bx, 0px), var(--by, 0px), 0) scale(0.97);
+  box-shadow: var(--key-active);
+}
+.btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+  box-shadow: none;
+  transform: none;
+}
+.btn:disabled::before {
+  opacity: 0.15;
+}
+.btn.primary {
+  color: var(--on-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.06) 40%, rgba(0, 0, 0, 0.18) 100%),
+    var(--coral);
+  border-color: color-mix(in srgb, var(--coral) 60%, white);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.3),
+    0 10px 24px rgba(0, 0, 0, 0.45),
+    var(--glow);
+}
+.btn.primary:not(:disabled):hover {
+  color: var(--on-accent);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.08) 40%, rgba(0, 0, 0, 0.14) 100%),
+    var(--peach);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.3),
+    0 14px 30px rgba(0, 0, 0, 0.5),
+    var(--glow);
+}
+/* Lit keys (an active stage tab, a telegraphed or answered board cell) show their own colour flat. */
+.crt-stage-tab.is-active,
+.tg-cell.telegraph,
+.tg-cell.hit,
+.tg-cell.miss {
+  background-blend-mode: normal;
+}

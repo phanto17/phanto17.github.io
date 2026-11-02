@@ -44,6 +44,8 @@ html[data-theme='prism'] {
   --cell-hit: rgba(159, 211, 168, 0.22);
   --cell-miss: rgba(233, 92, 58, 0.35);
   --glow-ink: rgba(242, 124, 82, 0.55);
+  --key-border: rgba(255, 255, 255, 0.14);
+  --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(11, 7, 11, 0.86);
   --glow: 0 0 14px rgba(242, 124, 82, 0.55), 0 0 48px rgba(242, 177, 128, 0.28);
   --glow-soft: 0 0 24px rgba(242, 124, 82, 0.25);
@@ -55,6 +57,9 @@ html[data-theme='prism'] {
   --monitor-depth: 0 24px 80px rgba(0, 0, 0, 0.85), 0 0 42px rgba(242, 124, 82, 0.22);
   --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
   --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+  --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(242, 124, 82, 0.55);
+  --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
@@ -101,6 +106,8 @@ html[data-theme='paper'] {
   --cell-hit: rgba(29, 99, 56, 0.18);
   --cell-miss: rgba(184, 59, 20, 0.3);
   --glow-ink: rgba(184, 59, 20, 0.18);
+  --key-border: rgba(43, 33, 24, 0.35);
+  --key-border-hover: rgba(43, 33, 24, 0.35);
   --backdrop: rgba(43, 33, 24, 0.6);
   --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
   --glow-soft: none;
@@ -112,6 +119,9 @@ html[data-theme='paper'] {
   --monitor-depth: 12px 12px 0 #2b2118;
   --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
   --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+  --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+  --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+  --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(43, 33, 24, 0.2), 0 3px 8px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
   color-scheme: light;
 }
 
@@ -158,6 +168,8 @@ html[data-theme='crt'] {
   --cell-hit: rgba(82, 255, 168, 0.22);
   --cell-miss: rgba(233, 92, 58, 0.35);
   --glow-ink: rgba(82, 255, 168, 0.45);
+  --key-border: rgba(255, 255, 255, 0.14);
+  --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(2, 4, 3, 0.88);
   --glow: 0 0 18px rgba(82, 255, 168, 0.45), 0 0 42px rgba(246, 211, 112, 0.22);
   --glow-soft: 0 0 18px rgba(82, 255, 168, 0.25);
@@ -169,6 +181,9 @@ html[data-theme='crt'] {
   --monitor-depth: 0 24px 80px rgba(0, 0, 0, 0.9), 0 0 42px rgba(82, 255, 168, 0.22);
   --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
   --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+  --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(82, 255, 168, 0.45);
+  --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
@@ -215,6 +230,8 @@ html[data-theme='signal'] {
   --cell-hit: rgba(95, 215, 255, 0.22);
   --cell-miss: rgba(233, 92, 58, 0.35);
   --glow-ink: rgba(255, 79, 163, 0.5);
+  --key-border: rgba(255, 255, 255, 0.14);
+  --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(6, 4, 10, 0.86);
   --glow: 0 0 14px rgba(255, 79, 163, 0.5), 0 0 48px rgba(95, 215, 255, 0.28);
   --glow-soft: 0 0 24px rgba(95, 215, 255, 0.25);
@@ -226,6 +243,9 @@ html[data-theme='signal'] {
   --monitor-depth: 0 24px 80px rgba(0, 0, 0, 0.85), 0 0 42px rgba(95, 215, 255, 0.22);
   --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
   --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+  --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(255, 79, 163, 0.5);
+  --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   color-scheme: dark;
 }
 
@@ -273,6 +293,8 @@ html[data-theme='signal'] {
     --cell-hit: rgba(29, 99, 56, 0.18);
     --cell-miss: rgba(184, 59, 20, 0.3);
     --glow-ink: rgba(184, 59, 20, 0.18);
+    --key-border: rgba(43, 33, 24, 0.35);
+    --key-border-hover: rgba(43, 33, 24, 0.35);
     --backdrop: rgba(43, 33, 24, 0.6);
     --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
     --glow-soft: none;
@@ -284,6 +306,9 @@ html[data-theme='signal'] {
     --monitor-depth: 12px 12px 0 #2b2118;
     --frame-inset: inset 0 0 24px rgba(11, 7, 11, 0.6);
     --cover-lift: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(242, 124, 82, 0.25);
+    --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+    --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+    --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(43, 33, 24, 0.2), 0 3px 8px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
     color-scheme: light;
   }
 }
