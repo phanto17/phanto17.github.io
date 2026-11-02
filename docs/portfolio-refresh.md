@@ -435,8 +435,9 @@ Accessibility: the axe-core audit and keyboard walk pass (the NVDA listening pas
 owner's machine). Performance: measured locally at 4 × CPU (LCP 1.42 s, CLS 0.003, no slow
 interaction) and then on the owner's phone against the published site (LCP 0.70 s, CLS 0, worst input
 128 ms, no dropped frame): the gate passes. Published: the owner pushed `main` on 2026-11-02 (the
-push was refused to the session by the permission classifier). Open: the NVDA listening pass only.
-Details in the dated sections that follow.
+push was refused to the session by the permission classifier). Accessibility verification: axe audit,
+keyboard walk and an accessibility-tree read of the live site, all clean; an NVDA listening session
+remains available to the owner but nothing in the plan waits on it. Details in the dated sections that follow.
 
 #### R8 — the reference sites in a real browser (2026-11-01)
 
@@ -821,3 +822,29 @@ scroll. Passed on the published site. `tools/phone-trace.mjs` should take its ta
 scroll settles (the same wait the replay uses); noted for the tool's next edit.
 
 **Still open: only the NVDA listening pass**, which needs NVDA installed on the owner's PC.
+
+### Screen-reader pass, done from the accessibility tree (2026-11-02)
+
+NVDA is not on the owner's PC, so the pass was made on what a screen reader is given: Chromium's
+accessibility tree of the live site (`Accessibility.getFullAXTree` over the DevTools protocol,
+scratchpad `vt/axtree.mjs`, 17 checks), home page with the landing open and after it, and the Push
+Comes to Shove page with the split and the lab:
+
+- The landing is a dialog named "The signal is live." with two buttons, "▶ Play Telegraph Recall" and
+  "Not now"; no unnamed button or link anywhere on either page.
+- Heading order: one h1 ("Junior Gameplay Programmer (Unity / C#)"), then the six section h2s in
+  page order, project titles and design notes as h3s; the notes on the project page read as h3 steps
+  in order ("1. Grid, pathing and pushes — all tested" first).
+- Landmarks: navigation "Main", main, contentinfo, two named regions (the lab's design notes and
+  the cabinet); the field notes are no longer stray complementary landmarks.
+- The dossier's facets read as expandable items "01 Who I am" (expanded), "02 Specialisation",
+  "03 Interests", "04 Goals"; the bento covers read as "<title> write-up" links; the decoded sub-head
+  reads as its real text ("who · specialisation · interests · goals"); the terminal's copy key reads
+  "Copy the e-mail address"; nothing of the reward is read while it is locked.
+- The shove lab is a group "Shove lab board" of sixteen buttons named "Row r, column c: <what>", four
+  "Shove up/down/left/right" keys and a polite live region for the log.
+
+What this cannot tell is how NVDA paces and phrases it; that listening session stays available to the
+owner (the protocol in "Accessibility review checklist"), but the plan's accessibility verification
+is otherwise complete: axe-core audit, keyboard walk and the accessibility-tree read, all on the
+published site.
