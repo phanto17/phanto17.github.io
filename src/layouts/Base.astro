@@ -104,25 +104,21 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <script>
       import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
       import { CARRIED_ATTRIBUTES, prefs } from '../scripts/prefs';
-
-      declare global {
-        interface Window {
-          portfolioReveal?: { io: IntersectionObserver; els: HTMLElement[] };
-        }
-      }
+      import { onPage, shared, trackHover } from '../scripts/page';
 
       const root = document.documentElement;
       const isMotionAllowed = () => prefs.isMotionAllowed();
 
       // ---------------------------------------------------------------------------------------------
-      // Per-page bindings. With the ClientRouter this module runs once per session, so everything
-      // that binds to elements of the page re-runs on `astro:page-load` (which also fires on the
-      // first load, after `load`). Listeners on `window` and `document` are registered once, below.
+      // Per-page bindings go through src/scripts/page.ts (`onPage`): with the ClientRouter this module
+      // runs once per session while the page's elements change on every navigation. Pointer effects
+      // are delegated (`trackHover`), so nothing is bound per element. Listeners on `window` and
+      // `document` are registered once, below.
       // ---------------------------------------------------------------------------------------------
 
       // 1. Scroll-triggered Fade-In & Stagger Choreography
       const initScrollReveal = () => {
-        window.portfolioReveal?.io.disconnect();
+        shared.reveal?.io.disconnect();
         const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
         if (!('IntersectionObserver' in window) || !isMotionAllowed()) {
           els.forEach((el) => el.classList.add('is-visible'));
@@ -140,58 +136,52 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
           { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
         );
         els.forEach((el) => io.observe(el));
-        window.portfolioReveal = { io, els };
+        shared.reveal = { io, els };
       };
 
-      // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards
-      const bindTilt = () => {
-        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
+      onPage(initScrollReveal);
+
+      // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards (one delegated listener)
+      const restTilt = (card: HTMLElement) => {
+        card.style.setProperty('--rx', '0deg');
+        card.style.setProperty('--ry', '0deg');
+        card.style.setProperty('--glare-opacity', '0');
+        card.style.setProperty('--lift', '0px');
+      };
+      trackHover('[data-tilt]', {
+        move: (card, e) => {
+          if (!isMotionAllowed() || e.pointerType === 'touch') return;
           const maxDeg = Number(card.dataset.tiltMax ?? 4.5);
-          card.addEventListener('pointermove', (e) => {
-            if (!isMotionAllowed() || e.pointerType === 'touch') return;
-            const rect = card.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            const nx = x / rect.width - 0.5;
-            const ny = y / rect.height - 0.5;
-            card.style.setProperty('--rx', `${(-ny * maxDeg * 2).toFixed(2)}deg`);
-            card.style.setProperty('--ry', `${(nx * maxDeg * 2).toFixed(2)}deg`);
-            card.style.setProperty('--mx', `${x.toFixed(0)}px`);
-            card.style.setProperty('--my', `${y.toFixed(0)}px`);
-            card.style.setProperty('--glare-opacity', '1');
-            card.style.setProperty('--lift', '-3px');
-          });
-          card.addEventListener('pointerleave', () => {
-            card.style.setProperty('--rx', '0deg');
-            card.style.setProperty('--ry', '0deg');
-            card.style.setProperty('--glare-opacity', '0');
-            card.style.setProperty('--lift', '0px');
-          });
-        });
-      };
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const nx = x / rect.width - 0.5;
+          const ny = y / rect.height - 0.5;
+          card.style.setProperty('--rx', `${(-ny * maxDeg * 2).toFixed(2)}deg`);
+          card.style.setProperty('--ry', `${(nx * maxDeg * 2).toFixed(2)}deg`);
+          card.style.setProperty('--mx', `${x.toFixed(0)}px`);
+          card.style.setProperty('--my', `${y.toFixed(0)}px`);
+          card.style.setProperty('--glare-opacity', '1');
+          card.style.setProperty('--lift', '-3px');
+        },
+        leave: restTilt,
+      });
 
-      // 3. Magnetic Micro-Interaction on .btn elements
-      const bindMagnetic = () => {
-        document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
-          btn.addEventListener('pointermove', (e) => {
-            if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
-            const rect = btn.getBoundingClientRect();
-            const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
-            const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
-            btn.style.setProperty('--bx', `${dx.toFixed(1)}px`);
-            btn.style.setProperty('--by', `${dy.toFixed(1)}px`);
-          });
-          btn.addEventListener('pointerleave', () => {
-            btn.style.setProperty('--bx', '0px');
-            btn.style.setProperty('--by', '0px');
-          });
-        });
+      // 3. Magnetic Micro-Interaction on .btn elements (one delegated listener)
+      const restMagnetic = (btn: HTMLElement) => {
+        btn.style.setProperty('--bx', '0px');
+        btn.style.setProperty('--by', '0px');
       };
-
-      document.addEventListener('astro:page-load', () => {
-        initScrollReveal();
-        bindTilt();
-        bindMagnetic();
+      trackHover('.btn', {
+        move: (btn, e) => {
+          if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
+          const rect = btn.getBoundingClientRect();
+          const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
+          const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
+          btn.style.setProperty('--bx', `${dx.toFixed(1)}px`);
+          btn.style.setProperty('--by', `${dy.toFixed(1)}px`);
+        },
+        leave: restMagnetic,
       });
 
       // ---------------------------------------------------------------------------------------------
@@ -214,16 +204,8 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       prefs.onChange('motion', () => {
         initScrollReveal();
         if (isMotionAllowed()) return;
-        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
-          card.style.setProperty('--rx', '0deg');
-          card.style.setProperty('--ry', '0deg');
-          card.style.setProperty('--glare-opacity', '0');
-          card.style.setProperty('--lift', '0px');
-        });
-        document.querySelectorAll<HTMLElement>('.btn').forEach((btn) => {
-          btn.style.setProperty('--bx', '0px');
-          btn.style.setProperty('--by', '0px');
-        });
+        document.querySelectorAll<HTMLElement>('[data-tilt]').forEach(restTilt);
+        document.querySelectorAll<HTMLElement>('.btn').forEach(restMagnetic);
       });
 
       // Motion toolkit (GSAP, src/scripts/motion.ts): loaded after first paint, only when motion is
@@ -307,30 +289,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         host.appendChild(ripple);
         ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
         setTimeout(() => ripple.remove(), 650);
-      });
-
-      // 6. Privacy-first, cookieless telemetry dispatcher for outbound & portfolio actions
-      document.addEventListener('click', (e) => {
-        const target = (e.target as HTMLElement | null)?.closest<HTMLElement>('[data-track]');
-        if (!target) return;
-        const eventName = target.dataset.track;
-        const eventMeta = target.dataset.trackMeta ?? '';
-        if (!eventName) return;
-        window.dispatchEvent(
-          new CustomEvent('portfolio:track', {
-            detail: { event: eventName, meta: eventMeta, ts: Date.now() },
-          }),
-        );
-        const w = window as unknown as {
-          plausible?: (ev: string, opts?: { props: Record<string, string> }) => void;
-          goatcounter?: { count?: (opts: { path: string; title: string; event: boolean }) => void };
-        };
-        if (typeof w.plausible === 'function') {
-          w.plausible(eventName, { props: { target: eventMeta } });
-        }
-        if (w.goatcounter && typeof w.goatcounter.count === 'function') {
-          w.goatcounter.count({ path: `event/${eventName}/${eventMeta}`, title: eventName, event: true });
-        }
       });
     </script>
   </body>

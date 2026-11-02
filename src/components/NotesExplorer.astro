@@ -84,19 +84,16 @@ const { notes, title, visuals = [] } = Astro.props;
 </div>
 
 <script>
+  import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
   const WIDE = '(min-width: 861px)';
-  let controller: AbortController | null = null;
 
   // The reading mode is a visitor preference (src/scripts/prefs.ts, row `notes`).
   const readMode = () => prefs.get('notes');
   const saveMode = (mode: 'explore' | 'page') => prefs.set('notes', mode);
 
-  function setup(root: HTMLElement) {
-    if (root.dataset.notesReady) return;
-    root.dataset.notesReady = 'true';
-    const signal = controller!.signal;
+  function setup(root: HTMLElement, signal: AbortSignal) {
     const notes = Array.from(root.querySelectorAll<HTMLElement>('[data-note]'));
     const tabs = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-note-tab]'));
     const modeBtn = root.querySelector<HTMLButtonElement>('[data-notes-mode]');
@@ -271,12 +268,9 @@ const { notes, title, visuals = [] } = Astro.props;
     signal.addEventListener('abort', () => io?.disconnect());
   }
 
-  document.addEventListener('astro:page-load', () => {
-    controller?.abort();
-    controller = new AbortController();
-    document.querySelectorAll<HTMLElement>('[data-notes]').forEach(setup);
+  onPage(({ signal }) => {
+    document.querySelectorAll<HTMLElement>('[data-notes]').forEach((root) => setup(root, signal));
   });
-  document.addEventListener('astro:before-swap', () => controller?.abort());
 </script>
 
 <style>

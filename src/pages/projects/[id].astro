@@ -95,14 +95,14 @@ const projectSchema = [
         {
           d.kind === 'tool' ? (
             d.downloadUrl ? (
-              <a class="btn primary" href={d.downloadUrl} data-track="download-release" data-track-meta={project.id}>
+              <a class="btn primary" href={d.downloadUrl}>
                 ↓ Download (Windows)
               </a>
             ) : (
               <span class="btn" aria-disabled="true">↓ Download — not released yet</span>
             )
           ) : d.itchUrl ? (
-            <a class="btn primary" href={d.itchUrl} data-track="play-itch" data-track-meta={project.id}>
+            <a class="btn primary" href={d.itchUrl}>
               ▶ Play on itch.io
             </a>
           ) : (
@@ -111,7 +111,7 @@ const projectSchema = [
         }
         {
           d.githubUrl && (
-            <a class="btn" href={d.githubUrl} data-track="open-source" data-track-meta={project.id}>
+            <a class="btn" href={d.githubUrl}>
               Source on GitHub
             </a>
           )
@@ -243,10 +243,11 @@ const projectSchema = [
   </div>
 
   <script>
+    import { onPage } from '../../scripts/page';
     import { prefs } from '../../scripts/prefs';
 
     // Runs on every arrival at a project page (first load and client-side navigation alike).
-    document.addEventListener('astro:page-load', () => {
+    onPage(() => {
     // 1. Copy button on code blocks
     document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
       if (pre.parentElement?.classList.contains('code-block-wrap')) return;

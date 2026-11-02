@@ -26,7 +26,7 @@ const words = ['The', 'signal', 'is', 'live.'];
       ))}
     </p>
     <div class="signal-landing-keys">
-      <button type="button" id="signal-landing-play" class="btn primary" data-track="signal-landing" data-track-meta="play">
+      <button type="button" id="signal-landing-play" class="btn primary">
         ▶ Play Telegraph Recall
       </button>
       <button type="button" id="signal-landing-dismiss" class="btn signal-landing-quiet" aria-keyshortcuts="Escape">
@@ -43,6 +43,7 @@ const words = ['The', 'signal', 'is', 'live.'];
     LANDING_SCROLL_THRESHOLD,
     shouldShowLanding,
   } from '../scripts/signal-reward';
+  import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
   const isMotionAllowed = () => prefs.isMotionAllowed();
@@ -79,7 +80,7 @@ const words = ['The', 'signal', 'is', 'live.'];
     }
   };
 
-  document.addEventListener('astro:page-load', () => {
+  onPage(({ signal }) => {
     const wasFirst = firstLoad;
     firstLoad = false;
     const panel = document.getElementById('signal-landing');
@@ -105,8 +106,6 @@ const words = ['The', 'signal', 'is', 'live.'];
       return;
     }
 
-    const page = new AbortController();
-    const { signal } = page;
     let timer: number | null = null;
     let open = false;
     let openY = 0;
@@ -136,9 +135,6 @@ const words = ['The', 'signal', 'is', 'live.'];
       panel.classList.add('is-open');
       playKey.focus({ preventScroll: true });
       chime();
-      window.dispatchEvent(
-        new CustomEvent('portfolio:track', { detail: { event: 'signal-landing', meta: 'shown', ts: Date.now() } }),
-      );
     };
 
     const dismiss = (restoreFocus = true) => {
@@ -224,19 +220,15 @@ const words = ['The', 'signal', 'is', 'live.'];
     });
     quietKey.addEventListener('click', () => dismiss());
 
-    document.addEventListener(
-      'astro:before-swap',
-      () => {
-        cancel();
-        if (open) {
-          open = false;
-          panel.hidden = true;
-          panel.classList.remove('is-open', 'is-closing');
-        }
-        page.abort();
-      },
-      { once: true, signal },
-    );
+    // Leaving the page: stop the timer and close the panel without an animation.
+    return () => {
+      cancel();
+      if (open) {
+        open = false;
+        panel.hidden = true;
+        panel.classList.remove('is-open', 'is-closing');
+      }
+    };
   });
 </script>
 

@@ -7,6 +7,7 @@ import {
   type PortalNodeId,
   type StageId,
 } from './telegraph-engine';
+import { onPage, shared, type PageContext } from './page';
 import { prefs } from './prefs';
 import { readReward, recordClear, saveReward } from './signal-reward';
 
@@ -23,12 +24,6 @@ const localStore = (): Storage | null => {
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
 const tiles = (n: number) => `${n} tile${n === 1 ? '' : 's'}`;
 
-declare global {
-  interface Window {
-    portfolioMotion?: boolean;
-  }
-}
-
 const STAGE_IDS = new Set<string>(TELEGRAPH_STAGES.map((stage) => stage.id));
 
 /** `#lab` or `#lab?stage=<StageId>`: the lab section, optionally with the popup open on a stage. */
@@ -39,23 +34,26 @@ export function parseLabHash(hash: string): { lab: boolean; stage: StageId | nul
   return { lab: true, stage };
 }
 
-let controller: AbortController | null = null;
+let registered = false;
 
 /**
- * Bind the Telegraph Recall UI to the current document. Idempotent per page: with the ClientRouter
- * this module is evaluated once per session, so the lazy loader calls `init()` again after every
- * navigation back to the home page. Listeners on `window`, `document` and media queries hang on an
- * AbortController that is aborted before the page is swapped out; element listeners leave with
- * their elements.
+ * Load the Telegraph Recall UI: binds the lab on the page on screen and on every later arrival at the
+ * home page (src/scripts/page.ts). Called by the lazy loader in TelegraphMiniGame.astro; a no-op
+ * after the first call.
  */
 export function init(): void {
-  const lab = document.getElementById('lab');
-  if (!lab || lab.dataset.tgReady) return;
-  lab.dataset.tgReady = '1';
-  controller?.abort();
-  controller = new AbortController();
-  const { signal } = controller;
+  if (registered) return;
+  registered = true;
+  onPage(bindLab);
+}
 
+/**
+ * Bind one page's lab. Listeners on `window`, `document` and media queries hang on the page's signal;
+ * element listeners leave with their elements; the returned cleanup stops timers and closes the popup.
+ */
+function bindLab({ signal }: PageContext): (() => void) | undefined {
+  const lab = document.getElementById('lab');
+  if (!lab) return;
 
   const engine = new TelegraphEngine();
   const stageCtrl = new TelegraphStageController();
@@ -248,7 +246,7 @@ export function init(): void {
     } else {
       stopStage2PreviewLoop();
     }
-    if (targetStage === 'title-intro' && window.portfolioMotion && !isReducedMotion()) {
+    if (targetStage === 'title-intro' && shared.motionReady && !isReducedMotion()) {
       const logo = stageScenes.find((scene) => !scene.hidden)?.querySelector<HTMLElement>('.crt-logo-title');
       if (logo) void import('./motion').then((m) => m.riseTitle(logo));
     }
@@ -274,7 +272,7 @@ export function init(): void {
     lastFocusedBeforeModal = document.activeElement as HTMLElement | null;
     hashBeforeOpen = location.hash;
     stageCtrl.setPopupOpen(true);
-    (window as Window & { portfolioLenis?: { stop: () => void } }).portfolioLenis?.stop();
+    shared.lenis?.stop();
     popupBackdrop.showModal();
     renderStage(initialStage);
     closePopupBtn?.focus();
@@ -285,7 +283,7 @@ export function init(): void {
     stopStage2PreviewLoop();
     stageCtrl.setPopupOpen(false);
     popupBackdrop.close();
-    (window as Window & { portfolioLenis?: { start: () => void } }).portfolioLenis?.start();
+    shared.lenis?.start();
     syncTelemetryHud();
     playTone(220, 'sine', 0.1);
     replaceHash(hashBeforeOpen !== null && !parseLabHash(hashBeforeOpen).stage ? hashBeforeOpen : '#lab');
@@ -303,7 +301,7 @@ export function init(): void {
     if (!isLab || !stage) return;
     // No element has the id `lab?stage=…`, so the browser could not scroll there itself. Through Lenis
     // when smooth scroll is on (its CSS makes native smooth scrolling instant).
-    const lenis = (window as Window & { portfolioLenis?: { scrollTo: (el: HTMLElement, o: { offset: number }) => void } }).portfolioLenis;
+    const lenis = shared.lenis;
     if (lenis && !isReducedMotion()) lenis.scrollTo(lab, { offset: 0 }); // Lenis applies the root scroll-padding itself
     else lab.scrollIntoView({ behavior: isReducedMotion() ? 'auto' : 'smooth', block: 'start' });
     if (popupBackdrop?.open) {
@@ -606,11 +604,6 @@ export function init(): void {
         statusEl.textContent = `All ${outcome.totalWaves} waves cleared! Last wave ${seconds(outcome.waveMs)} (+${outcome.waveScore}). Score ${outcome.score}, ${record}.${unlock}`;
       }
       if (startBtn) startBtn.textContent = '↻ Play Again';
-      window.dispatchEvent(
-        new CustomEvent('portfolio:track', {
-          detail: { event: 'minigame-cleared', meta: `score-${outcome.score}`, ts: Date.now() },
-        }),
-      );
       return;
     }
 
@@ -688,23 +681,18 @@ export function init(): void {
   // Arriving on `/#lab?stage=…` (first load or client-side navigation): open the popup on that stage.
   applyLabHash();
 
-  // Leaving the page (ClientRouter): cancel timers and sequences, close the popup, drop global listeners.
-  document.addEventListener(
-    'astro:before-swap',
-    () => {
-      playbackToken++;
-      pendingCue = null;
-      playingSequence = null;
-      replayOnReturn = null;
-      stopStage2PreviewLoop();
-      if (nextWaveTimer !== null) window.clearTimeout(nextWaveTimer);
-      nextWaveTimer = null;
-      if (popupBackdrop?.open) {
-        popupBackdrop.close();
-        (window as Window & { portfolioLenis?: { start: () => void } }).portfolioLenis?.start();
-      }
-      controller?.abort();
-    },
-    { signal },
-  );
+  // Leaving the page (ClientRouter): cancel timers and sequences, close the popup.
+  return () => {
+    playbackToken++;
+    pendingCue = null;
+    playingSequence = null;
+    replayOnReturn = null;
+    stopStage2PreviewLoop();
+    if (nextWaveTimer !== null) window.clearTimeout(nextWaveTimer);
+    nextWaveTimer = null;
+    if (popupBackdrop?.open) {
+      popupBackdrop.close();
+      shared.lenis?.start();
+    }
+  };
 }

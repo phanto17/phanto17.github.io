@@ -39,10 +39,10 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
         </h1>
         <p class="lead" data-reveal style="--reveal-delay:1">{site.tagline}</p>
         <div class="actions" data-reveal style="--reveal-delay:2">
-          <a class="btn primary" href="#projects" data-track="hero-cta" data-track-meta="projects">▶ See the projects</a>
-          <a class="btn" href="#lab" data-track="hero-cta" data-track-meta="lab">Play the mini-game</a>
-          <a class="btn" href={site.cv} download data-track="download-cv" data-track-meta="hero">↓ Download the CV</a>
-          <a class="btn" href={site.github} data-track="outbound-github" data-track-meta="hero">Open GitHub ↗</a>
+          <a class="btn primary" href="#projects">▶ See the projects</a>
+          <a class="btn" href="#lab">Play the mini-game</a>
+          <a class="btn" href={site.cv} download>↓ Download the CV</a>
+          <a class="btn" href={site.github}>Open GitHub ↗</a>
         </div>
       </div>
 
@@ -274,7 +274,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
         </div>
         <div class="cta brutal-panel" data-reveal data-tilt data-tilt-max="3" style="--reveal-delay:2">
           <p class="lead">Looking for a junior gameplay programmer or an intern? I'd love to talk.</p>
-          <a class="btn primary" href={`mailto:${site.email}`} data-track="contact-email" data-track-meta="cta">
+          <a class="btn primary" href={`mailto:${site.email}`}>
             ✉ Write to me
           </a>
         </div>
@@ -283,22 +283,22 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   </section>
 
   <script>
+    import { onPage } from '../scripts/page';
     import { prefs } from '../scripts/prefs';
 
     const isMotionAllowed = () => prefs.isMotionAllowed();
 
-    document.addEventListener('astro:page-load', () => {
-      armStuckHead();
+    onPage(({ signal }) => {
+      armStuckHead(signal);
       bindTiles();
       bindCopyKeys();
     });
 
     // Projects head bar: CSS makes it sticky on wide screens; this only marks when it is being held
     // under the nav (.is-stuck adds the frosted background). Paint only, so no layout shift.
-    function armStuckHead() {
+    function armStuckHead(signal: AbortSignal) {
       const bar = document.querySelector<HTMLElement>('#projects .section-head-bar');
       if (!bar) return;
-      const page = new AbortController();
       let queued = false;
       const update = () => {
         queued = false;
@@ -312,9 +312,8 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
         queued = true;
         requestAnimationFrame(update);
       };
-      window.addEventListener('scroll', queue, { passive: true, signal: page.signal });
-      window.addEventListener('resize', queue, { passive: true, signal: page.signal });
-      document.addEventListener('astro:before-swap', () => page.abort(), { once: true, signal: page.signal });
+      window.addEventListener('scroll', queue, { passive: true, signal });
+      window.addEventListener('resize', queue, { passive: true, signal });
       update();
     }
 

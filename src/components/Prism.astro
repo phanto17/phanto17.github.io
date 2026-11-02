@@ -18,12 +18,17 @@ const { small = false, top = '-40px', class: cls = '' } = Astro.props;
 </div>
 
 <script>
-  if ('IntersectionObserver' in window) {
+  import { onPage } from '../scripts/page';
+
+  // Pause a band's drift while it is off screen; re-armed for every page the router brings in.
+  onPage(() => {
+    if (!('IntersectionObserver' in window)) return;
     const observer = new IntersectionObserver((entries) => {
       entries.forEach((entry) => entry.target.classList.toggle('is-offscreen', !entry.isIntersecting));
     });
     document.querySelectorAll('.prism-wrap').forEach((prism) => observer.observe(prism));
-  }
+    return () => observer.disconnect();
+  });
 </script>
 
 <style>

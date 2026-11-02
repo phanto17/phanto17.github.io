@@ -61,13 +61,12 @@ const label = (i: number): string => {
 <script>
   import { demoBoard, previewShoves, resolveShove, type ShoveBoard } from '../scripts/shove-sim';
   import type { Direction } from '../scripts/telegraph-engine';
+  import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
   const isReduced = () => !prefs.isMotionAllowed();
 
   function setup(lab: HTMLElement) {
-    if (lab.dataset.ready) return;
-    lab.dataset.ready = '1';
     const cells = Array.from(lab.querySelectorAll<HTMLButtonElement>('[data-cell]'));
     const dirs = Array.from(lab.querySelectorAll<HTMLButtonElement>('[data-dir]'));
     const log = lab.querySelector<HTMLElement>('[data-shove-log]');
@@ -186,7 +185,7 @@ const label = (i: number): string => {
     paint();
   }
 
-  document.addEventListener('astro:page-load', () => {
+  onPage(() => {
     document.querySelectorAll<HTMLElement>('[data-shove-lab]').forEach(setup);
   });
 </script>

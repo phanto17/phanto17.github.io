@@ -56,19 +56,19 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
     <div class="tile-actions">
       {
         liveUrl ? (
-          <a class="pill play" href={liveUrl} data-track={d.kind === 'tool' ? 'download-release' : 'play-itch'} data-track-meta={project.id}>
+          <a class="pill play" href={liveUrl}>
             {statusLabel}
           </a>
         ) : (
           <span class="pill wip">{statusLabel}</span>
         )
       }
-      <a class="pill" href={href} data-track="open-writeup" data-track-meta={project.id}>
+      <a class="pill" href={href}>
         write-up →
       </a>
       {
         d.githubUrl && (
-          <a class="pill" href={d.githubUrl} data-track="open-source" data-track-meta={project.id}>
+          <a class="pill" href={d.githubUrl}>
             source ↗
           </a>
         )

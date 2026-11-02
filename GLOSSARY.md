@@ -20,6 +20,19 @@ conversation finds it fuzzy.
 - **Preference change** — the one event (`portfolio:prefchange`) the module fires after `set()`, or
   when an OS preference moves (`source: 'system'`); listened to through `prefs.onChange(key, …)`.
 
+## Page lifecycle (`src/scripts/page.ts`)
+
+- **Page** — what the ClientRouter puts on screen between two swaps. Scripts live for the session;
+  the page's elements do not.
+- **Binder** — a function registered with `onPage` that binds one page: it runs once per page (at
+  once if the page has already loaded, otherwise on `astro:page-load`), receives the page's
+  **signal** for every listener that outlives the page, and may return a **cleanup**. Signal and
+  cleanup fire on `astro:before-swap`.
+- **Delegated hover** — `trackHover(selector, { move, leave })`: one document-level pointer listener
+  follows the pointer over matching elements, in place of binding listeners on each of them.
+- **Shared handles** — `shared.lenis`, `shared.reveal`, `shared.motionReady`: the objects scripts hand
+  each other, in place of `window.*` globals.
+
 ## Themes and the Signal
 
 - **Theme** — one of `prism` (darkroom), `paper` (daylight), `crt` (phosphor) or `signal`

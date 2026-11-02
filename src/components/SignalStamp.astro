@@ -14,12 +14,13 @@
 
 <script>
   import { readReward, type SignalReward } from '../scripts/signal-reward';
+  import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
   const root = document.documentElement;
   const isMotionAllowed = () => prefs.isMotionAllowed();
 
-  document.addEventListener('astro:page-load', () => {
+  onPage(({ signal }) => {
     const stamp = document.getElementById('signal-stamp');
     const score = document.getElementById('signal-stamp-score');
     if (!stamp || !score) return;
@@ -40,7 +41,6 @@
     if (reward) sync(reward);
     else prefs.refreshSignal();
 
-    const page = new AbortController();
     window.addEventListener(
       'portfolio:signalcleared',
       (event) => {
@@ -54,9 +54,8 @@
           stamp.classList.add('is-new');
         }
       },
-      { signal: page.signal },
+      { signal },
     );
-    document.addEventListener('astro:before-swap', () => page.abort(), { once: true, signal: page.signal });
   });
 </script>
 

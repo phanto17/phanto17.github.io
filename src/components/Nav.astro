@@ -46,7 +46,7 @@ import { site, nav } from '../data/site';
         <span class="menu-icon" aria-hidden="true">☰</span>
         <span class="menu-text">Menu</span>
       </button>
-      <a class="btn cv" href={site.cv} download data-track="download-cv" data-track-meta="nav" data-astro-prefetch="false">
+      <a class="btn cv" href={site.cv} download data-astro-prefetch="false">
         <span class="long">Download CV</span><span class="short">CV</span>
       </a>
     </div>
@@ -55,6 +55,7 @@ import { site, nav } from '../data/site';
 
 <script>
   import type { ThemeId } from '../scripts/generated/themes';
+  import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
   const root = document.documentElement;
@@ -165,7 +166,7 @@ import { site, nav } from '../data/site';
     document.addEventListener('astro:after-swap', () => setOpen(false));
   }
 
-  // 4. Active section scroll-spy on the home page (re-armed after every page navigation)
+  // 4. Active section scroll-spy on the home page (re-armed for every page the router brings in)
   let spy: IntersectionObserver | null = null;
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
   const armScrollSpy = () => {
@@ -205,8 +206,7 @@ import { site, nav } from '../data/site';
       sections.forEach((s) => spy?.observe(s));
     }
   };
-  armScrollSpy();
-  document.addEventListener('astro:page-load', armScrollSpy);
+  onPage(armScrollSpy);
 </script>
 
 <style>

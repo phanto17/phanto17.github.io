@@ -12,18 +12,10 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
+import { onPage, shared } from './page';
 import { prefs } from './prefs';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
-
-declare global {
-  interface Window {
-    portfolioReveal?: { io: IntersectionObserver; els: HTMLElement[] };
-    portfolioMotion?: boolean;
-    /** The Lenis instance while smooth scroll is on (desktop, motion allowed); pages may scrollTo through it. */
-    portfolioLenis?: Lenis;
-  }
-}
 
 const root = document.documentElement;
 const token = (name: string, fallback: string): string => getComputedStyle(root).getPropertyValue(name).trim() || fallback;
@@ -48,10 +40,10 @@ const splits: SplitText[] = [];
 
 /** Reveal takeover: elements the CSS observer has not shown yet get a staggered GSAP rise. */
 function takeOverReveals() {
-  const pending = (window.portfolioReveal?.els ?? Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'))).filter(
+  const pending = (shared.reveal?.els ?? Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'))).filter(
     (el) => !el.classList.contains('is-visible'),
   );
-  window.portfolioReveal?.io.disconnect();
+  shared.reveal?.io.disconnect();
   if (pending.length === 0) return;
   // From here on GSAP owns these elements: drop the CSS transition so the two never fight.
   pending.forEach((el) => {
@@ -275,7 +267,7 @@ function smoothScroll() {
   lenisTick = (time) => lenis?.raf(time * 1000);
   gsap.ticker.add(lenisTick);
   gsap.ticker.lagSmoothing(0);
-  window.portfolioLenis = lenis;
+  shared.lenis = lenis;
 }
 
 function stopSmoothScroll() {
@@ -283,7 +275,7 @@ function stopSmoothScroll() {
   lenisTick = null;
   lenis?.destroy();
   lenis = null;
-  window.portfolioLenis = undefined;
+  shared.lenis = null;
   const dropClasses = () => root.classList.remove('lenis', 'lenis-smooth', 'lenis-scrolling', 'lenis-stopped');
   dropClasses();
   requestAnimationFrame(dropClasses); // Lenis touches the classes once more from its own frame
@@ -345,7 +337,7 @@ let initialised = false;
 export function init(): void {
   if (initialised) return;
   initialised = true;
-  window.portfolioMotion = true;
+  shared.motionReady = true;
   const build = () => {
     if (isReducedMotion() || ctx) return;
     ctx = gsap.context(() => {
@@ -356,21 +348,20 @@ export function init(): void {
     });
     smoothScroll();
   };
-  build();
   document.addEventListener('click', onAnchorClick, { capture: true });
   // The motion key or the OS preference: both arrive as one preference change.
   prefs.onChange('motion', () => (isReducedMotion() ? teardown() : build()));
-  // ClientRouter navigations: release the old page's tweens and triggers before the swap, choreograph
-  // the new page once it is in (Base.astro has re-armed the reveal observer by then).
-  document.addEventListener('astro:before-swap', () => {
-    splits.forEach((s) => s.revert());
-    splits.length = 0;
-    ctx?.revert();
-    ctx = null;
-  });
-  document.addEventListener('astro:page-load', () => {
+  // Choreograph the page on screen now and every page the router brings in (Base.astro's reveal
+  // observer is re-armed first: it registered earlier); release the tweens and triggers before a swap.
+  onPage(() => {
     if (!isReducedMotion()) build();
     lenis?.resize();
+    return () => {
+      splits.forEach((s) => s.revert());
+      splits.length = 0;
+      ctx?.revert();
+      ctx = null;
+    };
   });
   // Watchdog: if requestAnimationFrame stalls (throttled background pane, some embedded browsers),
   // tick GSAP by hand four times a second so nothing it faded out stays hidden.
@@ -379,7 +370,6 @@ export function init(): void {
     if (gsap.ticker.frame === lastFrame) gsap.ticker.tick();
     lastFrame = gsap.ticker.frame;
   }, 250);
-  window.dispatchEvent(new Event('portfolio:motionready'));
 }
 
 export { gsap, ScrollTrigger, SplitText };
