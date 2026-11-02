@@ -436,8 +436,8 @@ owner's machine). Performance: measured locally at 4 × CPU (LCP 1.42 s, CLS 0.0
 interaction) and then on the owner's phone against the published site (LCP 0.70 s, CLS 0, worst input
 128 ms, no dropped frame): the gate passes. Published: the owner pushed `main` on 2026-11-02 (the
 push was refused to the session by the permission classifier). Accessibility verification: axe audit,
-keyboard walk and an accessibility-tree read of the live site, all clean; an NVDA listening session
-remains available to the owner but nothing in the plan waits on it. Details in the dated sections that follow.
+keyboard walk and an accessibility-tree read of the live site, all clean; the NVDA listening session was
+skipped by the owner's decision (2026-11-02), so nothing in the plan is open. Details in the dated sections that follow.
 
 #### R8 — the reference sites in a real browser (2026-11-01)
 
@@ -844,7 +844,6 @@ Comes to Shove page with the split and the lab:
 - The shove lab is a group "Shove lab board" of sixteen buttons named "Row r, column c: <what>", four
   "Shove up/down/left/right" keys and a polite live region for the log.
 
-What this cannot tell is how NVDA paces and phrases it; that listening session stays available to the
-owner (the protocol in "Accessibility review checklist"), but the plan's accessibility verification
-is otherwise complete: axe-core audit, keyboard walk and the accessibility-tree read, all on the
-published site.
+What this cannot tell is how NVDA paces and phrases it. **The owner decided on 2026-11-02 to skip the
+NVDA listening session**, so the plan's accessibility verification is closed with the axe-core audit,
+the keyboard walk and the accessibility-tree read, all on the published site.
