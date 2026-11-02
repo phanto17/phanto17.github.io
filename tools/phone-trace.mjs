@@ -109,8 +109,12 @@ await evaluate(`new Promise((r) => { document.getElementById('lab').scrollIntoVi
 await evaluate(`(() => { window.__evt = []; new PerformanceObserver((l) => window.__evt.push(...l.getEntries().map((e) => ({ name: e.name, ms: Math.round(e.duration), target: e.target?.id || e.target?.className?.toString().slice(0, 20) })))).observe({ type: 'event', durationThreshold: 16 });
   window.__status = []; const st = document.getElementById('tg-status'); new MutationObserver(() => window.__status.push(st.textContent.trim())).observe(st, { childList: true, characterData: true, subtree: true }); })()`);
 const tap = async (selector) => {
-  const rect = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); el.scrollIntoView({ block: 'center', behavior: 'auto' }); const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 }; })()`);
-  await sleep(250);
+  // Scroll instantly (the page's CSS smooth scroll would still be moving), let the reveals settle, then
+  // read the position and make sure the touch will land on the element (2026-11-02: a tap taken mid-scroll
+  // missed the Start key).
+  await evaluate(`document.querySelector(${JSON.stringify(selector)}).scrollIntoView({ block: 'center', behavior: 'instant' }); 'ok'`);
+  await sleep(900);
+  const rect = await evaluate(`(() => { const el = document.querySelector(${JSON.stringify(selector)}); const r = el.getBoundingClientRect(); const x = r.left + r.width / 2, y = r.top + r.height / 2; const at = document.elementFromPoint(x, y); if (!at || !(at === el || el.contains(at))) throw new Error('tap would miss ' + ${JSON.stringify(selector)}); return { x, y }; })()`);
   const pt = { x: Math.round(rect.x), y: Math.round(rect.y) };
   await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [pt] });
   await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });

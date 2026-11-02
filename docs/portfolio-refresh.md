@@ -433,9 +433,10 @@ recorded here from the web builds rather than by the owner) are done; Lenis is i
 (`4c433f5`); the WebGL hero is superseded by the signal field and the owner's removal of the hero card.
 Accessibility: the axe-core audit and keyboard walk pass (the NVDA listening pass still needs the
 owner's machine). Performance: measured locally at 4 × CPU (LCP 1.42 s, CLS 0.003, no slow
-interaction); the phone trace on the published site is the owner's. Publishing: the four commits are
-local on `main`; both a push and a branch push were refused by the permission classifier here, so the
-owner pushes. Details in the dated sections that follow.
+interaction) and then on the owner's phone against the published site (LCP 0.70 s, CLS 0, worst input
+128 ms, no dropped frame): the gate passes. Published: the owner pushed `main` on 2026-11-02 (the
+push was refused to the session by the permission classifier). Open: the NVDA listening pass only.
+Details in the dated sections that follow.
 
 #### R8 — the reference sites in a real browser (2026-11-01)
 
@@ -794,3 +795,29 @@ double the compositor load. The implementation plan's item is closed with this r
 **Publishing.** Pushing `main`, and pushing a branch for a pull request, were both refused by the
 Claude Code permission classifier in this session. The commits are local on `main`:
 `git -C D:/Portfolio push origin main` publishes them.
+
+### Phone gate on the published site (2026-11-02)
+
+The owner pushed `main` (deploy of `3ebd6dc` succeeded) and connected the Galaxy S20 FE (Brave 156)
+over USB; `tools/phone-trace.mjs` ran against https://phanto17.github.io with the new home page.
+
+- *Cold load*: TTFB 95 ms, first contentful paint 512 ms, DOMContentLoaded 482 ms, load 694 ms, LCP
+  696 ms (the last hero word), CLS 0, one long task of 105 ms at 813 ms (the motion and field boot),
+  20 requests, 408 KB transferred (fonts still the bulk; the motion chunk with GSAP, SplitText and
+  Lenis 54 KB, not executed as Lenis on touch).
+- *Idle*: 60 fps with the field on and off, p95 frame 16.7 ms, nothing over 33 ms.
+- *Touch scroll* through two and a half screens, field on: 84.8 fps, p95 16.7 ms, nothing over 33 ms.
+  Trace over a 2 s scroll: renderer main 72% busy (59% on 2026-11-01), compositor 61%, GPU main 63%,
+  longest main-thread task 5.3 ms. Busier than before (the bento tiles, the sticky head and the decode
+  all answer the scroll), still nothing dropped.
+- *One game turn*: the tool's own tap missed the Start key this time (it reads the key's position while
+  the page's CSS smooth scroll is still moving; the lab now sits further down the longer home page), so
+  the turn was replayed with a verified tap (scratchpad `vt/phone-turn.mjs`, which waits for the
+  scroll and checks `elementFromPoint` first): Start tap 128 ms event duration, the three tile taps
+  104–128 ms, no long task. Within the 200 ms INP target; 72–104 ms on 2026-11-01.
+
+Gate: LCP 0.70 s ≤ 2.5 s, CLS 0 ≤ 0.1, worst input 128 ms ≤ 200 ms, no frame over 33 ms during a
+scroll. Passed on the published site. `tools/phone-trace.mjs` should take its tap positions after the
+scroll settles (the same wait the replay uses); noted for the tool's next edit.
+
+**Still open: only the NVDA listening pass**, which needs NVDA installed on the owner's PC.
