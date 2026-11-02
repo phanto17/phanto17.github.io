@@ -26,17 +26,6 @@ export type InteractionKind =
   | 'cell-input'
   | 'popup-toggle';
 
-export interface InteractionEvent {
-  id: string;
-  kind: InteractionKind;
-  stage: StageId;
-  targetId: string;
-  x?: number;
-  y?: number;
-  timestamp: number;
-  meta?: Record<string, string | number | boolean>;
-}
-
 export type PortalNodeId = 'psychology' | 'tactics-shove' | 'dungeon-cinderhold' | 'simulation';
 
 export interface PortalNode {
@@ -128,14 +117,14 @@ export const TELEGRAPH_PORTAL_NODES: readonly PortalNode[] = [
   },
 ] as const;
 
+/**
+ * The CRT popup's state: the current stage, the portals explored so far and a count of every
+ * interaction (the cabinet's PULSES readout). The popup (telegraph-popup.ts) presents it.
+ */
 export class TelegraphStageController {
   private currentStage: StageId = 'welcome';
-  private popupOpen = false;
-  private visitedStages: Set<StageId> = new Set(['welcome']);
   private exploredPortals: Set<PortalNodeId> = new Set(['psychology']);
-  private activePortal: PortalNodeId = 'psychology';
   private interactionCount = 0;
-  private history: InteractionEvent[] = [];
 
   public getStage(): StageId {
     return this.currentStage;
@@ -145,86 +134,50 @@ export class TelegraphStageController {
     return TELEGRAPH_STAGES.find((s) => s.id === this.currentStage) ?? TELEGRAPH_STAGES[0];
   }
 
-  public isPopupOpen(): boolean {
-    return this.popupOpen;
-  }
-
-  public setPopupOpen(open: boolean): InteractionEvent {
-    this.popupOpen = open;
-    return this.recordInteraction('popup-toggle', open ? 'popup-open' : 'popup-close', undefined, { open });
-  }
-
-  public transitionTo(stage: StageId): { from: StageId; to: StageConfig; event: InteractionEvent } {
-    const from = this.currentStage;
+  /** Move to a stage; counts as an interaction. */
+  public transitionTo(stage: StageId): StageConfig {
     this.currentStage = stage;
-    this.visitedStages.add(stage);
-    const to = this.getStageConfig();
-    const event = this.recordInteraction('stage-transition', stage, undefined, {
-      from,
-      to: stage,
-      transition: to.transition,
-    });
-    return { from, to, event };
+    this.recordInteraction('stage-transition');
+    return this.getStageConfig();
   }
 
-  public nextStage(): { from: StageId; to: StageConfig; event: InteractionEvent } {
+  /** Move to the next stage, or stay (null) on the last one. */
+  public nextStage(): StageConfig | null {
     const idx = TELEGRAPH_STAGES.findIndex((stage) => stage.id === this.currentStage);
-    const next = TELEGRAPH_STAGES[(idx + 1) % TELEGRAPH_STAGES.length].id;
-    return this.transitionTo(next);
+    const next = TELEGRAPH_STAGES[idx + 1];
+    return next ? this.transitionTo(next.id) : null;
   }
 
-  public selectPortal(portalId: PortalNodeId): { node: PortalNode; event: InteractionEvent } {
-    this.activePortal = portalId;
+  /** Move to the previous stage, or stay (null) on the first one. */
+  public prevStage(): StageConfig | null {
+    const idx = TELEGRAPH_STAGES.findIndex((stage) => stage.id === this.currentStage);
+    const prev = idx > 0 ? TELEGRAPH_STAGES[idx - 1] : undefined;
+    return prev ? this.transitionTo(prev.id) : null;
+  }
+
+  /** Select a portal card; it counts as explored from then on. */
+  public selectPortal(portalId: PortalNodeId): PortalNode {
     this.exploredPortals.add(portalId);
-    const node = TELEGRAPH_PORTAL_NODES.find((p) => p.id === portalId) ?? TELEGRAPH_PORTAL_NODES[0];
-    const event = this.recordInteraction('portal-explore', portalId, undefined, {
-      exploredCount: this.exploredPortals.size,
-    });
-    return { node, event };
+    this.recordInteraction('portal-explore');
+    return TELEGRAPH_PORTAL_NODES.find((p) => p.id === portalId) ?? TELEGRAPH_PORTAL_NODES[0];
   }
 
-  public getActivePortal(): PortalNode {
-    return TELEGRAPH_PORTAL_NODES.find((p) => p.id === this.activePortal) ?? TELEGRAPH_PORTAL_NODES[0];
+  public isExplored(portalId: PortalNodeId): boolean {
+    return this.exploredPortals.has(portalId);
   }
 
   public getExploredPortals(): readonly PortalNodeId[] {
     return Array.from(this.exploredPortals);
   }
 
-  public getVisitedStages(): readonly StageId[] {
-    return Array.from(this.visitedStages);
-  }
-
   public getInteractionCount(): number {
     return this.interactionCount;
   }
 
-  public getRecentInteractions(limit = 5): readonly InteractionEvent[] {
-    return this.history.slice(-limit);
-  }
-
-  public recordInteraction(
-    kind: InteractionKind,
-    targetId: string,
-    coords?: { x: number; y: number },
-    meta?: Record<string, string | number | boolean>,
-  ): InteractionEvent {
+  /** Count one interaction of `kind`; returns the new total. */
+  public recordInteraction(_kind: InteractionKind): number {
     this.interactionCount += 1;
-    const ev: InteractionEvent = {
-      id: `evt-${this.interactionCount}`,
-      kind,
-      stage: this.currentStage,
-      targetId,
-      x: coords?.x,
-      y: coords?.y,
-      timestamp: Date.now(),
-      meta,
-    };
-    this.history.push(ev);
-    if (this.history.length > 32) {
-      this.history.shift();
-    }
-    return ev;
+    return this.interactionCount;
   }
 }
 

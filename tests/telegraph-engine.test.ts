@@ -322,41 +322,42 @@ describe('TelegraphEngine: scoring', () => {
 });
 
 describe('TelegraphStageController', () => {
-  it('starts on the welcome stage with the popup closed', () => {
+  it('starts on the welcome stage with no interactions', () => {
     const ctrl = new TelegraphStageController();
     expect(ctrl.getStage()).toBe('welcome');
-    expect(ctrl.isPopupOpen()).toBe(false);
-    expect(ctrl.getVisitedStages()).toEqual(['welcome']);
+    expect(ctrl.getInteractionCount()).toBe(0);
   });
 
-  it('walks the stages in order and wraps back to the first', () => {
+  it('walks the stages forward and back, stopping at the ends', () => {
     const ctrl = new TelegraphStageController();
-    const order = [1, 2, 3].map(() => ctrl.nextStage().to.id);
-    expect(order).toEqual(['animation-sequence', 'title-intro', 'welcome']);
-    expect(ctrl.getVisitedStages()).toEqual(['welcome', 'animation-sequence', 'title-intro']);
+    expect(ctrl.prevStage()).toBeNull();
+    expect(ctrl.nextStage()?.id).toBe('animation-sequence');
+    expect(ctrl.nextStage()?.id).toBe('title-intro');
+    expect(ctrl.nextStage()).toBeNull();
+    expect(ctrl.getStage()).toBe('title-intro');
+    expect(ctrl.prevStage()?.id).toBe('animation-sequence');
   });
 
-  it('reports each transition with its style', () => {
+  it('reports a transition with its style and counts it', () => {
     const ctrl = new TelegraphStageController();
-    const { from, to, event } = ctrl.transitionTo('title-intro');
-    expect(from).toBe('welcome');
+    const to = ctrl.transitionTo('title-intro');
     expect(to.id).toBe('title-intro');
-    expect(event).toMatchObject({ kind: 'stage-transition', stage: 'title-intro', meta: { transition: 'phosphor-warp' } });
+    expect(to.transition).toBe('phosphor-warp');
+    expect(ctrl.getInteractionCount()).toBe(1);
   });
 
   it('tracks explored portals', () => {
     const ctrl = new TelegraphStageController();
-    expect(ctrl.selectPortal('simulation').node.id).toBe('simulation');
-    expect(ctrl.getActivePortal().id).toBe('simulation');
+    expect(ctrl.isExplored('simulation')).toBe(false);
+    expect(ctrl.selectPortal('simulation').id).toBe('simulation');
+    expect(ctrl.isExplored('simulation')).toBe(true);
     expect(ctrl.getExploredPortals()).toEqual(['psychology', 'simulation']);
   });
 
-  it('counts every interaction but keeps only the last 32', () => {
+  it('counts every interaction', () => {
     const ctrl = new TelegraphStageController();
-    for (let i = 0; i < 40; i++) ctrl.recordInteraction('click-ripple', `t${i}`);
+    for (let i = 0; i < 40; i++) ctrl.recordInteraction('click-ripple');
     expect(ctrl.getInteractionCount()).toBe(40);
-    expect(ctrl.getRecentInteractions(100)).toHaveLength(32);
-    expect(ctrl.getRecentInteractions(1)[0]).toMatchObject({ id: 'evt-40', targetId: 't39' });
   });
 
   it('has three stages and four portal nodes with unique ids', () => {

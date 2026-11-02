@@ -219,11 +219,11 @@ check('TelegraphStageController & 3-Stage CRT Popup / Non-Linear Portal DOM pass
   assert.ok(TELEGRAPH_STAGES.every((stage) => stage.label && stage.title && stage.ctaLabel));
   assert.equal(ctrl.getStage(), 'welcome');
   const step2 = ctrl.nextStage();
-  assert.equal(step2.to.id, 'animation-sequence');
-  assert.equal(step2.to.transition, 'scanline-wipe');
+  assert.equal(step2.id, 'animation-sequence');
+  assert.equal(step2.transition, 'scanline-wipe');
   const step3 = ctrl.nextStage();
-  assert.equal(step3.to.id, 'title-intro');
-  assert.equal(ctrl.getVisitedStages().length, 3);
+  assert.equal(step3.id, 'title-intro');
+  assert.equal(ctrl.nextStage(), null);
 
   ctrl.selectPortal('tactics-shove');
   ctrl.selectPortal('dungeon-cinderhold');

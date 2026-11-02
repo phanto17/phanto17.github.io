@@ -33,6 +33,23 @@ conversation finds it fuzzy.
 - **Shared handles** — `shared.lenis`, `shared.reveal`, `shared.motionReady`: the objects scripts hand
   each other, in place of `window.*` globals.
 
+## Telegraph Recall (`src/scripts/telegraph-*.ts`, `sound.ts`)
+
+- **Engine** — the pure game model (`telegraph-engine.ts`): waves, cues, shoves, scoring, the Forecast
+  Hint. **Stage controller** — the popup's state: current stage, explored portals, interaction count.
+- **Board controller** — `telegraph-board.ts`: plays the engine's sequences as cues, takes the
+  visitor's recall, owns manual-cue mode, the pause while the tab is hidden, the next-wave timer and
+  the reward. It talks to a **board view** (the `BoardView` interface: the DOM adapter in
+  `telegraph-ui.ts`, a recording fake in tests) and takes injected `wait`, `now` and storage.
+- **Popup** — `telegraph-popup.ts`: the CRT dialog with its stage router, preview loop, focus trap,
+  number-key shortcuts, `#lab?stage=<id>` deep links and the portal cards' inspector.
+- **Copy** — `telegraph-copy.ts`: every string the game shows, as pure functions of the model.
+- **Composition** — `telegraph-ui.ts`: queries the lab's elements once (all required), builds the DOM
+  board view, binds the popup, wires the cabinet's keys; `init()` registers one page binder.
+- **Sound cue** — a named entry in `sound.ts`'s `TONES` table (`cue`, `shove`, `step`, `wave`,
+  `clear`, `miss`, `blocked`, `preview`, `stage-*`, `portal`, `close`); `sound.play(cue, step)` is
+  the only way the game makes a sound, muted unless the `sound` preference is on.
+
 ## Themes and the Signal
 
 - **Theme** — one of `prism` (darkroom), `paper` (daylight), `crt` (phosphor) or `signal`
