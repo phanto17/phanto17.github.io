@@ -11,15 +11,15 @@
  */
 import InteractivePanel from './InteractivePanel.astro';
 import Figure from './Figure.astro';
-import type { Note, NoteVisual } from '../lib/notes';
+import type { WriteUpPlan } from '../lib/notes';
 
 interface Props {
-  notes: Note[];
+  /** The write-up plan (src/lib/notes.ts planWriteUp): the notes, each with its visual. */
+  plan: WriteUpPlan;
   title: string;
-  /** One per note, in order (src/lib/notes.ts planVisuals). */
-  visuals?: NoteVisual[];
 }
-const { notes, title, visuals = [] } = Astro.props;
+const { plan, title } = Astro.props;
+const { notes } = plan;
 ---
 
 <div class="notes" data-notes>
@@ -45,7 +45,18 @@ const { notes, title, visuals = [] } = Astro.props;
               Note {i + 1} of {notes.length}
             </span>
           </p>
-          <Fragment set:html={note.html} />
+          <Fragment set:html={note.headingHtml} />
+          <!-- The note's visual renders here, after its heading, so it reads in place without JavaScript and on
+               narrow screens; on wide screens the script moves it into the pinned pane below. -->
+          <figure class="visual" data-visual={note.id} data-visual-kind={note.visual.kind} data-lenis-prevent>
+            {note.visual.kind === 'code' && <Fragment set:html={note.visual.html} />}
+            {note.visual.kind === 'image' && <Figure type="image" src={note.visual.src} alt={note.visual.alt ?? ''} caption={note.visual.caption} />}
+            {note.visual.kind === 'widget' && <slot name="widget" />}
+            <figcaption class="visual-cap meta">
+              <b>{note.code}</b> · {note.title}
+            </figcaption>
+          </figure>
+          <Fragment set:html={note.bodyHtml} />
           <div class="note-nav" data-notes-ui hidden>
             {i > 0 ? (
               <button type="button" class="btn" data-note-step={notes[i - 1].id}>
@@ -65,22 +76,8 @@ const { notes, title, visuals = [] } = Astro.props;
     }
   </div>
 
-  {
-    visuals.length === notes.length && (
-      <div class="notes-visuals" data-notes-visuals hidden>
-        {visuals.map((v, i) => (
-          <figure class="visual" data-visual={notes[i].id} data-visual-kind={v.kind} data-lenis-prevent>
-            {v.kind === 'code' && <Fragment set:html={v.html ?? ''} />}
-            {v.kind === 'image' && <Figure type="image" src={v.src} alt={v.alt ?? ''} caption={v.caption} />}
-            {v.kind === 'widget' && <slot name="widget" />}
-            <figcaption class="visual-cap meta">
-              <b>{notes[i].code}</b> · {notes[i].title}
-            </figcaption>
-          </figure>
-        ))}
-      </div>
-    )
-  }
+  <!-- The pinned pane of the wide layout: empty until the script moves the notes' visuals into it. -->
+  <div class="notes-visuals" data-notes-visuals hidden></div>
 </div>
 
 <script>
@@ -109,8 +106,8 @@ const { notes, title, visuals = [] } = Astro.props;
 
     root.querySelectorAll<HTMLElement>('[data-notes-ui]').forEach((el) => (el.hidden = false));
 
-    // The visuals live in the pinned pane on wide screens and inside their notes (after the heading)
-    // on narrow ones, so the shove lab and the figures are reachable either way.
+    // The visuals are rendered inside their notes (after the heading); on wide screens they move into
+    // the pinned pane and come back when the layout narrows, so they are reachable either way.
     const placeVisuals = () => {
       if (!visualsBox) return;
       visuals.forEach((v) => {

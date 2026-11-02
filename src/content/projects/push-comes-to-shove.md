@@ -8,6 +8,7 @@ dates:
 role: Solo — design & programming
 engine: Unity 6 · URP 2D
 order: 2
+widget: shove-lab
 highlights:
   - BFS pathing & push resolution (unit-tested)
   - Attacks as ScriptableObject strategies

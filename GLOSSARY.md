@@ -50,6 +50,20 @@ conversation finds it fuzzy.
   `clear`, `miss`, `blocked`, `preview`, `stage-*`, `portal`, `close`); `sound.play(cue, step)` is
   the only way the game makes a sound, muted unless the `sound` preference is on.
 
+## Write-ups and notes (`src/lib/notes.ts`)
+
+- **Write-up** — a project's Markdown file in `src/content/projects`. Its **breakdown** is the
+  "Technical breakdown" H2, which must be the last H2.
+- **Write-up plan** — `planWriteUp({ html, media, widget })`: the rendered write-up split into
+  `before`, `intro` and **notes**, each note one H3 of the breakdown (the "What changed in …" H3s
+  merged into one **release notes** note) carrying its heading, its body and its **visual**. A pure
+  function: nothing passed in changes.
+- **Visual** — what the pinned pane shows for a note: the page's **widget** (frontmatter `widget`,
+  on the first note), the note's first code block (its in-note copy tagged `data-in-pane`), or a
+  gallery image in turn. Rendered inside the note; moved to the **pane** on wide screens.
+- **Write-up rules** — `WRITE_UP_RULES` and `checkWriteUpSource`: the conventions above, checked over
+  every write-up by `tests/write-ups.test.ts`.
+
 ## Themes and the Signal
 
 - **Theme** — one of `prism` (darkroom), `paper` (daylight), `crt` (phosphor) or `signal`

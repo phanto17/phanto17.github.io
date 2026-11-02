@@ -61,6 +61,8 @@ const projects = defineCollection({
       .default([]),
     /** Optional short muted WebM loop (R7, 4–6 s, 720p) the home-page tile plays on hover; a still cover without it. */
     clip: z.string().optional(),
+    /** An interactive widget shown with the first technical note (src/lib/notes.ts; the component is the page's). */
+    widget: z.enum(['shove-lab']).optional(),
     /** Sort order on the home page (1 = first). */
     order: z.number().default(99),
     /** Short systems list shown on the project card. */
