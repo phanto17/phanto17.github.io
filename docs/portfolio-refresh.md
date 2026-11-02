@@ -680,3 +680,52 @@ scrolled to the "N-01" step. R7 (the clips) is still the owner's; the `clip` fie
 
 **Hours against the plan** (wall clock): R1 0.2 h of 1.5; R4 0.3 h of 8; R5 0.3 h of 8; R6 0.2 h of 4;
 dismissal fix and verification 0.3 h.
+
+### R7 recorded here, and what stays blocked (2026-11-02)
+
+**R7 — gameplay clips.** The plan had these as the owner's, but they could be made from the local web
+builds: headless Chrome on the real GPU (`--headless=new --use-angle=d3d11 --enable-gpu`, the RTX 4070
+Ti via ANGLE; the swiftshader harness is far too slow for Unity) running each build from
+`tools/serve-web.mjs`, driven over the DevTools protocol with the games' own keyboard and mouse
+bindings, and the Unity canvas recorded with `canvas.captureStream(30)` + `MediaRecorder`
+(VP9, 2.5 Mbps) straight to WebM, no ffmpeg. MediaRecorder writes no Duration, so a small script adds
+one to the EBML Info element (otherwise `<video>` reports Infinity and some browsers will not loop).
+Three takes, 5.4 s each, 1280 × 720, muted, 1.35–1.37 MB:
+
+- `public/media/cinderhold/clip.webm`: Floor 1, the player runs between rooms and dodges (Shift) past
+  a slime.
+- `public/media/horde-hours/clip.webm`: the first minute of a run, abilities auto-firing into the
+  first slimes, kills 1 → 4.
+- `public/media/push-comes-to-shove/clip.webm`: First Shove, turn 1: the Soldier steps west of the
+  orc and shoves it east into the pond (the hit lands at about 2 s, the orc is gone).
+
+Each project's frontmatter has `clip: /media/<id>/clip.webm`; the bento plays it on hover and focus
+(verified headlessly: tile plays at 720p, stops and rewinds on leave, muted loop with a known
+duration). These are machine-played takes, not the owner's: fine as hover previews, and the owner can
+replace any of them by dropping a new WebM at the same path (4–6 s, 720p, no audio).
+
+Two things learnt while recording. The canvas capture of the Horde Hours and Push Comes to Shove
+builds looked frozen when inspected with a seek-based contact sheet; the recordings were fine, the
+sheet was seeking a cue-less WebM and landing on the first keyframe every time. Judge a MediaRecorder
+WebM by playing it, not by seeking it. And the default Unity template leaves its progress bar at 90%
+in headless Chrome although the game is running (the engine's shader warnings in the console are the
+real "loaded" signal; wait about 14 s).
+
+**The grey block** reported in the previous note is a software-renderer artefact: the same page
+screenshotted in headless Chrome on the real GPU shows none.
+
+**What stays open, and why**
+
+- *Push to main*: the push of this work was refused by the Claude Code permission classifier as a
+  production deploy. The commits are local; `git -C D:/Portfolio push origin main` publishes.
+- *Screen-reader pass*: NVDA is not installed and the owner chose to skip it on 2026-11-01; the
+  protocol in "Accessibility review checklist" stands.
+- *Performance gate*: needs the owner's phone over USB (`tools/phone-trace.mjs`); the new work adds
+  three lazily loaded clips (preload none, so nothing is fetched until a hover) and no script on the
+  LCP path.
+- *WebGL hero*: superseded. The hero's canvas card was removed on the owner's word on 2026-11-01 and
+  the WebGL signal field already carries the hero; a second scene would double the compositor load
+  the phone trace measured. Not built.
+- *Lenis smooth scroll*: decided against on touch after the phone trace; on desktop it would move the
+  native scroll onto the main thread for a stylistic gain the owner has not asked for. Not built; the
+  decision is recorded, and the item is closed unless the owner asks for it.

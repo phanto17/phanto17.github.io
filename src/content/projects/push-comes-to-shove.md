@@ -40,6 +40,7 @@ tools:
   - TextMesh Pro
   - Claude Code
   - Shader Graph / HLSL
+clip: /media/push-comes-to-shove/clip.webm
 media:
   - { type: image, src: /media/push-comes-to-shove/cover.avif, alt: "Push Comes to Shove pixel-art key art: human soldiers, archer and purple elf ranger shoving goblins into water and into an orc brute", caption: "Fig. 1 — Push Comes to Shove key art" }
   - { type: image, src: /media/push-comes-to-shove/enemy-turn.avif, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 2 — enemy turn: one enemy's intent at a time (web build)" }

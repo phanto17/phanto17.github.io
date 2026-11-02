@@ -43,6 +43,7 @@ tools:
   - Unity Test Framework (NUnit)
   - Claude Code
   - TextMesh Pro
+clip: /media/horde-hours/clip.webm
 media:
   - { type: image, src: /media/horde-hours/cover.avif, alt: "Horde Hours key art: the hero surrounded by slimes, skeletons, bats and gold elites at night with fireball, lightning and spinning axe abilities", caption: "Fig. 1 — Horde Hours key art" }
   - { type: image, src: /media/horde-hours/fireball.avif, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 2 — a run in the web build: fireball bursting on a slime" }

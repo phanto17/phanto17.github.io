@@ -41,6 +41,7 @@ tools:
   - TextMesh Pro
   - Unity Test Framework (EditMode + PlayMode, run headlessly)
   - Claude Code
+clip: /media/cinderhold/clip.webm
 media:
   - { type: image, src: /media/cinderhold/cover.avif, alt: "Cinderhold pixel-art key art: the knight mid-dodge with afterimages escaping Cinderclaw's glowing red floor telegraph in a torchlit dungeon", caption: "Fig. 1 — Cinderhold key art: dodging Cinderclaw's telegraphed slam" }
   - { type: image, src: /media/cinderhold/hud-live.avif, alt: "Live 0.5.0 WebGL build on a generated Floor 1 showing the knight under flickering wall sconces, health pips, level bar, sword and Dodge cooldown gauge", caption: "Fig. 2 — 0.5.0 web build: generated Floor 1 with full HUD and Dodge gauge" }
