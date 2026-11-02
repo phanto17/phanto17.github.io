@@ -105,6 +105,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
       import { CARRIED_ATTRIBUTES, prefs } from '../scripts/prefs';
       import { onPage, shared, trackHover } from '../scripts/page';
+      import { sound } from '../scripts/sound';
 
       const root = document.documentElement;
       const isMotionAllowed = () => prefs.isMotionAllowed();
@@ -252,32 +253,13 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       }
 
       // 5. Retro micro-interactions, site-wide: every control answers a click with a phosphor ripple
-      // and, when the visitor has turned sound on, a short synth click. Sound is opt-in and off by
-      // default; the switch lives on the Telegraph Recall cabinet (prefs.set('sound', …)).
+      // and, when the visitor has turned sound on, the `click` cue (src/scripts/sound.ts). Sound is
+      // opt-in and off by default; the switch lives on the Telegraph Recall cabinet (prefs.set('sound', …)).
       const RIPPLE_HOSTS = '[data-crt-ripple], .btn, .pill, .proj, .crt-stage3-node';
-      let audio: AudioContext | null = null;
-      const clickTone = () => {
-        try {
-          audio = audio ?? new AudioContext();
-          const t = audio.currentTime;
-          const osc = audio.createOscillator();
-          const gain = audio.createGain();
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(1760, t);
-          osc.frequency.exponentialRampToValueAtTime(880, t + 0.04);
-          gain.gain.setValueAtTime(0.035, t);
-          gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
-          osc.connect(gain).connect(audio.destination);
-          osc.start(t);
-          osc.stop(t + 0.06);
-        } catch {
-          /* AudioContext unavailable or blocked */
-        }
-      };
       document.addEventListener('click', (e) => {
         const host = (e.target as HTMLElement | null)?.closest<HTMLElement>(RIPPLE_HOSTS);
         if (!host) return;
-        if (prefs.isSoundOn()) clickTone();
+        sound.play('click');
         if (!isMotionAllowed()) return;
         const rect = host.getBoundingClientRect();
         const x = e.detail === 0 ? rect.width / 2 : e.clientX - rect.left;

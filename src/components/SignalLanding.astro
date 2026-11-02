@@ -45,40 +45,13 @@ const words = ['The', 'signal', 'is', 'live.'];
   } from '../scripts/signal-reward';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
+  import { sound } from '../scripts/sound';
 
   const isMotionAllowed = () => prefs.isMotionAllowed();
 
   // Only the document the visitor arrived on gets the panel; a client-side return to the home page
   // (this module runs once per session under the ClientRouter) does not.
   let firstLoad = true;
-
-  /** A short two-note cue, only when the visitor has turned the site sound on. */
-  const chime = () => {
-    if (!prefs.isSoundOn()) return;
-    try {
-      const ctx = new AudioContext();
-      if (ctx.state !== 'running') {
-        void ctx.close();
-        return;
-      }
-      const t = ctx.currentTime;
-      [660, 990].forEach((freq, i) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, t + i * 0.12);
-        gain.gain.setValueAtTime(0.0001, t + i * 0.12);
-        gain.gain.exponentialRampToValueAtTime(0.05, t + i * 0.12 + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.12 + 0.16);
-        osc.connect(gain).connect(ctx.destination);
-        osc.start(t + i * 0.12);
-        osc.stop(t + i * 0.12 + 0.18);
-      });
-      window.setTimeout(() => void ctx.close(), 600);
-    } catch {
-      /* no audio */
-    }
-  };
 
   onPage(({ signal }) => {
     const wasFirst = firstLoad;
@@ -134,7 +107,7 @@ const words = ['The', 'signal', 'is', 'live.'];
       panel.hidden = false;
       panel.classList.add('is-open');
       playKey.focus({ preventScroll: true });
-      chime();
+      sound.play('chime'); // the two-note cue, only with the site sound on
     };
 
     const dismiss = (restoreFocus = true) => {

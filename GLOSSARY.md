@@ -46,9 +46,11 @@ conversation finds it fuzzy.
 - **Copy** — `telegraph-copy.ts`: every string the game shows, as pure functions of the model.
 - **Composition** — `telegraph-ui.ts`: queries the lab's elements once (all required), builds the DOM
   board view, binds the popup, wires the cabinet's keys; `init()` registers one page binder.
-- **Sound cue** — a named entry in `sound.ts`'s `TONES` table (`cue`, `shove`, `step`, `wave`,
-  `clear`, `miss`, `blocked`, `preview`, `stage-*`, `portal`, `close`); `sound.play(cue, step)` is
-  the only way the game makes a sound, muted unless the `sound` preference is on.
+- **Sound cue** — a named entry in `sound.ts`'s `TONES` table (`click` for every control, `chime`
+  for the landing, and the game's `cue`, `shove`, `step`, `wave`, `clear`, `miss`, `blocked`,
+  `preview`, `stage-*`, `portal`, `close`); `sound.play(cue, step)` is the only way the site makes a
+  sound, muted unless the `sound` preference is on. A tone may sweep its pitch, fade in, or carry
+  further notes (`then`).
 
 ## Write-ups and notes (`src/lib/notes.ts`)
 
