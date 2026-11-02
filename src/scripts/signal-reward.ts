@@ -11,14 +11,18 @@
  * a blocked localStorage (private mode) degrades to "nothing unlocked".
  */
 
-export const THEME_IDS = ['prism', 'paper', 'crt'] as const;
-export const SIGNAL_THEME = 'signal' as const;
-export type ThemeId = (typeof THEME_IDS)[number] | typeof SIGNAL_THEME;
+import { PUBLIC_THEMES, SIGNAL_THEME, type ThemeId } from './generated/themes';
+import { SIGNAL_UNLOCK } from './prefs-table';
+
+/** The public themes (the theme key's cycle before the unlock). From design/tokens.json via the generator. */
+export const THEME_IDS: readonly ThemeId[] = PUBLIC_THEMES;
+export { SIGNAL_THEME };
+export type { ThemeId };
 
 /** JSON record of the reward. */
-export const REWARD_KEY = 'portfolio-signal';
-/** The mini-game's own best-score key (a number); set only by clearing all waves, so it also unlocks. */
-export const LEGACY_BEST_KEY = 'portfolio-tg-best';
+export const REWARD_KEY = SIGNAL_UNLOCK.rewardKey;
+/** The mini-game's former best-score key (a number); a positive value from before the record existed also unlocks. */
+export const LEGACY_BEST_KEY = SIGNAL_UNLOCK.legacyBestKey;
 /** 'seen' once the landing panel has been shown. */
 export const LANDING_KEY = 'portfolio-landing';
 
@@ -106,7 +110,7 @@ export function stampLabel(reward: SignalReward): string {
 
 export function isThemeId(value: unknown, unlocked: boolean): value is ThemeId {
   if (value === SIGNAL_THEME) return unlocked;
-  return (THEME_IDS as readonly string[]).includes(value as string);
+  return (THEME_IDS as readonly unknown[]).includes(value);
 }
 
 /** The theme key's cycle: the three public themes, plus Signal once unlocked. */

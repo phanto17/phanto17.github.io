@@ -4,6 +4,9 @@ import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import { site, PERSON_ID } from '../data/site';
+// The preference boot (theme, motion, sound, CRT) runs inline before first paint; generated from
+// src/scripts/prefs-table.ts and design/tokens.json by tools/build-tokens.mjs.
+import prefsBoot from '../scripts/generated/prefs-boot.js?raw';
 
 interface Props {
   title?: string;
@@ -87,41 +90,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\u003c')} />}
     <!-- Page-to-page navigation with the View Transitions API (a CRT power-cycle, see global.css). -->
     <ClientRouter />
-    <script is:inline>
-      (function () {
-        var root = document.documentElement;
-        // Page background per theme; must match `bg` in design/tokens.json.
-        var themeBg = { prism: '#1a1713', paper: '#f4ede1', crt: '#070b09', signal: '#0d0a14' };
-        try {
-          var savedTheme = localStorage.getItem('portfolio-theme');
-          // The Signal theme and the hero stamp are the reward for clearing Telegraph Recall
-          // (src/scripts/signal-reward.ts): honoured only in the browser where it was earned.
-          var signalUnlocked =
-            Boolean(localStorage.getItem('portfolio-signal')) || Number(localStorage.getItem('portfolio-tg-best')) > 0;
-          if (signalUnlocked) root.classList.add('has-signal');
-          if (
-            savedTheme === 'prism' ||
-            savedTheme === 'paper' ||
-            savedTheme === 'crt' ||
-            (savedTheme === 'signal' && signalUnlocked)
-          ) {
-            root.setAttribute('data-theme', savedTheme);
-          }
-          var savedMotion = localStorage.getItem('portfolio-motion');
-          if (savedMotion === 'reduced') {
-            root.setAttribute('data-motion', 'reduced');
-          } else {
-            root.classList.add('js-motion');
-          }
-          if (localStorage.getItem('portfolio-sound') === 'on') root.setAttribute('data-sound', 'on');
-        } catch (e) {
-          root.classList.add('js-motion');
-        }
-        var theme = root.getAttribute('data-theme') || (matchMedia('(prefers-color-scheme: light)').matches ? 'paper' : 'prism');
-        var meta = document.getElementById('theme-color');
-        if (meta) meta.setAttribute('content', themeBg[theme] || themeBg.prism);
-      })();
-    </script>
+    <script is:inline set:html={prefsBoot} />
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -134,18 +103,16 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <Footer />
     <script>
       import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
+      import { CARRIED_ATTRIBUTES, prefs } from '../scripts/prefs';
 
       declare global {
         interface Window {
           portfolioReveal?: { io: IntersectionObserver; els: HTMLElement[] };
-          /** Site-wide click sound (opt-in, default off). Persisted in localStorage as `portfolio-sound`. */
-          setPortfolioSound?: (on: boolean) => void;
         }
       }
 
       const root = document.documentElement;
-      const isMotionAllowed = () =>
-        root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const isMotionAllowed = () => prefs.isMotionAllowed();
 
       // ---------------------------------------------------------------------------------------------
       // Per-page bindings. With the ClientRouter this module runs once per session, so everything
@@ -231,19 +198,21 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       // Session-wide behaviour (registered once).
       // ---------------------------------------------------------------------------------------------
 
-      // The router rebuilds <html>'s attributes from the new page, which never ran the theme script:
-      // carry the theme, motion, sound and CRT switches (and the js-* classes) across.
+      // The router rebuilds <html>'s attributes from the new page, whose boot script never ran in
+      // this browser: carry the preference attributes (and the js-* classes) across.
       document.addEventListener('astro:before-swap', (event) => {
         const next = (event as TransitionBeforeSwapEvent).newDocument.documentElement;
-        ['class', 'data-theme', 'data-motion', 'data-sound', 'data-crt'].forEach((name) => {
+        ['class', ...CARRIED_ATTRIBUTES].forEach((name) => {
           const value = root.getAttribute(name);
           if (value === null) next.removeAttribute(name);
           else next.setAttribute(name, value);
         });
       });
 
-      // Clear any pointer-driven transforms when motion is turned off mid-interaction.
-      window.addEventListener('portfolio:motionchange', () => {
+      // Motion switched (the visitor's key or the OS): re-arm the reveals for the new rule, and clear
+      // any pointer-driven transforms when motion is turned off mid-interaction.
+      prefs.onChange('motion', () => {
+        initScrollReveal();
         if (isMotionAllowed()) return;
         document.querySelectorAll<HTMLElement>('[data-tilt]').forEach((card) => {
           card.style.setProperty('--rx', '0deg');
@@ -268,7 +237,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       };
       if (document.readyState === 'complete') bootMotion();
       else window.addEventListener('load', bootMotion, { once: true });
-      window.addEventListener('portfolio:motionchange', bootMotion);
+      prefs.onChange('motion', bootMotion);
 
       // Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
       // after first paint; renders one still frame under reduced motion; skipped with data saver or no
@@ -302,7 +271,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
 
       // 5. Retro micro-interactions, site-wide: every control answers a click with a phosphor ripple
       // and, when the visitor has turned sound on, a short synth click. Sound is opt-in and off by
-      // default; the switch lives on the Telegraph Recall cabinet and is remembered per browser.
+      // default; the switch lives on the Telegraph Recall cabinet (prefs.set('sound', …)).
       const RIPPLE_HOSTS = '[data-crt-ripple], .btn, .pill, .proj, .crt-stage3-node';
       let audio: AudioContext | null = null;
       const clickTone = () => {
@@ -323,20 +292,10 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
           /* AudioContext unavailable or blocked */
         }
       };
-      window.setPortfolioSound = (on) => {
-        if (on) root.setAttribute('data-sound', 'on');
-        else root.removeAttribute('data-sound');
-        try {
-          localStorage.setItem('portfolio-sound', on ? 'on' : 'off');
-        } catch {
-          /* storage unavailable */
-        }
-        window.dispatchEvent(new Event('portfolio:soundchange'));
-      };
       document.addEventListener('click', (e) => {
         const host = (e.target as HTMLElement | null)?.closest<HTMLElement>(RIPPLE_HOSTS);
         if (!host) return;
-        if (root.getAttribute('data-sound') === 'on') clickTone();
+        if (prefs.isSoundOn()) clickTone();
         if (!isMotionAllowed()) return;
         const rect = host.getBoundingClientRect();
         const x = e.detail === 0 ? rect.width / 2 : e.clientX - rect.left;
