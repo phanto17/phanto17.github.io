@@ -428,7 +428,14 @@ the site. The owner decides.
 | R7 | Gameplay clips (owner) | Three 4–6 s WebM loops at the impact moments (a shove into a pit, a Horde Hours weapon proc, a Cinderhold dodge), 720p, no audio. | Hover previews on the project grid; also usable on itch. | 2 |
 | R8 | Reference sites, properly | Open dontlookup.app, yaas-energy.com and mecha-xyz.webflow.io in a real browser and note the concrete patterns (a text-only fetch on 2026-11-01 got only the loading screens of the first two). | Ground R2, R4 and R5 in what the owner actually liked. | 1 |
 
-Lenis smooth scroll, the WebGL hero and the performance gate stay blocked on the phone trace below.
+**Status (2026-11-02).** R8, R2, R3 (commit `46d68e7`), R1, R4, R5, R6 (`574e4b8`) and R7 (`9a0dfe1`,
+recorded here from the web builds rather than by the owner) are done; Lenis is in on desktop
+(`4c433f5`); the WebGL hero is superseded by the signal field and the owner's removal of the hero card.
+Accessibility: the axe-core audit and keyboard walk pass (the NVDA listening pass still needs the
+owner's machine). Performance: measured locally at 4 × CPU (LCP 1.42 s, CLS 0.003, no slow
+interaction); the phone trace on the published site is the owner's. Publishing: the four commits are
+local on `main`; both a push and a branch push were refused by the permission classifier here, so the
+owner pushes. Details in the dated sections that follow.
 
 #### R8 — the reference sites in a real browser (2026-11-01)
 
