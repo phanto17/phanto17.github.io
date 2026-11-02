@@ -7,23 +7,17 @@ import {
   type PortalNodeId,
   type StageId,
 } from './telegraph-engine';
+import { prefs } from './prefs';
 import { readReward, recordClear, saveReward } from './signal-reward';
 
 const ARROW: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
-const BEST_KEY = 'portfolio-tg-best';
 
-const readBest = (): number => {
+/** localStorage, or null where it is blocked (private mode): the reward then lasts for this visit only. */
+const localStore = (): Storage | null => {
   try {
-    return Number(localStorage.getItem(BEST_KEY)) || 0;
+    return localStorage;
   } catch {
-    return 0;
-  }
-};
-const saveBest = (score: number) => {
-  try {
-    localStorage.setItem(BEST_KEY, String(score));
-  } catch {
-    /* private mode: the best score lasts for this visit only */
+    return null;
   }
 };
 const seconds = (ms: number) => `${(ms / 1000).toFixed(1)}s`;
@@ -32,7 +26,6 @@ const tiles = (n: number) => `${n} tile${n === 1 ? '' : 's'}`;
 declare global {
   interface Window {
     portfolioMotion?: boolean;
-    setPortfolioSound?: (on: boolean) => void;
   }
 }
 
@@ -106,7 +99,7 @@ export function init(): void {
   const interactionCountEl = document.querySelector<HTMLElement>('#tg-interaction-count');
   const currentStageBadgeEl = document.querySelector<HTMLElement>('#tg-current-stage-badge');
 
-  let muted = document.documentElement.getAttribute('data-sound') !== 'on';
+  let muted = !prefs.isSoundOn();
   let manualCues = false;
   let pendingCue: (() => void) | null = null;
   let audioCtx: AudioContext | null = null;
@@ -115,10 +108,11 @@ export function init(): void {
   let nextWaveTimer: number | null = null;
   let playingSequence: readonly Cue[] | null = null;
   let replayOnReturn: readonly Cue[] | null = null;
-  let best = readBest();
+  // The best score lives in the reward record (src/scripts/signal-reward.ts).
+  let best = readReward(localStore())?.best ?? 0;
   let lastFocusedBeforeModal: HTMLElement | null = null;
 
-  const isReducedMotion = () => document.documentElement.dataset.motion === 'reduced' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isReducedMotion = () => !prefs.isMotionAllowed();
 
   function playTone(freq: number, type: OscillatorType = 'triangle', duration = 0.11) {
     if (muted) return;
@@ -195,8 +189,7 @@ export function init(): void {
   const syncPreviewMotion = () => {
     if (popupBackdrop?.open && stageCtrl.getStage() === 'animation-sequence') startStage2PreviewLoop();
   };
-  window.addEventListener('portfolio:motionchange', syncPreviewMotion, { signal });
-  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', syncPreviewMotion, { signal });
+  prefs.onChange('motion', syncPreviewMotion, { signal });
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
       stopStage2PreviewLoop();
@@ -598,21 +591,14 @@ export function init(): void {
       playTone(784, 'triangle', 0.28);
       syncHud();
       const newBest = outcome.score > best;
-      if (newBest) {
-        best = outcome.score;
-        saveBest(best);
-      }
+      if (newBest) best = outcome.score;
       // The reward (hero stamp + Signal theme, src/scripts/signal-reward.ts): recorded per browser and
-      // announced to the page; the stamp and the theme key listen.
-      let storage: Storage | null = null;
-      try {
-        storage = localStorage;
-      } catch {
-        storage = null;
-      }
-      const firstUnlock = !document.documentElement.classList.contains('has-signal');
+      // announced to the page; the stamp listens, the theme key reads it on its next press.
+      const storage = localStore();
+      const firstUnlock = !prefs.signalUnlocked();
       const reward = recordClear(readReward(storage), outcome.score, new Date());
       saveReward(storage, reward);
+      prefs.refreshSignal();
       window.dispatchEvent(new CustomEvent('portfolio:signalcleared', { detail: { reward, score: outcome.score } }));
       if (statusEl) {
         const record = newBest ? 'a new best' : `best ${best}`;
@@ -676,19 +662,13 @@ export function init(): void {
   });
 
   const syncSoundUi = () => {
-    muted = document.documentElement.getAttribute('data-sound') !== 'on';
+    muted = !prefs.isSoundOn();
     muteBtn?.setAttribute('aria-pressed', String(!muted));
     if (muteBtn) muteBtn.textContent = muted ? 'Sound: off' : 'Sound: on';
   };
   syncSoundUi();
-  window.addEventListener('portfolio:soundchange', syncSoundUi, { signal });
-  muteBtn?.addEventListener('click', () => {
-    if (window.setPortfolioSound) window.setPortfolioSound(muted);
-    else {
-      muted = !muted;
-      syncSoundUi();
-    }
-  });
+  prefs.onChange('sound', syncSoundUi, { signal });
+  muteBtn?.addEventListener('click', () => prefs.set('sound', muted ? 'on' : 'off'));
 
   manualBtn?.addEventListener('click', () => {
     manualCues = !manualCues;

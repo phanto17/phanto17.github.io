@@ -9,6 +9,8 @@
  * scroll position (owner, 2026-11-01). Under reduced motion (OS or site switch) it renders one still
  * frame; with no WebGL it does nothing and the CSS gradient on <body> stays.
  */
+import { prefs } from './prefs';
+
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
 
@@ -52,7 +54,7 @@ void main(){
 type Uniforms = Record<string, WebGLUniformLocation | null>;
 
 const root = document.documentElement;
-const isReducedMotion = () => root.getAttribute('data-motion') === 'reduced' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const isReducedMotion = () => !prefs.isMotionAllowed();
 
 function cssColour(name: string, fallback: string): [number, number, number] {
   const raw = getComputedStyle(root).getPropertyValue(name).trim() || fallback;
@@ -167,11 +169,10 @@ export function init(canvas: HTMLCanvasElement): void {
   };
   const kick = () => { if (raf === null) raf = requestAnimationFrame(draw); };
   applyTheme();
-  new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
-  window.matchMedia('(prefers-color-scheme: light)').addEventListener('change', applyTheme);
+  // A theme change, or the OS scheme moving while no theme is saved.
+  prefs.onChange('theme', applyTheme);
   kick();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
-  window.addEventListener('portfolio:motionchange', kick);
-  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', kick);
+  prefs.onChange('motion', kick);
   root.classList.add('has-field');
 }

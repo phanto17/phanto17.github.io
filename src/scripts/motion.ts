@@ -12,6 +12,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SplitText } from 'gsap/SplitText';
 import Lenis from 'lenis';
+import { prefs } from './prefs';
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
@@ -40,8 +41,7 @@ export const timing = {
   easeQuint: 'power4.out',
 };
 
-export const isReducedMotion = (): boolean =>
-  root.getAttribute('data-motion') === 'reduced' || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const isReducedMotion = (): boolean => !prefs.isMotionAllowed();
 
 let ctx: gsap.Context | null = null;
 const splits: SplitText[] = [];
@@ -358,8 +358,8 @@ export function init(): void {
   };
   build();
   document.addEventListener('click', onAnchorClick, { capture: true });
-  window.addEventListener('portfolio:motionchange', () => (isReducedMotion() ? teardown() : build()));
-  window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', () => (isReducedMotion() ? teardown() : build()));
+  // The motion key or the OS preference: both arrive as one preference change.
+  prefs.onChange('motion', () => (isReducedMotion() ? teardown() : build()));
   // ClientRouter navigations: release the old page's tweens and triggers before the swap, choreograph
   // the new page once it is in (Base.astro has re-armed the reveal observer by then).
   document.addEventListener('astro:before-swap', () => {

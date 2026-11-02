@@ -84,24 +84,14 @@ const { notes, title, visuals = [] } = Astro.props;
 </div>
 
 <script>
-  const STORE = 'portfolio-notes';
+  import { prefs } from '../scripts/prefs';
+
   const WIDE = '(min-width: 861px)';
   let controller: AbortController | null = null;
 
-  const readMode = (): 'explore' | 'page' => {
-    try {
-      return localStorage.getItem(STORE) === 'page' ? 'page' : 'explore';
-    } catch {
-      return 'explore';
-    }
-  };
-  const saveMode = (mode: 'explore' | 'page') => {
-    try {
-      localStorage.setItem(STORE, mode);
-    } catch {
-      /* private mode: the choice lasts for this page only */
-    }
-  };
+  // The reading mode is a visitor preference (src/scripts/prefs.ts, row `notes`).
+  const readMode = () => prefs.get('notes');
+  const saveMode = (mode: 'explore' | 'page') => prefs.set('notes', mode);
 
   function setup(root: HTMLElement) {
     if (root.dataset.notesReady) return;

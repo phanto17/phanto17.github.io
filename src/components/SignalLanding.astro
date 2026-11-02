@@ -43,10 +43,9 @@ const words = ['The', 'signal', 'is', 'live.'];
     LANDING_SCROLL_THRESHOLD,
     shouldShowLanding,
   } from '../scripts/signal-reward';
+  import { prefs } from '../scripts/prefs';
 
-  const root = document.documentElement;
-  const isMotionAllowed = () =>
-    root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMotionAllowed = () => prefs.isMotionAllowed();
 
   // Only the document the visitor arrived on gets the panel; a client-side return to the home page
   // (this module runs once per session under the ClientRouter) does not.
@@ -54,7 +53,7 @@ const words = ['The', 'signal', 'is', 'live.'];
 
   /** A short two-note cue, only when the visitor has turned the site sound on. */
   const chime = () => {
-    if (root.getAttribute('data-sound') !== 'on') return;
+    if (!prefs.isSoundOn()) return;
     try {
       const ctx = new AudioContext();
       if (ctx.state !== 'running') {
@@ -207,8 +206,8 @@ const words = ['The', 'signal', 'is', 'live.'];
       { signal },
     );
     window.addEventListener('hashchange', () => cancel(), { signal });
-    window.addEventListener(
-      'portfolio:motionchange',
+    prefs.onChange(
+      'motion',
       () => {
         if (isMotionAllowed()) return;
         cancel();

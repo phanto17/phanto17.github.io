@@ -14,10 +14,10 @@
 
 <script>
   import { readReward, type SignalReward } from '../scripts/signal-reward';
+  import { prefs } from '../scripts/prefs';
 
   const root = document.documentElement;
-  const isMotionAllowed = () =>
-    root.getAttribute('data-motion') !== 'reduced' && !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isMotionAllowed = () => prefs.isMotionAllowed();
 
   document.addEventListener('astro:page-load', () => {
     const stamp = document.getElementById('signal-stamp');
@@ -27,7 +27,7 @@
     const sync = (reward: SignalReward) => {
       score.textContent = String(reward.best);
       stamp.setAttribute('aria-label', `Signal cleared. Best score ${reward.best}.`);
-      root.classList.add('has-signal');
+      prefs.refreshSignal();
     };
 
     let storage: Storage | null = null;
@@ -38,7 +38,7 @@
     }
     const reward = readReward(storage);
     if (reward) sync(reward);
-    else root.classList.remove('has-signal');
+    else prefs.refreshSignal();
 
     const page = new AbortController();
     window.addEventListener(

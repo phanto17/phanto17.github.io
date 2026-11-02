@@ -61,10 +61,9 @@ const label = (i: number): string => {
 <script>
   import { demoBoard, previewShoves, resolveShove, type ShoveBoard } from '../scripts/shove-sim';
   import type { Direction } from '../scripts/telegraph-engine';
+  import { prefs } from '../scripts/prefs';
 
-  const isReduced = () =>
-    document.documentElement.getAttribute('data-motion') === 'reduced' ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const isReduced = () => !prefs.isMotionAllowed();
 
   function setup(lab: HTMLElement) {
     if (lab.dataset.ready) return;

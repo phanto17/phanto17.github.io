@@ -243,6 +243,8 @@ const projectSchema = [
   </div>
 
   <script>
+    import { prefs } from '../../scripts/prefs';
+
     // Runs on every arrival at a project page (first load and client-side navigation alike).
     document.addEventListener('astro:page-load', () => {
     // 1. Copy button on code blocks
@@ -273,28 +275,19 @@ const projectSchema = [
       wrap.appendChild(btn);
     });
 
-    // 2. CRT scanline viewport toggle
+    // 2. CRT scanline viewport toggle: a per-tab preference (src/scripts/prefs.ts, row `crt`), painted
+    // on <html> by the module; this key only presents it.
     const crtBtn = document.querySelector<HTMLButtonElement>('#crt-toggle');
     if (crtBtn) {
-      const saved = sessionStorage.getItem('portfolio-crt');
-      if (saved === 'off') {
-        document.documentElement.setAttribute('data-crt', 'off');
-        crtBtn.setAttribute('aria-pressed', 'false');
-        crtBtn.textContent = 'CRT Scanlines: OFF';
-      }
+      const syncCrt = () => {
+        const on = prefs.get('crt') === 'on';
+        crtBtn.setAttribute('aria-pressed', String(on));
+        crtBtn.textContent = on ? 'CRT Scanlines: ON' : 'CRT Scanlines: OFF';
+      };
+      syncCrt();
       crtBtn.addEventListener('click', () => {
-        const isOff = document.documentElement.getAttribute('data-crt') === 'off';
-        if (isOff) {
-          document.documentElement.removeAttribute('data-crt');
-          sessionStorage.setItem('portfolio-crt', 'on');
-          crtBtn.setAttribute('aria-pressed', 'true');
-          crtBtn.textContent = 'CRT Scanlines: ON';
-        } else {
-          document.documentElement.setAttribute('data-crt', 'off');
-          sessionStorage.setItem('portfolio-crt', 'off');
-          crtBtn.setAttribute('aria-pressed', 'false');
-          crtBtn.textContent = 'CRT Scanlines: OFF';
-        }
+        prefs.set('crt', prefs.get('crt') === 'on' ? 'off' : 'on');
+        syncCrt();
       });
     }
     });

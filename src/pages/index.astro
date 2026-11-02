@@ -283,9 +283,9 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   </section>
 
   <script>
-    const isMotionAllowed = () =>
-      document.documentElement.getAttribute('data-motion') !== 'reduced' &&
-      !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    import { prefs } from '../scripts/prefs';
+
+    const isMotionAllowed = () => prefs.isMotionAllowed();
 
     document.addEventListener('astro:page-load', () => {
       armStuckHead();
