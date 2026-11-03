@@ -6,7 +6,8 @@ export interface LettersDeps { thud(v: number): void; shock(): void; ui(): void 
 
 interface P { ch: string; x: number; y: number; vx: number; vy: number; r: number; a: number; w: number; c: string }
 
-export function mountLetters(root: HTMLElement, word: string, deps: LettersDeps) {
+/** Every listener goes on `signal`, so leaving the page leaves nothing bound (src/scripts/page.ts). */
+export function mountLetters(root: HTMLElement, word: string, deps: LettersDeps, { signal }: { signal: AbortSignal }) {
   const cv = root.querySelector<HTMLCanvasElement>('canvas')!, x = cv.getContext('2d')!;
   const gravBtn = root.querySelector<HTMLButtonElement>('[data-mess-gravity]')!, resetBtn = root.querySelector<HTMLButtonElement>('[data-mess-reset]')!;
   let W = 0, H = 0, dpr = 1, raf = 0, active = false, grav = true, grab: { p: P; tx: number; ty: number } | null = null, last = 0, acc = 0;
@@ -59,12 +60,12 @@ export function mountLetters(root: HTMLElement, word: string, deps: LettersDeps)
     for (const p of P) { const dx = p.x - sx, dy = p.y - sy, d = Math.hypot(dx, dy) || 1, f = Math.max(0, 1 - d / (W * 0.8)) * 1500; p.vx += (dx / d) * f; p.vy += (dy / d) * f; p.w += (Math.random() - 0.5) * 8; }
   }
   const pos = (e: PointerEvent) => { const b = cv.getBoundingClientRect(); return { x: e.clientX - b.left, y: e.clientY - b.top }; };
-  cv.addEventListener('pointerdown', (e) => { const q = pos(e), hit = P.find((p) => Math.hypot(p.x - q.x, p.y - q.y) < p.r * 1.15); if (hit) { grab = { p: hit, tx: q.x, ty: q.y }; cv.setPointerCapture(e.pointerId); } else shock(q.x, q.y); });
-  cv.addEventListener('pointermove', (e) => { if (grab) { const q = pos(e); grab.tx = q.x; grab.ty = q.y; } });
-  const rel = () => { grab = null; }; cv.addEventListener('pointerup', rel); cv.addEventListener('pointercancel', rel);
-  resetBtn.addEventListener('click', () => { reset(); deps.ui(); });
-  gravBtn.addEventListener('click', () => { grav = !grav; gravBtn.setAttribute('aria-pressed', String(!grav)); deps.ui(); });
-  addEventListener('resize', () => { if (active) size(); });
+  cv.addEventListener('pointerdown', (e) => { const q = pos(e), hit = P.find((p) => Math.hypot(p.x - q.x, p.y - q.y) < p.r * 1.15); if (hit) { grab = { p: hit, tx: q.x, ty: q.y }; cv.setPointerCapture(e.pointerId); } else shock(q.x, q.y); }, { signal });
+  cv.addEventListener('pointermove', (e) => { if (grab) { const q = pos(e); grab.tx = q.x; grab.ty = q.y; } }, { signal });
+  const rel = () => { grab = null; }; cv.addEventListener('pointerup', rel, { signal }); cv.addEventListener('pointercancel', rel, { signal });
+  resetBtn.addEventListener('click', () => { reset(); deps.ui(); }, { signal });
+  gravBtn.addEventListener('click', () => { grav = !grav; gravBtn.setAttribute('aria-pressed', String(!grav)); deps.ui(); }, { signal });
+  addEventListener('resize', () => { if (active) size(); }, { signal });
   return {
     start() { if (active) return; active = true; size(); last = performance.now(); raf = requestAnimationFrame(loop); },
     stop() { active = false; cancelAnimationFrame(raf); },

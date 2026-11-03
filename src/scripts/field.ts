@@ -65,6 +65,12 @@ function cssColour(name: string, fallback: string): [number, number, number] {
   return [0.1, 0.09, 0.07];
 }
 
+/** Pauses the field while a page that hides it (the map) is on screen; null until `init` ran. */
+let setActiveImpl: ((on: boolean) => void) | null = null;
+export function setActive(on: boolean): void {
+  setActiveImpl?.(on);
+}
+
 export function init(canvas: HTMLCanvasElement): void {
   const gl = (canvas.getContext('webgl', { antialias: false, alpha: false, powerPreference: 'low-power' }) ||
     canvas.getContext('experimental-webgl')) as WebGLRenderingContext | null;
@@ -154,6 +160,7 @@ export function init(canvas: HTMLCanvasElement): void {
   const start = performance.now();
   let last = 0;
   let raf: number | null = null;
+  let active = true;
   const draw = (now: number) => {
     raf = null;
     const still = isReducedMotion();
@@ -167,7 +174,12 @@ export function init(canvas: HTMLCanvasElement): void {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
     if ((!still || settling) && !document.hidden) raf = requestAnimationFrame(draw);
   };
-  const kick = () => { if (raf === null) raf = requestAnimationFrame(draw); };
+  const kick = () => { if (active && raf === null) raf = requestAnimationFrame(draw); };
+  setActiveImpl = (on) => {
+    active = on;
+    if (on) kick();
+    else if (raf !== null) { cancelAnimationFrame(raf); raf = null; }
+  };
   applyTheme();
   // A theme change, or the OS scheme moving while no theme is saved.
   prefs.onChange('theme', applyTheme);

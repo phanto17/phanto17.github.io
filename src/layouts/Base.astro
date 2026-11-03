@@ -228,15 +228,20 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       // Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
       // after first paint; renders one still frame under reduced motion; skipped with data saver or no
       // WebGL. The canvas persists across page navigations, so the WebGL context is created once.
+      // The map page has its own WebGL scene, so the field is decided per page: it starts on the first
+      // page that shows it (a visit may begin on the map) and pauses while the map is on screen.
       const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
-      const bootField = () => {
+      let field: Promise<typeof import('../scripts/field')> | null = null;
+      const loadField = (canvas: HTMLCanvasElement) =>
+        (field ??= import('../scripts/field').then((f) => { f.init(canvas); return f; }));
+      onPage(({ signal }) => {
         const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
-        // The map page has its own WebGL scene; the field would be a second context for nothing.
-        if (!fieldCanvas || nav.connection?.saveData || document.body.dataset.chrome === 'world') return;
-        void import('../scripts/field').then((f) => f.init(fieldCanvas));
-      };
-      if (document.readyState === 'complete') bootField();
-      else window.addEventListener('load', bootField, { once: true });
+        if (!fieldCanvas || nav.connection?.saveData) return;
+        if (document.body.dataset.chrome === 'world') { void field?.then((f) => f.setActive(false)); return; }
+        const show = () => void loadField(fieldCanvas).then((f) => f.setActive(true));
+        if (document.readyState === 'complete') show();
+        else window.addEventListener('load', show, { once: true, signal });
+      });
 
       // 4. Custom Tactical Cursor Reticle (fine pointer only)
       const reticle = document.getElementById('cursor-reticle');
