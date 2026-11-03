@@ -132,6 +132,16 @@ real text kept as the accessible name), every home section is its own module (do
 cards, terminal) and project write-ups read as a sticky split at 861px and up (steps left, a pinned visual
 per step right, the shove lab on Push Comes to Shove). All of it stops or flattens under reduced motion.
 
+## 6b. The field map (home, 2026-11-03)
+
+The 3D world keeps its own light (a teal-green island at night, sunlit by day, following Poznań
+time), while every piece of interface on it uses the Prism tokens: panels are `--bg` at 84 %,
+hairlines `--hairline`, labels DM Mono uppercase in the location's accent mixed 60 % toward
+`--text` so they read on Paper too, titles Fraunces. Location accents: coral (Horde Hours),
+mint (Push Comes to Shove), brick red (Cinderhold), gold (Eternity Keeper), sky (The Lab),
+lavender (Guild Hall). Controls are the site's glass keys (`.btn`); Dev Mode is edged in `--sky`.
+Motion off = still dioramas and no camera bob; the drawer and start screen drop their transitions.
+
 ## 7. Imagery rules & CRT viewport
 
 Screenshots/GIFs sit in `--r-md` frames on `--surface` with a 1 px `--umber` border, a faint

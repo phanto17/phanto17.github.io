@@ -52,6 +52,32 @@ conversation finds it fuzzy.
   sound, muted unless the `sound` preference is on. A tone may sweep its pitch, fade in, or carry
   further notes (`then`).
 
+## The field map (`src/components/World.astro`, `src/world/`)
+
+- **Field map** — the home page: a three.js world the visitor walks through, loaded after Explore.
+  The start screen above it is plain HTML with the CV title, the CV, the overview and the projects.
+- **Location** — a place on the map: a **project** (one per file in the projects collection), a
+  **landmark** (Field Station = About, The Lab = mini-games, Guild Hall = activities, Radio Mast =
+  contact) or the **uncharted** marker, the free slot the next project will take.
+- **Slot** — a location's fixed position on a sunflower spiral (`gen.ts` `slotPos`): projects take
+  slots in order, landmarks reserve theirs, so adding a project moves nothing.
+- **Diorama** — the small animated scene at a location (`dioramas.ts`), chosen by the project's
+  `world.kind`: `arena`, `board`, `dungeon`, `archive` or `generic`. Its `info()` is what Dev Mode
+  prints; the scenes illustrate the systems and are not footage from the games.
+- **Nav grid** — the walkable tiles (`gen.ts` `generate`); the explorer and the locals find paths on
+  it with `bfs`, which Dev Mode draws as the explored set and the path.
+- **Dev Mode** (the `` ` `` key) — render passes (beauty, wireframe, normals, clay, depth: keys 1–5),
+  overlays (nav grid N, colliders C, AI states I, BFS path P), live frame and GPU readouts, a
+  time-of-day override and a test project that regenerates the map.
+- **Panel** — the drawer that opens at a location; its markup is a `<template data-panel="<id>">`
+  rendered by `World.astro`, cloned by `boot.ts`. The Lab opens the real Telegraph cabinet in an
+  overlay, with the **letters** (`letters.ts`, a hand-written 2D solver) on a second tab.
+- **Ambient** (`ambient.ts`) — the drone and wind on the site's shared `audioContext`, on while the
+  `sound` preference is on; the map's cues (`open`, `arrive`, `walk`, `thud`, `shock`) are in `TONES`.
+- **Rank** — Telegraph Recall's ladder on the best campaign score (`signal-reward.ts` `RANKS`,
+  `rankFor`, `nextRank`): Cadet, Scout (any clear), Tactician 2900, Warden 3300, Oracle 3700; shown
+  on the hero stamp and in the clear message.
+
 ## Write-ups and notes (`src/lib/notes.ts`)
 
 - **Write-up** — a project's Markdown file in `src/content/projects`. Its **breakdown** is the

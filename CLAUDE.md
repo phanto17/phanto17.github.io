@@ -107,6 +107,27 @@ file's header comment. Edit the HTML, reprint, never hand-edit the PDF.
 - Responsive down to phone width; good contrast; every animation respects
   `prefers-reduced-motion`.
 
+## The field map (home page since 2026-11-03, branch `world`)
+
+`/` is an explorable 3D world (`src/components/World.astro`; engine `src/world/engine.ts`, generation
+`gen.ts` with Vitest tests, dioramas `dioramas.ts`, lighting from Poznań time `light.ts`, HUD and panels
+`boot.ts`, styles `src/styles/world.css`). The old home sections moved unchanged to `/overview/`
+(`src/pages/overview.astro`; the About dossier now reads `src/data/about.ts`, shared with the Field
+Station panel). The start screen is static HTML (CV title, CV, overview, projects); `three` (≈555 KB of script, less gzipped) loads only after Explore; without WebGL the start screen points at the overview. Every
+location comes from data: projects from the collection (`world.kind` / `world.accent`, defaults
+`generic` / coral), landmarks from `site.ts` / `activities.ts` / `about.ts`. Adding a project file adds
+a location on a fixed spiral slot and never moves another (`tests/world-gen.test.ts` pins it). The Lab
+location opens the real Telegraph cabinet (`TelegraphMiniGame.astro`, one engine, one set of tests) plus
+the "Make a mess" letters; ranks on the best score (`RANKS` in `signal-reward.ts`) show on the stamp and
+in the clear message. Sound: the map's cues live in `sound.ts` `TONES`, the ambient bed in
+`src/world/ambient.ts` on the shared `audioContext`; sound/motion/theme go through `prefs.ts` as
+everywhere. `Base.astro` takes `chrome="world"` (no signal field, no footer; `body[data-chrome]`). The
+dioramas are illustrations of the systems, not game footage; team content on the map is the same text
+as the Activities section. Dev Mode: `` ` ``, passes 1–5, overlays N/C/I/P, time slider, a test
+project. Checks: `tools/check-browser.cjs` has a `world` check (WebGL via SwiftShader flags) and the
+Telegraph checks run on `/overview/`; `tools/verify-portfolio.mjs` reads the overview for the hero bar
+and accepts the JSON-LD `@graph`.
+
 ## Site status (2026-10-11)
 
 Astro 7.3.8 scaffold is in place and builds clean (`npm run build`, `astro check` 0 errors):
