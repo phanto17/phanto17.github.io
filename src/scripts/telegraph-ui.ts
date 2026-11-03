@@ -267,8 +267,12 @@ function bindLab({ signal }: PageContext): (() => void) | undefined {
     { signal },
   );
 
+  // The lab is live: the browser checks (tools/check-browser.cjs) wait for this before pressing keys.
+  lab.dataset.bound = 'true';
+
   // Leaving the page (ClientRouter): cancel timers and sequences, close the popup.
   return () => {
+    delete lab.dataset.bound;
     board.dispose();
     popup.dispose();
   };
