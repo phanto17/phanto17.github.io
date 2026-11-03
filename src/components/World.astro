@@ -1,0 +1,242 @@
+---
+/**
+ * The field map: the home page as an explorable world. Every location on the map comes from data
+ * (the projects collection, src/data/site.ts, activities.ts, about.ts), so a new project file is a
+ * new place on the map, with its own label, panel, field-log entry and `/projects/<id>/` page.
+ *
+ * The start screen is plain HTML (the CV title, the CV, the overview and the projects are reachable
+ * before any JavaScript runs); the three.js engine (src/world/engine.ts) loads only after Explore.
+ * Panels are server-rendered <template>s that boot.ts clones into the drawer.
+ */
+import { getCollection } from 'astro:content';
+import TelegraphMiniGame from './TelegraphMiniGame.astro';
+import SignalStamp from './SignalStamp.astro';
+import { site } from '../data/site';
+import { activities, experience, education } from '../data/activities';
+import { aboutFacets } from '../data/about';
+import '../styles/world.css';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const seeds = projects.map((p) => ({
+  id: p.id,
+  title: p.data.title,
+  kind: p.data.world.kind,
+  accent: p.data.world.accent,
+  eyebrow: p.data.genre,
+}));
+const landmarks = [
+  { id: 'station', title: 'Field Station', kind: 'station', accent: '#f3e6d3', eyebrow: 'About me' },
+  { id: 'lab', title: 'The Lab', kind: 'lab', accent: '#7fd6ff', eyebrow: 'Mini-games', slot: 4 },
+  { id: 'guild', title: 'Guild Hall', kind: 'guild', accent: '#c6a8ff', eyebrow: 'Team projects & channel', slot: 5 },
+  { id: 'mast', title: 'Radio Mast', kind: 'mast', accent: '#f27c52', eyebrow: 'Contact', slot: 6 },
+];
+const worldData = { seeds, landmarks, word: 'TYMOTEUSZ' };
+const statusLabel = { playable: 'Playable', released: 'Released', 'in-progress': 'In progress', planned: 'Planned' } as const;
+const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ?? 'now'}`;
+---
+
+<div class="world" id="world" data-world>
+  <canvas class="world-gl" id="world-gl" aria-label="Explorable map of the projects. The overview page has the same content as text."></canvas>
+  <div class="world-vignette" aria-hidden="true"></div>
+  <div class="world-labels" id="world-labels" aria-hidden="true"></div>
+  <p class="world-pass" id="world-pass" hidden aria-live="polite"></p>
+
+  <section class="world-start" id="world-start" aria-label="Welcome">
+    <div class="world-start-inner">
+      <SignalStamp />
+      <p class="meta">{site.name} · field notes</p>
+      <h1>Junior Gameplay Programmer <em>(Unity / C#)</em></h1>
+      <p class="lead">{site.tagline}</p>
+      <div class="world-actions">
+        <button class="btn primary" id="world-enter-sound" type="button" data-crt-ripple>Explore with sound</button>
+        <button class="btn" id="world-enter-quiet" type="button" data-crt-ripple>Explore without sound</button>
+      </div>
+      <p class="world-fast">
+        <a href="/overview/">Skip to the overview</a>
+        <a href="/overview/#projects">See the projects</a>
+        <a href={site.cv} download>Download the CV ↗</a>
+      </p>
+      <p class="world-nogl" id="world-nogl" hidden>This browser can’t run the 3D map; the overview has everything.</p>
+      <noscript><p class="world-nogl">The map needs JavaScript. The <a href="/overview/">overview</a> has everything as text.</p></noscript>
+    </div>
+  </section>
+
+  <div class="world-hud" id="world-hud" hidden>
+    <div class="world-keys">
+      <a class="btn world-key" href="/overview/">Overview</a>
+      <button class="btn world-key" id="world-sound" type="button" aria-pressed="false">Sound: off</button>
+      <button class="btn world-key dev" id="world-dev-key" type="button" aria-pressed="false">Dev Mode: off</button>
+    </div>
+    <section class="world-log" id="world-log" aria-label="Field log">
+      <button class="world-log-head" id="world-log-toggle" type="button"><span class="meta">Field log</span><span class="meta" id="world-log-count"></span></button>
+      <ul id="world-log-list"></ul>
+    </section>
+    <aside class="world-map" aria-label="Minimap">
+      <canvas id="world-mini" width="360" height="290" title="Click to travel"></canvas>
+      <p class="world-clock"><span>Poznań <b id="world-clock-time">--:--</b></span><span id="world-clock-phase"></span></p>
+    </aside>
+    <p class="world-hint" id="world-hint"><kbd>WASD</kbd> or click to walk · drag to look around · scroll to zoom · <kbd>`</kbd> Dev Mode</p>
+    <div class="world-prompt" id="world-prompt" hidden>
+      <button class="btn primary" id="world-prompt-open" type="button" data-crt-ripple><kbd>Enter</kbd> <span>Open <span id="world-prompt-name"></span></span></button>
+    </div>
+  </div>
+
+  <aside class="world-dev" id="world-dev" hidden aria-label="Dev Mode">
+    <div class="world-dev-head"><span class="meta">Dev Mode</span><button class="world-x" id="world-dev-close" type="button" aria-label="Close Dev Mode">×</button></div>
+    <h4>Render pass <span class="world-k">1–5</span></h4>
+    <div class="world-seg" id="world-views">
+      <button type="button" data-view="beauty" aria-pressed="true">Beauty</button><button type="button" data-view="wireframe" aria-pressed="false">Wire</button><button type="button" data-view="normals" aria-pressed="false">Normals</button><button type="button" data-view="clay" aria-pressed="false">Clay</button><button type="button" data-view="depth" aria-pressed="false">Depth</button>
+    </div>
+    <h4>Overlays</h4>
+    <div class="world-checks" id="world-overlays">
+      <label><input type="checkbox" data-ovl="nav" /> Nav grid <span class="world-k">N</span></label>
+      <label><input type="checkbox" data-ovl="colliders" checked /> Colliders <span class="world-k">C</span></label>
+      <label><input type="checkbox" data-ovl="ai" checked /> AI states <span class="world-k">I</span></label>
+      <label><input type="checkbox" data-ovl="path" checked /> BFS path <span class="world-k">P</span></label>
+    </div>
+    <h4>Live</h4>
+    <dl class="world-stats">
+      <div><dt>Frame</dt><dd id="world-stat-fps">–</dd></div><div><dt>GPU</dt><dd id="world-stat-draw">–</dd></div>
+      <div><dt>World</dt><dd id="world-stat-world">–</dd></div><div><dt>Actors</dt><dd id="world-stat-actors">–</dd></div>
+      <div><dt>Last BFS</dt><dd id="world-stat-bfs">–</dd></div><div><dt>Here</dt><dd id="world-stat-near">–</dd></div>
+    </dl>
+    <h4>Time of day <span class="world-k" id="world-time-val"></span></h4>
+    <div class="world-time"><input id="world-time-range" type="range" min="0" max="23.99" step="0.05" aria-label="Time of day override" /><button class="btn world-key" id="world-time-now" type="button">Now</button></div>
+    <h4>World data</h4>
+    <div class="row"><button class="btn world-key" id="world-add" type="button">+ Add test project</button><button class="btn world-key" id="world-remove" type="button" disabled>Remove</button></div>
+    <p class="fine" id="world-add-msg">Adds one entry to the project list and regenerates the map.</p>
+  </aside>
+
+  <aside class="world-drawer" id="world-drawer" hidden aria-labelledby="world-drawer-title">
+    <button class="world-x world-drawer-x" id="world-drawer-close" type="button" aria-label="Close panel">×</button>
+    <div class="world-drawer-body" id="world-drawer-body"></div>
+  </aside>
+
+  <div class="world-lab" id="world-lab" hidden role="region" aria-label="The Lab">
+    <div class="world-lab-bar">
+      <button class="btn" id="world-lab-close" type="button" data-crt-ripple>← Back to the map</button>
+      <div class="world-seg" role="tablist" aria-label="Lab tabs">
+        <button role="tab" type="button" data-lab-tab="recall" aria-selected="true">Telegraph Recall</button>
+        <button role="tab" type="button" data-lab-tab="mess" aria-selected="false">Make a mess</button>
+      </div>
+    </div>
+    <div class="world-lab-tab" data-lab-panel="recall"><TelegraphMiniGame /></div>
+    <div class="world-lab-tab world-mess" data-lab-panel="mess" hidden>
+      <canvas aria-label="Physics playground: the letters of my name, to drag and throw"></canvas>
+      <div class="world-mess-bar">
+        <p>Drag and throw the letters. Click empty space for a shockwave. A hand-written fixed-step solver, no library.</p>
+        <div class="row"><button class="btn" type="button" data-mess-gravity aria-pressed="false">Zero gravity</button><button class="btn" type="button" data-mess-reset>Reset</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panels: one template per location, cloned into the drawer by boot.ts. -->
+  {projects.map((p) => (
+    <template data-panel={p.id}>
+      <div class="world-panel" style={`--acc:${p.data.world.accent}`}>
+        <p class="world-panel-eyebrow">{p.data.genre}</p>
+        <h2 id="world-drawer-title">{p.data.title}</h2>
+        <p class="world-panel-meta"><span class="pill">{statusLabel[p.data.status]}</span><span>{dates(p.data.dates)}</span><span>{p.data.engine}</span></p>
+        {p.data.clip ? (
+          <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video>
+        ) : p.data.media[0]?.src ? (
+          <img class="world-clip" src={p.data.media[0].src} alt={p.data.media[0].alt} width="960" height="540" loading="lazy" decoding="async" />
+        ) : null}
+        <p class="lead">{p.data.summary}</p>
+        {p.data.highlights.length > 0 && (
+          <>
+            <h3>Systems I built</h3>
+            <ul class="world-sys">{p.data.highlights.map((h) => <li>{h}</li>)}</ul>
+          </>
+        )}
+        <div class="actions">
+          {p.data.itchUrl && <a class="btn primary" href={p.data.itchUrl}>▶ Play on itch.io</a>}
+          {p.data.downloadUrl && <a class="btn primary" href={p.data.downloadUrl}>↓ Download on GitHub</a>}
+          <a class="btn" href={`/projects/${p.id}/`}>Read the write-up →</a>
+          {p.data.githubUrl && <a class="btn" href={p.data.githubUrl}>Source ↗</a>}
+        </div>
+        <p class="world-dev-note" data-dev-note hidden></p>
+      </div>
+    </template>
+  ))}
+  <template data-panel="station">
+    <div class="world-panel" style="--acc:#f3e6d3">
+      <p class="world-panel-eyebrow">About me</p>
+      <h2 id="world-drawer-title">{site.name}</h2>
+      <p class="world-panel-meta"><span>{site.title}</span><span>{site.location}</span></p>
+      {aboutFacets.map((f) => (
+        <>
+          <h3>{f.title}</h3>
+          <p set:html={f.html} />
+          {f.rows && <dl class="dl">{f.rows.map(([k, v]) => <div><dt>{k}</dt><dd set:html={v} /></div>)}</dl>}
+        </>
+      ))}
+      <h3>Experience outside games</h3>
+      {experience.map((e) => (
+        <p><strong>{e.title}</strong> <span class="meta">{e.period}</span><br />{e.text}</p>
+      ))}
+      <p class="meta">{education.title} ({education.period})</p>
+      <div class="actions">
+        <a class="btn primary" href={site.cv} download>↓ Download the CV</a>
+        <a class="btn" href="/overview/#about">Full dossier →</a>
+        <a class="btn" href={site.github}>GitHub ↗</a>
+      </div>
+    </div>
+  </template>
+  <template data-panel="guild">
+    <div class="world-panel" style="--acc:#c6a8ff">
+      <p class="world-panel-eyebrow">Team projects, channel, community</p>
+      <h2 id="world-drawer-title">Guild Hall</h2>
+      <div class="world-team">
+        {activities.map((a) => (
+          <article>
+            <p class="meta">{a.period} · {a.kind}</p>
+            <h3>{a.title}</h3>
+            <p>{a.text}</p>
+            {a.credits && <p class="meta">{a.credits}</p>}
+          </article>
+        ))}
+      </div>
+      <div class="actions"><a class="btn" href={site.youtube}>YouTube: phanto ↗</a><a class="btn" href="/overview/#activities">On the overview →</a></div>
+    </div>
+  </template>
+  <template data-panel="mast">
+    <div class="world-panel" style="--acc:#f27c52">
+      <p class="world-panel-eyebrow">Contact</p>
+      <h2 id="world-drawer-title">Radio Mast</h2>
+      <p class="lead">Looking for a junior gameplay programmer or an intern? I’d love to talk.</p>
+      <div class="world-mail"><span class="meta">Email</span><code data-mail>{site.email}</code><button class="btn" type="button" data-copy-mail>Copy</button></div>
+      <div class="actions">
+        <a class="btn primary" href={`mailto:${site.email}`}>✉ Write to me</a>
+        <a class="btn" href={site.cv} download>↓ Download the CV</a>
+        <a class="btn" href={site.github}>GitHub ↗</a>
+        <a class="btn" href={site.youtube}>YouTube ↗</a>
+      </div>
+    </div>
+  </template>
+
+  <script type="application/json" id="world-data" set:html={JSON.stringify(worldData).replace(/</g, '\\u003c')} />
+</div>
+
+<script>
+  import { onPage } from '../scripts/page';
+  import { prefs } from '../scripts/prefs';
+
+  // The engine is heavy (three.js), so it loads on Explore. Everything before that is static HTML.
+  onPage(({ signal }) => {
+    const root = document.getElementById('world');
+    if (!root) return;
+    let booted: Promise<{ dispose(): void }> | null = null;
+    const boot = (withSound: boolean) => {
+      prefs.set('sound', withSound ? 'on' : 'off');
+      booted ??= import('../world/boot').then((m) => m.bootWorld(root, { signal }));
+      return booted;
+    };
+    document.getElementById('world-enter-sound')?.addEventListener('click', () => boot(true), { signal });
+    document.getElementById('world-enter-quiet')?.addEventListener('click', () => boot(false), { signal });
+    // A deep link to a location (`/#cinderhold`) or to the Lab opens the world at once.
+    const hash = location.hash.replace(/^#/, '').split('?')[0];
+    if (hash && root.querySelector(`template[data-panel="${CSS.escape(hash)}"]`) || hash === 'lab') boot(prefs.isSoundOn());
+    return () => { booted?.then((w) => w.dispose()); };
+  });
+</script>

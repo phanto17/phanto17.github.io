@@ -9,6 +9,9 @@ dates:
 role: Solo — design & programming
 engine: Unity 6 · URP 2D
 order: 3
+world:
+  kind: dungeon
+  accent: "#ff5d4a"
 highlights:
   - Data-driven melee + tested health model
   - Enemy state machines, boss as data

@@ -20,9 +20,12 @@ interface Props {
    * the site's Person and WebSite nodes, so a node can point at the author with { '@id': PERSON_ID }.
    */
   schema?: Record<string, unknown>[];
+  /** `world`: the field map fills the viewport; the signal field and the footer stay off. */
+  chrome?: 'default' | 'world';
 }
 const {
   title,
+  chrome = 'default',
   description = site.description,
   image = '/media/og/default.jpg',
   noindex = false,
@@ -92,7 +95,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <ClientRouter />
     <script is:inline set:html={prefsBoot} />
   </head>
-  <body>
+  <body data-chrome={chrome}>
     <a class="skip-link" href="#main">Skip to content</a>
     <canvas id="signal-field" class="signal-field" aria-hidden="true" transition:persist="signal-field"></canvas>
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
@@ -228,7 +231,8 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
       const bootField = () => {
         const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
-        if (!fieldCanvas || nav.connection?.saveData) return;
+        // The map page has its own WebGL scene; the field would be a second context for nothing.
+        if (!fieldCanvas || nav.connection?.saveData || document.body.dataset.chrome === 'world') return;
         void import('../scripts/field').then((f) => f.init(fieldCanvas));
       };
       if (document.readyState === 'complete') bootField();
