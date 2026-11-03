@@ -108,6 +108,33 @@ export function stampLabel(reward: SignalReward): string {
   return `SIGNAL CLEARED · ${reward.best}`;
 }
 
+/**
+ * Rank ladder on the best campaign score. A clear is worth at least 2 650 (25 cues, 3 shoves, no pace
+ * bonus) and at most 3 900, so the ranks above Scout reward reading the board faster, not longer runs.
+ */
+export const RANKS: readonly { name: string; at: number }[] = [
+  { name: 'Cadet', at: 0 },
+  { name: 'Scout', at: 1 },
+  { name: 'Tactician', at: 2900 },
+  { name: 'Warden', at: 3300 },
+  { name: 'Oracle', at: 3700 },
+];
+
+export function rankFor(best: number): { name: string; at: number } {
+  return RANKS.reduce((r, x) => (best >= x.at ? x : r), RANKS[0]);
+}
+
+/** The next rank and the points still missing, or null at the top. */
+export function nextRank(best: number): { name: string; missing: number } | null {
+  const next = RANKS.find((r) => r.at > best);
+  return next ? { name: next.name, missing: next.at - best } : null;
+}
+
+/** The stamp with the rank: `SIGNAL CLEARED · 2650 · SCOUT`. */
+export function rankLabel(reward: SignalReward): string {
+  return `${stampLabel(reward)} · ${rankFor(reward.best).name.toUpperCase()}`;
+}
+
 export function isThemeId(value: unknown, unlocked: boolean): value is ThemeId {
   if (value === SIGNAL_THEME) return unlocked;
   return (THEME_IDS as readonly unknown[]).includes(value);

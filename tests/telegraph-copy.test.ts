@@ -28,9 +28,9 @@ describe('telegraph copy', () => {
     );
     const cleared = { kind: 'campaign-cleared' as const, totalWaves: 5, streak: 25, waveMs: 4000, waveScore: 900, score: 3200 };
     expect(copy.campaignCleared(cleared, 3200, true, true)).toBe(
-      'All 5 waves cleared! Last wave 4.0s (+900). Score 3200, a new best. Signal cleared: the hero stamp and the Signal theme are unlocked.',
+      'All 5 waves cleared! Last wave 4.0s (+900). Score 3200, a new best. Rank Tactician, 100 to Warden. Signal cleared: the hero stamp and the Signal theme are unlocked.',
     );
-    expect(copy.campaignCleared(cleared, 4000, false, false)).toBe('All 5 waves cleared! Last wave 4.0s (+900). Score 3200, best 4000.');
+    expect(copy.campaignCleared(cleared, 4000, false, false)).toBe('All 5 waves cleared! Last wave 4.0s (+900). Score 3200, best 4000. Rank Oracle.');
   });
 
   it('appends the blocked instruction to the current status without stacking it', () => {
