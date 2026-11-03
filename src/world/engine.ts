@@ -320,11 +320,13 @@ export function createEngine(canvas: HTMLCanvasElement, labelsEl: HTMLElement, o
 
   // ── Camera ─────────────────────────────────────────────
   const camDir = new THREE.Vector3(0, 1, 0.92).normalize();
+  // The start screen's slow orbit is decoration: its clock stands still under reduced motion.
+  let orbitT = 0;
   function stepCamera(dt: number) {
     const c = S.cam, p = S.player;
     c.zoom += (c.zoomT - c.zoom) * Math.min(1, dt * 6);
     let tx = p.x + c.pan.x + c.shift.x, tz = p.z + c.pan.y + c.shift.y;
-    const a = S.time * 0.05;
+    const a = orbitT * 0.05;
     if (c.intro) { tx = Math.cos(a) * 6; tz = Math.sin(a) * 6 + 4; }
     c.focus.x += (tx - c.focus.x) * Math.min(1, dt * 3.6); c.focus.z += (tz - c.focus.z) * Math.min(1, dt * 3.6); c.focus.y += (p.y - c.focus.y) * Math.min(1, dt * 3);
     const dist = 62 * c.zoom * (c.intro ? 1.35 : 1);
@@ -467,7 +469,7 @@ export function createEngine(canvas: HTMLCanvasElement, labelsEl: HTMLElement, o
     tick(Math.min(0.05, clock.getDelta()));
   }
   function tick(dt: number) {
-    S.time += dt; frameN++;
+    S.time += dt; frameN++; if (S.motion) orbitT += dt;
     S.ms += (dt * 1000 - S.ms) * 0.08; S.fps = 1000 / Math.max(1, S.ms);
     adaptQuality(dt);
     if (!S.cam.intro) stepPlayer(dt); else player.position.set(S.player.x, S.player.y, S.player.z);

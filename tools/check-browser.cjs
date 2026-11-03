@@ -456,6 +456,11 @@ async function checkTouchInput(browser) {
   console.log('Emulated touch navigation, modal and game controls passed.');
 }
 
+/** Waits for a condition in the page; SwiftShader frames hold timers back, so fixed sleeps flake here. */
+const until = (page, fn, message) => page.waitForFunction(fn, null, { timeout: 10000 }).catch(() => assert.fail(message));
+/** The camera has caught up with the explorer, so a screen point lands on the same tile every run. */
+const settled = () => { const { cam, player } = window.__world.eng.S; return !cam.intro && Math.hypot(cam.focus.x - cam.pan.x - player.x, cam.focus.z - cam.pan.y - player.z) < 0.05; };
+
 /** The field map: Explore boots the engine, the explorer walks, panels and the Lab open, Dev Mode runs, a project can be added. */
 async function checkWorld(browser) {
   const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
@@ -480,8 +485,7 @@ async function checkWorld(browser) {
   assert.equal(await page.locator('#world-drawer-title').textContent(), 'Cinderhold');
   assert.equal(await page.locator('#world-drawer a[href="/projects/cinderhold/"]').isVisible(), true, 'The panel does not link to the write-up');
   await page.keyboard.press('Escape');
-  await page.waitForTimeout(400);
-  assert.equal(await page.locator('#world-drawer').getAttribute('hidden'), '');
+  await until(page, () => document.getElementById('world-drawer').hidden, 'Escape did not close the panel');
   // Dev Mode: render passes, overlays and a test project that moves nothing.
   await page.keyboard.press('Backquote');
   await page.keyboard.press('2');
@@ -503,8 +507,32 @@ async function checkWorld(browser) {
   assert.ok((await page.evaluate(() => window.__world.letters()?.state().length)) >= 8, 'The letters did not start');
   await page.locator('#world-lab-close').click();
   assert.equal(await page.locator('#world-lab').getAttribute('hidden'), '');
+  // A panel and the Lab never stack, and the map's hash writes keep the router's history entry.
+  const routerState = await page.evaluate(() => JSON.stringify(history.state));
+  await page.evaluate(() => { const w = window.__world; w.openLoc(w.eng.locOf('cinderhold')); });
+  assert.equal(await page.evaluate(() => location.hash), '#cinderhold');
+  await page.evaluate(() => window.__world.openLab());
+  await until(page, () => document.getElementById('world-drawer').hidden, 'The panel stayed open under the Lab');
+  await page.locator('#world-lab-close').click();
+  assert.equal(await page.evaluate(() => location.hash), '');
+  assert.equal(await page.evaluate(() => JSON.stringify(history.state)), routerState, 'A hash write dropped the router state');
+  // Leaving the map for another page starts the signal field there (the map is a visit's first page here).
+  await page.locator('.world-keys a[href="/overview/"]').click();
+  await page.waitForURL('**/overview/');
+  await page.waitForFunction(() => document.getElementById('signal-field')?.width === Math.max(1, Math.round(innerWidth * 0.5)), null, { timeout: 10000 });
   assert.deepEqual(errors, []);
   await page.close();
+  // A stage deep link opens the Lab with the Telegraph popup on that stage, and the Lab keeps the stage in the hash.
+  const deep = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  await serveBuild(deep);
+  await deep.goto('http://portfolio.test/#lab?stage=welcome', { waitUntil: 'domcontentloaded' });
+  await deep.waitForFunction(() => Boolean(window.__world) && !document.getElementById('world-lab').hidden, null, { timeout: 60000 });
+  await deep.waitForSelector('#tg-crt-popup[open]', { state: 'attached', timeout: 30000 });
+  assert.equal(await deep.evaluate(() => location.hash), '#lab?stage=welcome', 'The Lab dropped the stage from the hash');
+  await deep.keyboard.press('Escape');
+  await until(deep, () => !document.querySelector('#tg-crt-popup[open]'), 'Escape did not close the popup');
+  assert.equal(await deep.locator('#world-lab').getAttribute('hidden'), null, 'Escape on the popup also closed the Lab');
+  await deep.close();
   // Phone: no horizontal overflow, tap to walk.
   const phone = await browser.newPage({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
   await serveBuild(phone);
@@ -512,10 +540,9 @@ async function checkWorld(browser) {
   assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'The start screen overflows on a phone');
   await phone.locator('#world-enter-quiet').click();
   await phone.waitForFunction(() => Boolean(window.__world) && !window.__world.eng.S.cam.intro, null, { timeout: 60000 });
-  await phone.waitForTimeout(1200);
+  await until(phone, settled, 'The camera did not settle on the explorer');
   await phone.touchscreen.tap(200, 300);
-  await phone.waitForTimeout(300);
-  assert.ok((await phone.evaluate(() => window.__world.eng.S.player.path.length)) > 0, 'A tap did not start a walk');
+  await until(phone, () => window.__world.eng.S.player.path.length > 0 || window.__world.eng.S.player.moving, 'A tap did not start a walk');
   await phone.close();
   console.log('Field map: boot, walk, panel, Dev Mode, test project, Lab and phone tap passed.');
 }

@@ -10,12 +10,15 @@ import { fmtHour, phaseName, poznanHour } from './light';
 import type { Location, ProjectSeed, LandmarkSeed } from './gen';
 import { prefs } from '../scripts/prefs';
 import { sound, audioContext } from '../scripts/sound';
+import { parseLabHash } from '../scripts/telegraph-popup';
 
 interface WorldData { seeds: ProjectSeed[]; landmarks: LandmarkSeed[]; word: string }
 const VISITED_KEY = 'portfolio-world-visited';
 
 const read = (k: string): string[] => { try { return JSON.parse(localStorage.getItem(k) ?? '[]') as string[]; } catch { return []; } };
 const write = (k: string, v: string[]) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked: the log just does not persist */ } };
+/** Rewrites only the fragment: the ClientRouter keeps its own entry in `history.state`, so it stays. */
+const replaceHash = (hash: string) => { try { history.replaceState(history.state, '', `${location.pathname}${location.search}${hash}`); } catch { /* history unavailable */ } };
 
 export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }) {
   const $ = <T extends HTMLElement>(sel: string): T => root.querySelector<T>(sel) as T;
@@ -34,6 +37,11 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
     const key = $('#world-sound'); key.setAttribute('aria-pressed', String(on)); key.textContent = `Sound: ${on ? 'on' : 'off'}`;
   };
   prefs.onChange('sound', syncAmbient, { signal });
+  // A deep link with sound on boots the map before any gesture, when the browser grants no
+  // AudioContext yet; the bed starts on the visitor's first click or key instead.
+  const retryAmbient = () => { if (!ambient && prefs.isSoundOn()) syncAmbient(); };
+  addEventListener('pointerdown', retryAmbient, { signal });
+  addEventListener('keydown', retryAmbient, { signal });
   $('#world-sound').addEventListener('click', () => prefs.set('sound', prefs.isSoundOn() ? 'off' : 'on'), { signal });
 
   // ── Engine ──────────────────────────────────────────────────────────────────────
@@ -82,21 +90,24 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
     if (l.kind === 'uncharted') return;
     markVisited(l.id);
     if (l.kind === 'lab') { openLab(); eng.goTo(l); return; }
+    closeLab({ quiet: true });
     const tpl = root.querySelector<HTMLTemplateElement>(`template[data-panel="${CSS.escape(l.id)}"]`); if (!tpl) return;
     openId = l.id;
     const body = $('#world-drawer-body'); body.replaceChildren(tpl.content.cloneNode(true)); body.scrollTop = 0;
     body.querySelector<HTMLVideoElement>('video')?.play().catch(() => {});
     bindCopy(body);
-    drawer.hidden = false; drawer.style.setProperty('--acc', l.accent); requestAnimationFrame(() => drawer.classList.add('is-open'));
+    // The slide-in waits a frame; a close that lands first (a quick Escape on a busy frame) wins.
+    drawer.hidden = false; drawer.style.setProperty('--acc', l.accent); requestAnimationFrame(() => { if (openId === l.id) drawer.classList.add('is-open'); });
     $('#world-drawer-close').focus({ preventScroll: true });
     sound.play('open');
     eng.goTo(l); const phone = innerWidth < 760; eng.setShift(phone ? 0 : 11, phone ? 5 : 0);
-    history.replaceState(null, '', `#${l.id}`);
+    replaceHash(`#${l.id}`);
   }
-  function closeDrawer() {
+  /** `quiet`: another overlay is taking over, so it plays its own sound and writes its own hash. */
+  function closeDrawer({ quiet = false } = {}) {
     if (drawer.hidden) return;
-    drawer.classList.remove('is-open'); openId = null; eng.setShift(0, 0); sound.play('close');
-    if (location.hash) history.replaceState(null, '', location.pathname);
+    drawer.classList.remove('is-open'); openId = null; eng.setShift(0, 0);
+    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); }
     setTimeout(() => { if (!drawer.classList.contains('is-open')) drawer.hidden = true; }, 260);
   }
   function bindCopy(scope: HTMLElement) {
@@ -111,22 +122,24 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
 
   // ── The Lab ─────────────────────────────────────────────────────────────────────
   function openLab(tab = 'recall') {
+    closeDrawer({ quiet: true });
     lab.hidden = false; eng.setLocked(true); sound.play('open');
-    letters ??= mountLetters($('[data-lab-panel="mess"]'), data.word, { thud: () => sound.play('thud'), shock: () => sound.play('shock'), ui: () => sound.play('click') });
+    letters ??= mountLetters($('[data-lab-panel="mess"]'), data.word, { thud: () => sound.play('thud'), shock: () => sound.play('shock'), ui: () => sound.play('click') }, { signal });
     setLabTab(tab); $('#world-lab-close').focus({ preventScroll: true });
-    history.replaceState(null, '', '#lab');
+    // A stage deep link (`#lab?stage=…`) is the Telegraph popup's; the Lab keeps it.
+    if (!parseLabHash(location.hash).lab) replaceHash('#lab');
   }
   function setLabTab(t: string) {
     $$('[data-lab-tab]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.labTab === t)));
     $$('[data-lab-panel]').forEach((p) => (p.hidden = p.dataset.labPanel !== t));
     if (t === 'mess') letters?.start(); else letters?.stop();
   }
-  function closeLab() {
+  function closeLab({ quiet = false } = {}) {
     if (lab.hidden) return;
-    lab.hidden = true; letters?.stop(); eng.setLocked(false); sound.play('close');
-    if (location.hash) history.replaceState(null, '', location.pathname);
+    lab.hidden = true; letters?.stop(); eng.setLocked(false);
+    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); }
   }
-  $('#world-lab-close').addEventListener('click', closeLab, { signal });
+  $('#world-lab-close').addEventListener('click', () => closeLab(), { signal });
   $$('[data-lab-tab]').forEach((b) => b.addEventListener('click', () => setLabTab(b.dataset.labTab ?? 'recall'), { signal }));
 
   // ── HUD ─────────────────────────────────────────────────────────────────────────
@@ -145,7 +158,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   }
   $('#world-log-toggle').addEventListener('click', () => $('#world-log').classList.toggle('is-open'), { signal });
   $('#world-prompt-open').addEventListener('click', () => { if (eng.S.near) openLoc(eng.S.near); }, { signal });
-  $('#world-drawer-close').addEventListener('click', closeDrawer, { signal });
+  $('#world-drawer-close').addEventListener('click', () => closeDrawer(), { signal });
   $<HTMLCanvasElement>('#world-mini').addEventListener('click', (e) => {
     const cv = e.currentTarget as HTMLCanvasElement, b = cv.getBoundingClientRect(), k = cv.width / b.width, w = eng.minimapToWorld((e.clientX - b.left) * k, (e.clientY - b.top) * k);
     const hit = eng.S.locs.filter((l) => l.kind !== 'uncharted').map((l) => ({ l, d: Math.hypot(l.x - w.x, l.z - w.z) })).sort((a, c) => a.d - c.d)[0];
@@ -186,7 +199,8 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
     const target = e.target as HTMLElement | null;
     if (target && (target.tagName === 'INPUT' && (target as HTMLInputElement).type !== 'range' && (target as HTMLInputElement).type !== 'checkbox' || target.tagName === 'TEXTAREA')) return;
     if (e.ctrlKey || e.metaKey || e.altKey) return;
-    if (e.code === 'Escape') { if (!lab.hidden) { if (!document.querySelector('dialog[open]')) closeLab(); } else if (!drawer.hidden) closeDrawer(); else if (eng.S.dev) setDev(false); return; }
+    // An Escape the Telegraph popup already took (it closes itself and prevents the default) is not the map's.
+    if (e.code === 'Escape') { if (e.defaultPrevented) return; if (!lab.hidden) closeLab(); else if (!drawer.hidden) closeDrawer(); else if (eng.S.dev) setDev(false); return; }
     if (eng.S.cam.intro || !lab.hidden) return;
     if (e.code === 'Backquote') { e.preventDefault(); setDev(!eng.S.dev); return; }
     const control = target?.closest?.<HTMLElement>('button, a, input');

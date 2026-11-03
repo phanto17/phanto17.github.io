@@ -228,7 +228,7 @@ const guild: Build = (a) => {
   G.add(box(4.6, 0.25, 4.6, roof, 0, 2.15));
   const r = new THREE.Mesh(new THREE.ConeGeometry(3.4, 1.2, 4), roof); r.rotation.y = Math.PI / 4; r.position.y = 3; r.castShadow = true; G.add(r);
   const g = glowSprite(a, 5, 0.32); g.position.y = 1.1; G.add(g);
-  return { group: G, update(t) { flags.forEach((f, i) => (f.rotation.y = Math.sin(t * 1.6 + i) * 0.2)); }, info: () => 'Team projects: four banners, four-person teams' };
+  return { group: G, update(t) { flags.forEach((f, i) => (f.rotation.y = Math.sin(t * 1.6 + i) * 0.2)); }, info: () => 'Guild Hall: four banners on a sine sway; the panel lists the team projects, the channel and the community work' };
 };
 
 const mast: Build = (a) => {
