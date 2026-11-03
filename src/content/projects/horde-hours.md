@@ -9,6 +9,9 @@ dates:
 role: Solo — design & programming
 engine: Unity 6 · URP
 order: 1
+world:
+  kind: arena
+  accent: "#f27c52"
 highlights:
   - ScriptableObject ability framework
   - Name-keyed object pooling

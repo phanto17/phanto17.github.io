@@ -6,8 +6,11 @@ const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const dist = path.resolve(__dirname, '..', 'dist');
+// The home page is the field map (World.astro); the text sections, the Telegraph cabinet and the
+// landing live on /overview/, so the interaction checks run there and the map has its own check.
+const HOME = 'http://portfolio.test/overview/';
 const routes = [
-  '/', '/projects/', '/projects/horde-hours/', '/projects/push-comes-to-shove/',
+  '/', '/overview/', '/projects/', '/projects/horde-hours/', '/projects/push-comes-to-shove/',
   '/projects/cinderhold/', '/projects/eternity-keeper/', '/style-guide/', '/404.html',
 ];
 const mimeTypes = {
@@ -18,6 +21,18 @@ const mimeTypes = {
 /** A shove cue (waves 4–5) is answered with the tile it lands on, one step in the arrow's direction. */
 const SHOVE = { up: -4, down: 4, left: -1, right: 1 };
 const landing = (idx, dir) => (dir ? idx + SHOVE[dir] : idx);
+
+/** Telegraph Recall's script loads when the cabinet nears the viewport: scroll it in and wait for the binder. */
+async function readyLab(page) {
+  await page.locator('#lab').scrollIntoViewIfNeeded();
+  await page.waitForSelector('#lab[data-bound="true"]', { state: 'attached', timeout: 30000 });
+}
+async function openPopup(page) {
+  await readyLab(page);
+  await page.locator('#tg-open-popup').click();
+  await page.waitForSelector('#tg-crt-popup[open]', { state: 'attached' });
+  await page.waitForTimeout(150);
+}
 
 async function serveBuild(page) {
   await page.route('http://portfolio.test/**', async (route) => {
@@ -51,7 +66,7 @@ async function checkLayouts(browser) {
         assert.ok(contentWidth <= viewportWidth, `${route}: horizontal overflow at ${width}px in ${theme}`);
         checked++;
       }
-      await page.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
+      await page.goto(HOME, { waitUntil: 'domcontentloaded' });
       if (width <= 980) {
         await page.locator('.menu-toggle').click();
         assert.equal(await page.locator('#nav-links a').first().isVisible(), true);
@@ -60,7 +75,7 @@ async function checkLayouts(browser) {
         await page.keyboard.press('Escape');
         assert.equal(await page.locator('#nav-links a').first().isVisible(), false);
       }
-      await page.locator('#tg-open-popup').click();
+      await openPopup(page);
       const dialog = await page.locator('.crt-popup-monitor').boundingBox();
       assert.ok(dialog && dialog.y >= 0 && dialog.y + dialog.height <= height, 'Dialog exceeds viewport');
       if (width <= 680) {
@@ -84,7 +99,7 @@ async function checkNoJavaScript(browser) {
   for (const width of [320, 768, 1440]) {
     const page = await browser.newPage({ viewport: { width, height: 700 }, javaScriptEnabled: false });
     await serveBuild(page);
-    await page.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
+    await page.goto(HOME, { waitUntil: 'domcontentloaded' });
     assert.equal(await page.locator('#nav-links a').first().isVisible(), true);
     assert.equal(await page.locator('#tg-open-popup').isVisible(), false);
     assert.equal(await page.locator('noscript p').isVisible(), true);
@@ -97,9 +112,10 @@ async function checkNoJavaScript(browser) {
 async function checkAnchorNavigation(browser) {
   const page = await browser.newPage({ viewport: { width: 640, height: 450 }, reducedMotion: 'reduce' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   await page.locator('.menu-toggle').click();
-  await page.locator('#nav-links a[href="/#projects"]').click();
+  await page.locator('#nav-links a[href="/overview/#projects"]').click();
   const heading = await page.locator('#projects h2').boundingBox();
   const navigation = await page.locator('nav.nav').boundingBox();
   assert.ok(heading && navigation && heading.y >= navigation.y + navigation.height,
@@ -113,8 +129,8 @@ async function checkGame(browser) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
-  await page.locator('#tg-open-popup').click();
+  await page.goto(HOME, { waitUntil: 'domcontentloaded' });
+  await openPopup(page);
   assert.equal(await page.getByRole('dialog', { name: 'Telegraph Recall introduction' }).isVisible(), true);
   assert.equal(await page.locator('#crt-prev-stage').isVisible(), false);
   for (let i = 0; i < 12; i++) {
@@ -179,7 +195,7 @@ async function checkGame(browser) {
 async function checkMotionPreferences(browser) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, reducedMotion: 'reduce' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
+  await page.goto(HOME, { waitUntil: 'domcontentloaded' });
   const toggle = page.locator('#motion-switcher');
   await page.waitForFunction(() => document.querySelector('#motion-switcher')?.disabled);
   assert.equal(await toggle.isDisabled(), true);
@@ -202,7 +218,8 @@ async function checkMotionPreferences(browser) {
 async function checkFullCampaign(browser) {
   const page = await browser.newPage({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   await page.locator('#tg-manual').click();
   await page.locator('#tg-start').click();
 
@@ -239,7 +256,8 @@ async function checkFullCampaign(browser) {
 async function checkKeyboardGame(browser) {
   const page = await browser.newPage({ viewport: { width: 640, height: 450 }, reducedMotion: 'reduce' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   const activeId = () => page.evaluate(() => document.activeElement.id);
   async function tabUntil(id) {
     for (let i = 0; i < 30 && await activeId() !== id; i++) await page.keyboard.press('Tab');
@@ -312,7 +330,8 @@ async function checkKeyboardGame(browser) {
 async function checkActionFeedback(browser) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, reducedMotion: 'no-preference' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   const panel = page.locator('[data-portal-id="tactics-shove"]');
   await panel.click();
   assert.equal(await panel.getAttribute('aria-pressed'), 'true');
@@ -320,7 +339,7 @@ async function checkActionFeedback(browser) {
   assert.equal(await page.getByRole('region', { name: 'Planning the next move' }).count(), 1);
   assert.ok(await panel.locator('.crt-click-ripple').count() > 0, 'An activated panel should show feedback');
   assert.equal(await page.locator('#tg-mute').getAttribute('aria-pressed'), 'false');
-  await page.locator('#tg-open-popup').click();
+  await openPopup(page);
   const before = Number(await page.locator('#tg-interaction-count').textContent());
   await page.locator('#crt-next-stage').click();
   const after = Number(await page.locator('#tg-interaction-count').textContent());
@@ -355,7 +374,8 @@ async function checkThemeContrast(browser) {
     const page = await browser.newPage({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
     await page.addInitScript((value) => localStorage.setItem('portfolio-theme', value), theme);
     await serveBuild(page);
-    await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+    await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
     const buttonColors = await page.locator('#tg-open-popup').evaluate((el) => {
       const style = getComputedStyle(el);
       return [style.color, style.backgroundColor];
@@ -375,7 +395,8 @@ async function checkThemeContrast(browser) {
 async function checkThemePreferences(browser) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, colorScheme: 'light' });
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   assert.equal(await page.locator('#theme-label').textContent(), 'Paper');
   await page.emulateMedia({ colorScheme: 'dark' });
   await page.waitForFunction(() => document.querySelector('#theme-label')?.textContent === 'Prism');
@@ -397,7 +418,8 @@ async function checkTouchInput(browser) {
   const errors = [];
   page.on('pageerror', (error) => errors.push(error.message));
   await serveBuild(page);
-  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  await page.goto(HOME, { waitUntil: 'networkidle' });
+  await readyLab(page);
   for (const selector of ['.menu-toggle', '#theme-switcher', '.nav-actions .cv']) {
     const bounds = await page.locator(selector).boundingBox();
     assert.ok(bounds && bounds.width >= 44 && bounds.height >= 44, `Touch target too small: ${selector}`);
@@ -434,10 +456,75 @@ async function checkTouchInput(browser) {
   console.log('Emulated touch navigation, modal and game controls passed.');
 }
 
+/** The field map: Explore boots the engine, the explorer walks, panels and the Lab open, Dev Mode runs, a project can be added. */
+async function checkWorld(browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await serveBuild(page);
+  await page.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
+  assert.equal(await page.locator('#world-start h1').textContent().then((t) => t.replace(/\s+/g, ' ').trim()), 'Junior Gameplay Programmer (Unity / C#)');
+  assert.equal(await page.locator('#world-start a[href="/overview/"]').isVisible(), true, 'The overview link is not on the start screen');
+  await page.locator('#world-enter-quiet').click();
+  await page.waitForFunction(() => Boolean(window.__world), null, { timeout: 60000 });
+  await page.waitForFunction(() => !window.__world.eng.S.cam.intro, null, { timeout: 10000 });
+  await page.waitForTimeout(1500);
+  const locs = await page.evaluate(() => window.__world.eng.S.locs.map((l) => l.id));
+  assert.deepEqual(locs.filter((id) => !['station', 'lab', 'guild', 'mast', 'uncharted'].includes(id)), ['horde-hours', 'push-comes-to-shove', 'cinderhold', 'eternity-keeper']);
+  assert.equal(await page.locator('.world-label').count(), locs.length, 'One label per location');
+  // Walk to Cinderhold by BFS and open its panel.
+  await page.evaluate(() => { const w = window.__world; w.eng.goTo(w.eng.locOf('cinderhold')); w.eng.stepFrames(600, 1 / 30); });
+  assert.equal(await page.evaluate(() => window.__world.eng.S.near?.id), 'cinderhold', 'The explorer did not arrive');
+  await page.keyboard.press('Enter');
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('#world-drawer-title').textContent(), 'Cinderhold');
+  assert.equal(await page.locator('#world-drawer a[href="/projects/cinderhold/"]').isVisible(), true, 'The panel does not link to the write-up');
+  await page.keyboard.press('Escape');
+  await page.waitForTimeout(400);
+  assert.equal(await page.locator('#world-drawer').getAttribute('hidden'), '');
+  // Dev Mode: render passes, overlays and a test project that moves nothing.
+  await page.keyboard.press('Backquote');
+  await page.keyboard.press('2');
+  assert.equal(await page.evaluate(() => window.__world.eng.S.view), 'wireframe');
+  await page.keyboard.press('1');
+  const before = await page.evaluate(() => window.__world.eng.S.locs.map((l) => `${l.id}@${l.x},${l.z}`));
+  await page.locator('#world-add').click();
+  const after = await page.evaluate(() => window.__world.eng.S.locs.map((l) => `${l.id}@${l.x},${l.z}`));
+  for (const entry of before) if (!entry.startsWith('uncharted@')) assert.ok(after.includes(entry), `${entry} moved when a project was added`);
+  assert.equal(after.length, before.length + 1);
+  await page.locator('#world-remove').click();
+  await page.keyboard.press('Backquote');
+  // The Lab: the real Telegraph cabinet and the letters.
+  await page.evaluate(() => window.__world.openLab());
+  await page.waitForTimeout(300);
+  assert.equal(await page.locator('#world-lab #tg-open-popup').isVisible(), true, 'The Telegraph cabinet is not in the Lab');
+  await page.locator('[data-lab-tab="mess"]').click();
+  await page.waitForTimeout(800);
+  assert.ok((await page.evaluate(() => window.__world.letters()?.state().length)) >= 8, 'The letters did not start');
+  await page.locator('#world-lab-close').click();
+  assert.equal(await page.locator('#world-lab').getAttribute('hidden'), '');
+  assert.deepEqual(errors, []);
+  await page.close();
+  // Phone: no horizontal overflow, tap to walk.
+  const phone = await browser.newPage({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
+  await serveBuild(phone);
+  await phone.goto('http://portfolio.test/', { waitUntil: 'domcontentloaded' });
+  assert.equal(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, 'The start screen overflows on a phone');
+  await phone.locator('#world-enter-quiet').click();
+  await phone.waitForFunction(() => Boolean(window.__world) && !window.__world.eng.S.cam.intro, null, { timeout: 60000 });
+  await phone.waitForTimeout(1200);
+  await phone.touchscreen.tap(200, 300);
+  await phone.waitForTimeout(300);
+  assert.ok((await phone.evaluate(() => window.__world.eng.S.player.path.length)) > 0, 'A tap did not start a walk');
+  await phone.close();
+  console.log('Field map: boot, walk, panel, Dev Mode, test project, Lab and phone tap passed.');
+}
+
 (async () => {
   assert.ok(fs.existsSync(path.join(dist, 'index.html')), 'Run npm run build first.');
   const browser = await chromium.launch({
     headless: true,
+    args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
     ...(process.env.CHROME_BIN ? { executablePath: process.env.CHROME_BIN } : {}),
   });
   try {
@@ -446,6 +533,7 @@ async function checkTouchInput(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
+      world: checkWorld,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

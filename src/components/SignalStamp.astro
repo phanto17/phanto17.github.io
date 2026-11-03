@@ -13,7 +13,7 @@
 </p>
 
 <script>
-  import { readReward, type SignalReward } from '../scripts/signal-reward';
+  import { readReward, rankFor, type SignalReward } from '../scripts/signal-reward';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
@@ -26,8 +26,8 @@
     if (!stamp || !score) return;
 
     const sync = (reward: SignalReward) => {
-      score.textContent = String(reward.best);
-      stamp.setAttribute('aria-label', `Signal cleared. Best score ${reward.best}.`);
+      score.textContent = `${reward.best} · ${rankFor(reward.best).name}`;
+      stamp.setAttribute('aria-label', `Signal cleared. Best score ${reward.best}, rank ${rankFor(reward.best).name}.`);
       prefs.refreshSignal();
     };
 

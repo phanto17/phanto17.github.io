@@ -134,7 +134,8 @@ export function bindPopup(deps: PopupDeps): Popup {
   };
 
   function renderStage(stage: StageId, focusScene = false) {
-    const to = stageCtrl.transitionTo(stage);
+    // Next/previous already moved the controller; a re-render of the current stage is not a second transition.
+    const to = stageCtrl.getStage() === stage ? stageCtrl.getStageConfig() : stageCtrl.transitionTo(stage);
     syncHud();
     els.stageCode.textContent = to.code;
     const reduced = deps.isReducedMotion();

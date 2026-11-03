@@ -3,8 +3,8 @@
  * callers say what happened (`sound.play('shove')`) rather than how it should sound. The table is
  * pure data (`toneFor`), so the cues are testable without audio.
  *
- * Callers: the site-wide click (Base.astro), the signal landing's chime, and Telegraph Recall's board
- * and popup.
+ * Callers: the site-wide click (Base.astro), the signal landing's chime, Telegraph Recall's board and
+ * popup, and the field map (src/world/boot.ts).
  */
 import { prefs } from './prefs';
 
@@ -23,7 +23,12 @@ export type SoundCue =
   | 'stage-sequence'
   | 'stage-title'
   | 'portal'
-  | 'close';
+  | 'close'
+  | 'open'
+  | 'arrive'
+  | 'walk'
+  | 'thud'
+  | 'shock';
 
 export interface Tone {
   freq: number;
@@ -65,6 +70,12 @@ export const TONES: Readonly<Record<SoundCue, Tone>> = {
   'stage-title': { freq: 587, type: 'triangle', duration: 0.14 },
   portal: { freq: 392, type: 'triangle', duration: 0.1 },
   close: { freq: 220, type: 'sine', duration: 0.1 },
+  // The field map (src/world): a panel opening, arriving at a location, a footstep, the Lab's letters.
+  open: { freq: 330, type: 'triangle', duration: 0.14, sweepTo: 660, then: [{ freq: 660, at: 0.07 }] },
+  arrive: { freq: 392, type: 'sine', duration: 0.22, gain: 0.05, then: [{ freq: 587, at: 0.11 }] },
+  walk: { freq: 140, type: 'sine', duration: 0.05, gain: 0.02, sweepTo: 90 },
+  thud: { freq: 110, type: 'sine', duration: 0.07, gain: 0.05, sweepTo: 70 },
+  shock: { freq: 70, type: 'sawtooth', duration: 0.5, gain: 0.06, sweepTo: 230 },
 };
 
 const DEFAULT_GAIN = 0.08;
@@ -150,8 +161,11 @@ export function lazyContext(create: () => AudioContext): () => AudioContext | nu
   };
 }
 
+/** The one context the cues and the field map's ambient bed share (null until a gesture allows it). */
+export const audioContext = lazyContext(() => new AudioContext());
+
 /** The site's sound, muted unless the visitor turned sound on. */
 export const sound: SoundPlayer = createSound({
   isOn: () => prefs.isSoundOn(),
-  context: lazyContext(() => new AudioContext()),
+  context: audioContext,
 });

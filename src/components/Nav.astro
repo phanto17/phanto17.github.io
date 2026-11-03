@@ -57,6 +57,7 @@ import { site, nav } from '../data/site';
   import type { ThemeId } from '../scripts/generated/themes';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
+  import { OVERVIEW } from '../data/site';
 
   const root = document.documentElement;
   root.classList.add('js-nav');
@@ -166,24 +167,29 @@ import { site, nav } from '../data/site';
     document.addEventListener('astro:after-swap', () => setOpen(false));
   }
 
-  // 4. Active section scroll-spy on the home page (re-armed for every page the router brings in)
+  // 4. Active section scroll-spy on the overview (re-armed for every page the router brings in);
+  // on the map, the Map link is current.
   let spy: IntersectionObserver | null = null;
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
   const armScrollSpy = () => {
     spy?.disconnect();
     spy = null;
-    const onHome = window.location.pathname === '/' || window.location.pathname === '/index.html';
-    if (!onHome) {
+    const path = window.location.pathname;
+    const onMap = path === '/' || path === '/index.html';
+    const onOverview = path === OVERVIEW || path === `${OVERVIEW}index.html`;
+    if (!onOverview) {
       links.forEach((l) => {
-        l.classList.remove('active');
-        l.removeAttribute('aria-current');
+        const match = onMap && l.getAttribute('href') === '/';
+        l.classList.toggle('active', match);
+        if (match) l.setAttribute('aria-current', 'page');
+        else l.removeAttribute('aria-current');
       });
       return;
     }
     const sections = links
       .map((l) => {
-        const hash = l.getAttribute('href')?.replace(/^\//, '');
-        return hash ? document.querySelector<HTMLElement>(hash) : null;
+        const hash = l.getAttribute('href')?.split('#')[1];
+        return hash ? document.getElementById(hash) : null;
       })
       .filter((s): s is HTMLElement => Boolean(s));
 
@@ -192,7 +198,7 @@ import { site, nav } from '../data/site';
         (entries) => {
           entries.forEach((entry) => {
             if (!entry.isIntersecting) return;
-            const activeHref = `/#${entry.target.id}`;
+            const activeHref = `${OVERVIEW}#${entry.target.id}`;
             links.forEach((l) => {
               const match = l.getAttribute('href') === activeHref;
               l.classList.toggle('active', match);

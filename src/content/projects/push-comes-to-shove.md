@@ -8,6 +8,9 @@ dates:
 role: Solo — design & programming
 engine: Unity 6 · URP 2D
 order: 2
+world:
+  kind: board
+  accent: "#7fd6c2"
 widget: shove-lab
 highlights:
   - BFS pathing & push resolution (unit-tested)

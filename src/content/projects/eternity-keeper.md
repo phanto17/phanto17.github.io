@@ -9,6 +9,9 @@ dates:
 role: Maintainer of the fork — product direction, reverse engineering, testing, release engineering
 engine: Java 8 · JCEF (embedded Chromium) · jQuery UI · Python (UnityPy)
 order: 4
+world:
+  kind: archive
+  accent: "#f6d370"
 highlights:
   - Save-format reverse engineering
   - 708 JUnit tests + scripted UI suites

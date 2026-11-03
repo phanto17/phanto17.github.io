@@ -63,8 +63,19 @@ const projects = defineCollection({
     clip: z.string().optional(),
     /** An interactive widget shown with the first technical note (src/lib/notes.ts; the component is the page's). */
     widget: z.enum(['shove-lab']).optional(),
-    /** Sort order on the home page (1 = first). */
+    /** Sort order on the overview and the map (1 = first). */
     order: z.number().default(99),
+    /**
+     * The project's place on the field map (src/components/World.astro): which diorama stands there
+     * and the colour of its pad and label. `generic` needs no code; the other kinds have a scene in
+     * src/world/dioramas.ts. A new project file gets the next free slot on the map by itself.
+     */
+    world: z
+      .object({
+        kind: z.enum(['arena', 'board', 'dungeon', 'archive', 'generic']).default('generic'),
+        accent: z.string().default('#f27c52'),
+      })
+      .default({ kind: 'generic', accent: '#f27c52' }),
     /** Short systems list shown on the project card. */
     highlights: z.array(z.string()).default([]),
   }),

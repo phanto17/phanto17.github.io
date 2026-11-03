@@ -3,6 +3,7 @@
  * and the popup call these; nothing here touches the DOM.
  */
 import { TelegraphEngine, type Cue, type Direction, type PortalNode, type StepOutcome } from './telegraph-engine';
+import { nextRank, rankFor } from './signal-reward';
 
 export const ARROW: Readonly<Record<Direction, string>> = { up: '↑', down: '↓', left: '←', right: '→' };
 
@@ -48,7 +49,10 @@ export function waveCleared(o: Outcome<'wave-cleared'>): string {
 export function campaignCleared(o: Outcome<'campaign-cleared'>, best: number, newBest: boolean, firstUnlock: boolean): string {
   const record = newBest ? 'a new best' : `best ${best}`;
   const unlock = firstUnlock ? ' Signal cleared: the hero stamp and the Signal theme are unlocked.' : '';
-  return `All ${o.totalWaves} waves cleared! Last wave ${seconds(o.waveMs)} (+${o.waveScore}). Score ${o.score}, ${record}.${unlock}`;
+  const top = Math.max(best, o.score);
+  const next = nextRank(top);
+  const rank = ` Rank ${rankFor(top).name}${next ? `, ${next.missing} to ${next.name}` : ''}.`;
+  return `All ${o.totalWaves} waves cleared! Last wave ${seconds(o.waveMs)} (+${o.waveScore}). Score ${o.score}, ${record}.${rank}${unlock}`;
 }
 
 export function disrupted(o: Outcome<'disrupted'>): string {
