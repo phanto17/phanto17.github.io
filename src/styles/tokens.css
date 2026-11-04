@@ -1,5 +1,13 @@
 /* Prism CRT — generated from design/tokens.json by tools/build-tokens.mjs. Do not edit by hand. */
 
+/* Breakpoints (src/scripts/generated/breakpoints.ts; tests/breakpoints.test.ts allows no other width):
+     wide      (min-width: 981px)
+     belowWide (max-width: 980px)
+     mid       (max-width: 760px)
+     aboveMid  (min-width: 761px)
+     narrow    (max-width: 420px)
+*/
+
 :root,
 html[data-theme='prism'] {
   --bg-0: #0b070b;

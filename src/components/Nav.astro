@@ -59,6 +59,7 @@ import { NAV } from '../data/locations';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
   import { OVERVIEW } from '../data/site';
+  import { MEDIA } from '../scripts/generated/breakpoints';
 
   const root = document.documentElement;
   root.classList.add('js-nav');
@@ -164,7 +165,7 @@ import { NAV } from '../data/locations';
       }
     });
 
-    window.matchMedia('(max-width: 980px)').addEventListener('change', () => setOpen(false));
+    window.matchMedia(MEDIA.belowWide).addEventListener('change', () => setOpen(false));
     document.addEventListener('astro:after-swap', () => setOpen(false));
   }
 

@@ -83,8 +83,9 @@ const { notes } = plan;
 <script>
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
+  import { MEDIA } from '../scripts/generated/breakpoints';
 
-  const WIDE = '(min-width: 861px)';
+  const WIDE = MEDIA.wide;
 
   // The reading mode is a visitor preference (src/scripts/prefs.ts, row `notes`).
   const readMode = () => prefs.get('notes');
@@ -438,12 +439,12 @@ const { notes } = plan;
     overflow: auto;
   }
 
-  @media (max-width: 700px) {
+  @media (max-width: 760px) {
     .notes-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
-  @media (max-width: 540px) {
+  @media (max-width: 760px) {
     .notes-grid {
       grid-template-columns: minmax(0, 1fr);
       gap: 8px;

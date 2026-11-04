@@ -123,6 +123,13 @@ conversation finds it fuzzy.
   `tests/accents.test.ts` holds every location to 4.5:1 eyebrows and 3:1 borders in every theme, and
   keeps hex out of `World.astro`, `world.css` and `field-kit.css`.
 
+- **Breakpoints** — the three widths in `design/tokens.json` (`bp-wide` 981px, `bp-mid` 760px,
+  `bp-narrow` 420px), written as five queries: **wide** `(min-width: 981px)`, **belowWide**
+  `(max-width: 980px)`, **mid** `(max-width: 760px)`, **aboveMid** `(min-width: 761px)`, **narrow**
+  `(max-width: 420px)`. CSS writes them literally (media queries cannot read custom properties; the
+  list heads `tokens.css`), scripts use `MEDIA` from `src/scripts/generated/breakpoints.ts`;
+  `tests/breakpoints.test.ts` rejects any other width.
+
 ## Themes and the Signal
 
 - **Theme** — one of `prism` (darkroom), `paper` (daylight), `crt` (phosphor) or `signal`

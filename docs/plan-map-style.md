@@ -140,6 +140,19 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** The pages and the map change layout at the same widths; `check-browser` layouts pass at
   320/375/640/768/1440 on all themes.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. `design/tokens.json` has a `breakpoint` family (`bp-wide` 981px,
+  `bp-mid` 760px, `bp-narrow` 420px); `tools/build-tokens.mjs` writes the five queries as a comment at
+  the top of `tokens.css` and as `MEDIA` in `src/scripts/generated/breakpoints.ts` (`wide`, `belowWide`,
+  `mid`, `aboveMid`, `narrow`). `tests/breakpoints.test.ts` allows no other width query in the
+  `.css`/`.astro` files and no width number in scripts (`matchMedia` literals, `innerWidth < N`);
+  `prefs-boot.test.ts` checks the generated file is current. Every query moved **up** to the next
+  breakpoint (900/860/960 → 980; 700/680/640/600/580/560/540/520 → 760; 419 → 420), so nothing
+  collapses later than before. Visible: the write-up split, the sticky Projects head bar and the
+  two-column layouts start at 981px (were 861px), the compact phone rules start at 760px (the overview
+  facts panel, popup, tiles and mini-game stack at 541–760 now). `Nav.astro`, `NotesExplorer` and the
+  map's `boot.ts` read `MEDIA`; the map's phone test was `innerWidth < 760`, off by one from its own
+  CSS at exactly 760px. A sweep at 440–980px found no horizontal overflow; `check-browser` world,
+  layouts, motion, contrast, theme, nojs, anchors, keyboard and feedback pass.
 
 ### F5. The map-lit field (if D1 = B)
 - **Description:** Split `light.ts` into a pure `daylight.ts` (hours, `phaseName`, `poznanHour`, the key

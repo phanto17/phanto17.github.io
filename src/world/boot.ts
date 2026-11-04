@@ -11,6 +11,7 @@ import type { Location, ProjectSeed, LandmarkSeed } from './gen';
 import { prefs } from '../scripts/prefs';
 import { sound, audioContext } from '../scripts/sound';
 import { parseLabHash } from '../scripts/telegraph-popup';
+import { MEDIA } from '../scripts/generated/breakpoints';
 
 interface WorldData { seeds: ProjectSeed[]; landmarks: LandmarkSeed[]; word: string }
 const VISITED_KEY = 'portfolio-world-visited';
@@ -100,7 +101,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
     drawer.hidden = false; drawer.style.setProperty('--acc', l.accent); requestAnimationFrame(() => { if (openId === l.id) drawer.classList.add('is-open'); });
     $('#world-drawer-close').focus({ preventScroll: true });
     sound.play('open');
-    eng.goTo(l); const phone = innerWidth < 760; eng.setShift(phone ? 0 : 11, phone ? 5 : 0);
+    eng.goTo(l); const phone = matchMedia(MEDIA.mid).matches; eng.setShift(phone ? 0 : 11, phone ? 5 : 0);
     replaceHash(`#${l.id}`);
   }
   /** `quiet`: another overlay is taking over, so it plays its own sound and writes its own hash. */
@@ -152,7 +153,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
       const dot = document.createElement('i'); dot.className = 'diamond' + (visited.has(l.id) ? ' is-done' : ''); dot.setAttribute('aria-hidden', 'true');
       const t = document.createElement('span'); t.textContent = l.title;
       b.append(dot, t); if (visited.has(l.id)) { const v = document.createElement('span'); v.className = 'sr-only'; v.textContent = ' (visited)'; b.append(v); }
-      b.addEventListener('click', () => { openLoc(l); if (innerWidth < 760) $('#world-log').classList.remove('is-open'); });
+      b.addEventListener('click', () => { openLoc(l); if (matchMedia(MEDIA.mid).matches) $('#world-log').classList.remove('is-open'); });
       li.append(b); list.append(li);
     }
   }

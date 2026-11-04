@@ -34,6 +34,12 @@ export function renderTokensCss(tokens) {
   }
 
   let out = `/* ${tokens.name} — ${GENERATED_NOTE} */\n\n`;
+  // Media queries cannot read custom properties: the breakpoints are listed here as the queries to write.
+  if (tokens.breakpoint) {
+    out += `/* Breakpoints (src/scripts/generated/breakpoints.ts; tests/breakpoints.test.ts allows no other width):\n`;
+    for (const [name, query] of Object.entries(mediaQueries(tokens))) out += `     ${name.padEnd(9)} ${query}\n`;
+    out += `*/\n\n`;
+  }
   for (const th of themes) {
     out += th.id === first ? `:root,\nhtml[data-theme='${th.id}'] {\n` : `html[data-theme='${th.id}'] {\n`;
     out += themeBlock(th.id) + `}\n\n`;
@@ -51,6 +57,37 @@ export function renderTokensCss(tokens) {
   for (const [key, stack] of Object.entries(tokens.type.families)) out += `  --font-${key}: ${stack};\n`;
   out += `}\n`;
   return out;
+}
+
+/**
+ * The media queries for the three breakpoints, named by what holds inside them:
+ * wide ≥ bp-wide, belowWide < bp-wide, mid ≤ bp-mid, aboveMid > bp-mid, narrow ≤ bp-narrow.
+ */
+export function mediaQueries(tokens) {
+  const px = (name) => {
+    const t = tokens.breakpoint.tokens.find((x) => x.name === name);
+    if (!t) throw new Error(`design/tokens.json has no breakpoint ${name}`);
+    return parseInt(t.value, 10);
+  };
+  const [wide, mid, narrow] = [px('bp-wide'), px('bp-mid'), px('bp-narrow')];
+  return {
+    wide: `(min-width: ${wide}px)`,
+    belowWide: `(max-width: ${wide - 1}px)`,
+    mid: `(max-width: ${mid}px)`,
+    aboveMid: `(min-width: ${mid + 1}px)`,
+    narrow: `(max-width: ${narrow}px)`,
+  };
+}
+
+export function renderBreakpointsTs(tokens) {
+  const q = mediaQueries(tokens);
+  return (
+    `/* Prism CRT breakpoints — ${GENERATED_NOTE} */\n\n` +
+    `/** The only width queries on the site, for CSS (write them as they are) and for matchMedia in scripts. */\n` +
+    `export const MEDIA = {\n` +
+    Object.entries(q).map(([k, v]) => `  ${k}: '${v}',\n`).join('') +
+    `} as const;\n`
+  );
 }
 
 /** Theme ids, the public cycle, the Signal theme, the light theme and each theme's `bg`. */
@@ -143,6 +180,7 @@ export const OUTPUTS = {
   css: 'src/styles/tokens.css',
   themes: 'src/scripts/generated/themes.ts',
   boot: 'src/scripts/generated/prefs-boot.js',
+  breakpoints: 'src/scripts/generated/breakpoints.ts',
 };
 
 async function main() {
@@ -156,6 +194,7 @@ async function main() {
   mkdirSync(join(root, 'src/scripts/generated'), { recursive: true });
   writeFileSync(join(root, OUTPUTS.themes), renderThemesTs(facts));
   writeFileSync(join(root, OUTPUTS.boot), renderBoot(rows, facts, table.SIGNAL_UNLOCK));
+  writeFileSync(join(root, OUTPUTS.breakpoints), renderBreakpointsTs(tokens));
 
   const themes = tokens.color.themes;
   const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length + (tokens.accent?.tokens.length ?? 0));
