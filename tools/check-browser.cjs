@@ -392,6 +392,66 @@ async function checkThemeContrast(browser) {
   console.log('Primary action and project-link contrast passed in all themes.');
 }
 
+/**
+ * The signal field under the content column keeps text at 4.5:1 at night, dawn, day and dusk in every
+ * theme (the map-lit themes change with the Poznań hour). The page's own layers are hidden, the still
+ * frame (reduced motion) is screenshotted, and the lane is read as 8×8 block means so the film grain
+ * averages out.
+ */
+async function checkFieldLane(browser) {
+  // Poznań is UTC+1 on these dates.
+  const hours = { night: '2026-11-04T01:00:00Z', dawn: '2026-11-04T05:30:00Z', day: '2026-11-04T11:00:00Z', dusk: '2026-11-04T18:48:00Z' };
+  const low = [];
+  for (const theme of ['prism', 'paper', 'crt', 'signal']) {
+    for (const [name, iso] of Object.entries(hours)) {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+      await context.clock.setFixedTime(new Date(iso));
+      await context.addInitScript((value) => {
+        localStorage.setItem('portfolio-theme', value);
+        // The Signal theme needs the reward record.
+        if (value === 'signal') localStorage.setItem('portfolio-signal', JSON.stringify({ best: 9, clears: 1, since: '' }));
+      }, theme);
+      const page = await context.newPage();
+      await serveBuild(page);
+      await page.goto(HOME, { waitUntil: 'load' });
+      await page.waitForFunction(() => document.documentElement.classList.contains('has-field'), null, { timeout: 30000 });
+      assert.equal(await page.locator('html').getAttribute('data-theme'), theme, `The ${theme} theme did not apply`);
+      await page.waitForTimeout(800);
+      const inks = await page.evaluate(() => ['--text', '--text-2', '--text-3'].map((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim()));
+      await page.addStyleTag({ content: 'body > *:not(.signal-field) { opacity: 0 !important; } body { background: transparent !important; }' });
+      await page.waitForTimeout(150);
+      const png = (await page.screenshot()).toString('base64');
+      const worst = await page.evaluate(async ({ png, inks }) => {
+        const img = await new Promise((resolve) => { const i = new Image(); i.onload = () => resolve(i); i.src = `data:image/png;base64,${png}`; });
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const w = img.width, x0 = Math.round(w / 2 - 520), x1 = Math.round(w / 2 + 520);
+        const data = ctx.getImageData(0, 0, w, img.height).data;
+        const lin = (v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
+        const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+        let hi = 0, lo = 1;
+        for (let by = 0; by + 8 <= img.height; by += 8) for (let bx = x0; bx + 8 <= x1; bx += 8) {
+          let r = 0, g = 0, b = 0;
+          for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const k = ((by + y) * w + bx + x) * 4; r += data[k]; g += data[k + 1]; b += data[k + 2]; }
+          const l = lum(r / 64, g / 64, b / 64);
+          hi = Math.max(hi, l); lo = Math.min(lo, l);
+        }
+        const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        return Math.min(...inks.map((ink) => {
+          const li = lum(...[1, 3, 5].map((i) => parseInt(ink.slice(i, i + 2), 16)));
+          return Math.min(ratio(li, hi), ratio(li, lo));
+        }));
+      }, { png, inks });
+      if (worst < 4.5) low.push(`${theme} at ${name}: ${worst.toFixed(2)}:1`);
+      await context.close();
+    }
+  }
+  assert.deepEqual(low, [], 'Text over the field lane falls under 4.5:1');
+  console.log('Field lane contrast passed at night, dawn, day and dusk in all themes.');
+}
+
 async function checkThemePreferences(browser) {
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 }, colorScheme: 'light' });
   await serveBuild(page);
@@ -560,7 +620,7 @@ async function checkWorld(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
-      world: checkWorld,
+      world: checkWorld, field: checkFieldLane,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

@@ -27,12 +27,13 @@ html {
 
 body {
   margin: 0;
-  /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into bg. */
+  /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into
+     bg — the theme's own, or the map's at noon in a map-lit theme (--field-fallback-n, generated). */
   background:
-    radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-1) 38%, var(--bg)), transparent 70%),
-    radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-2) 30%, var(--bg)), transparent 70%),
-    radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-4) 45%, var(--bg)), transparent 72%),
-    radial-gradient(45% 40% at 85% 95%, color-mix(in srgb, var(--field-5) 40%, var(--bg)), transparent 70%),
+    radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-fallback-1) 38%, var(--bg)), transparent 70%),
+    radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-fallback-2) 30%, var(--bg)), transparent 70%),
+    radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-fallback-4) 45%, var(--bg)), transparent 72%),
+    radial-gradient(45% 40% at 85% 95%, color-mix(in srgb, var(--field-fallback-5) 40%, var(--bg)), transparent 70%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);

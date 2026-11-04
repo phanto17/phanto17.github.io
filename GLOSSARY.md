@@ -52,6 +52,17 @@ conversation finds it fuzzy.
   sound, muted unless the `sound` preference is on. A tone may sweep its pitch, fade in, or carry
   further notes (`then`).
 
+## The signal field (`src/scripts/field.ts`)
+
+- **Signal field** — the WebGL colour field behind every text page: five colour stops on a noise ramp,
+  mixed toward `bg` (the **lane** under the content column, the **edges** outside it).
+- **Map-lit** — a theme whose `field-map` token is 1 (Prism, Paper): the five stops are the field map
+  seen from far away at the current Poznań hour (`fieldPalette` in `src/world/daylight.ts`: sun, lit
+  path, ground, water, fog), drawn at `field-map-lane`. Other themes use their `field-1..5` at
+  `field-lane`. The no-WebGL fallback reads `--field-fallback-1..5` (noon when map-lit).
+- **Daylight** — `src/world/daylight.ts`: the hour table and the Poznań clock without three.js; the
+  map's `light.ts` wraps it.
+
 ## The field map (`src/components/World.astro`, `src/world/`)
 
 - **Field map** — the home page: a three.js world the visitor walks through, loaded after Explore.

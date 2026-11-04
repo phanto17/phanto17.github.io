@@ -164,6 +164,22 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** Every page's backdrop is the map seen from far away, at the same time of day as the
   map; page text keeps ≥ 4.5:1 (the contrast check samples the lane at night, dawn, day and dusk).
 - **Estimate:** 6 h
+- **Status:** Done on 2026-11-04. `src/world/daylight.ts` is the pure part (the key table as hex,
+  `poznanHour`, `fmtHour`, `phaseName`, `keysAround`, `fieldPalette`); `light.ts` wraps the same table
+  in THREE colours, so the map's lighting is unchanged, and the HUD (`boot.ts`) reads the clock from
+  `daylight.ts`. The five stops are sun, the path tile in that sunlight (dimmed at night), ground,
+  water and fog, in the ramp's bright / warm / dark / dark / mid order (the hour table has no grass or
+  path colour of its own: ground is the hemisphere ground colour). "Map-styled" became a theme switch
+  in a new themed `field` token family: `field-map` 1 in Prism and Paper, 0 in CRT and Signal (their
+  field colours are what makes those themes; one value flips each). The map's daytime sun is far
+  lighter than any theme stop, so map-lit themes draw the lane at `field-map-lane` (Prism 0.13, Paper
+  0.15) instead of `field-lane` 0.20. `field.ts` re-samples every 5 minutes and eases like a theme
+  change. The no-WebGL body gradient reads generated `--field-fallback-1..5` (the noon palette in
+  map-lit themes, `field-1..5` otherwise). Checks: `tests/field-lane.test.ts` bounds the lane by the
+  stops (`src/lib/field-lane.ts`) in every theme at every quarter hour, the new `check-browser` `field`
+  check measures the rendered still frame at night, dawn, day and dusk in all four themes (worst 4.9:1;
+  a 0.35 lane fails it), and the other nine checks pass. Found, not fixed: without WebGL or JavaScript
+  the hero's prism band sits right behind the H1 and washes it out (since 2026-10-29, not F5).
 
 ### F6. HUD nav and status line
 - **Description:** Restyle `Nav.astro` as the map's HUD bar on every page: translucent `panel` ground with

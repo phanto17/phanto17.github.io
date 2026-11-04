@@ -8,8 +8,17 @@
  * darkest, the page edges glow. The field is fixed to the viewport and does not drift with the
  * scroll position (owner, 2026-11-01). Under reduced motion (OS or site switch) it renders one still
  * frame; with no WebGL it does nothing and the CSS gradient on <body> stays.
+ *
+ * Map-lit (since 2026-11-04): in a theme whose `--field-map` is 1 the five colours are the field map
+ * seen from far away at the current Poznań hour (`fieldPalette` in src/world/daylight.ts: sun, lit
+ * path, ground, water, fog), re-sampled every few minutes and eased like a theme change; otherwise
+ * they are the theme's `--field-1..5`.
  */
 import { prefs } from './prefs';
+import { fieldPalette, poznanHour } from '../world/daylight';
+
+/** How often the map-lit palette follows the clock. */
+const RESAMPLE_MS = 5 * 60 * 1000;
 
 
 const VERT = `attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}`;
@@ -108,15 +117,19 @@ export function init(canvas: HTMLCanvasElement): void {
   const target: number[][] = [];
   const current: number[][] = [];
   let settling = false;
+  /** The html element is replaced on every page move, so this lives here, not in a data attribute. */
+  let mapLit = false;
   const applyTheme = () => {
     const names = ['--field-1', '--field-2', '--field-3', '--field-4', '--field-5', '--bg'];
     const fallback = ['#ed8a3f', '#e1241f', '#251218', '#162c30', '#445951', '#1a1713'];
+    const num = (n: string, f: number) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || f;
+    const lit = num('--field-map', 0) === 1 ? fieldPalette(poznanHour()) : null;
     names.forEach((n, i) => {
-      target[i] = cssColour(n, fallback[i]);
+      target[i] = lit && i < 5 ? [...lit[i]] : cssColour(n, fallback[i]);
       if (!current[i]) current[i] = [...target[i]];
     });
-    const num = (n: string, f: number) => parseFloat(getComputedStyle(root).getPropertyValue(n)) || f;
-    gl.uniform1f(u.u_lane, num('--field-lane', 0.2));
+    mapLit = lit !== null;
+    gl.uniform1f(u.u_lane, mapLit ? num('--field-map-lane', 0.13) : num('--field-lane', 0.2));
     gl.uniform1f(u.u_edge, num('--field-edge', 0.62));
     gl.uniform1f(u.u_bloom, num('--field-bloom', 0.16));
     settling = true;
@@ -183,6 +196,8 @@ export function init(canvas: HTMLCanvasElement): void {
   applyTheme();
   // A theme change, or the OS scheme moving while no theme is saved.
   prefs.onChange('theme', applyTheme);
+  // The map-lit palette follows the clock (a theme field ignores this: same targets, nothing moves).
+  window.setInterval(() => { if (mapLit) applyTheme(); }, RESAMPLE_MS);
   kick();
   document.addEventListener('visibilitychange', () => { if (!document.hidden) kick(); });
   prefs.onChange('motion', kick);

@@ -6,7 +6,7 @@
 import { createEngine, type Engine, type View, type OverlayKey } from './engine';
 import { startAmbient, type Ambient } from './ambient';
 import { mountLetters } from './letters';
-import { fmtHour, phaseName, poznanHour } from './light';
+import { fmtHour, phaseName, poznanHour } from './daylight';
 import type { Location, ProjectSeed, LandmarkSeed } from './gen';
 import { prefs } from '../scripts/prefs';
 import { sound, audioContext } from '../scripts/sound';

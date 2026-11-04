@@ -2,7 +2,9 @@
 //   src/styles/tokens.css              the themed custom properties,
 //   src/scripts/generated/themes.ts    the theme ids and each theme's page background,
 //   src/scripts/generated/prefs-boot.js the inline head script that paints the saved preferences
-//                                      before first paint (rows from src/scripts/prefs-table.ts).
+//                                      before first paint (rows from src/scripts/prefs-table.ts),
+//   src/scripts/generated/breakpoints.ts the five width queries (MEDIA).
+// The map-lit themes' no-WebGL backdrop is the noon palette of src/world/daylight.ts.
 //   node tools/build-tokens.mjs
 // The design system artifact is the source of truth for the values; design/tokens.json is a copy of
 // its project/tokens.json. Run this after updating the copy or the preference table, then commit the
@@ -17,7 +19,14 @@ const GENERATED_NOTE = 'generated from design/tokens.json by tools/build-tokens.
 /** Which themes are light (`color-scheme`); the one light theme also follows the OS when nothing is saved. */
 const scheme = { prism: 'dark', paper: 'light', crt: 'dark', signal: 'dark' };
 
-export function renderTokensCss(tokens) {
+/** The hour whose map palette is the static backdrop of the map-lit themes. */
+export const BACKDROP_HOUR = 12;
+
+/**
+ * tokens.css. `backdrop` is the map's palette at BACKDROP_HOUR as five hex colours: map-lit themes
+ * (`field-map` 1) draw the no-WebGL body gradient from it, the others from their own field-1..5.
+ */
+export function renderTokensCss(tokens, backdrop) {
   const themes = tokens.color.themes;
   const first = themes[0].id;
   const value = (t, theme) => (typeof t.value === 'string' ? t.value : (t.value[theme] ?? t.value[first]));
@@ -29,6 +38,12 @@ export function renderTokensCss(tokens) {
     for (const t of tokens.shadow.tokens) s += `  --${t.name}: ${value(t, id)};\n`;
     // How a location accent is drawn per theme (tone, edge, ink, offset): themed like the colours.
     for (const t of tokens.accent?.tokens ?? []) s += `  --${t.name}: ${value(t, id)};\n`;
+    // Where the field's colours come from (the map at the hour, or the theme's own) and its lane.
+    for (const t of tokens.field?.tokens ?? []) s += `  --${t.name}: ${value(t, id)};\n`;
+    const mapToken = tokens.field?.tokens.find((t) => t.name === 'field-map');
+    const mapLit = mapToken ? value(mapToken, id) === '1' : false;
+    if (mapLit && backdrop?.length !== 5) throw new Error('renderTokensCss: a map-lit theme needs the five backdrop colours');
+    for (let i = 1; i <= 5; i++) s += `  --field-fallback-${i}: ${mapLit ? backdrop[i - 1] : `var(--field-${i})`};\n`;
     s += `  color-scheme: ${scheme[id] ?? 'dark'};\n`;
     return s;
   }
@@ -189,15 +204,17 @@ async function main() {
   const table = await import(pathToFileURL(join(root, 'src/scripts/prefs-table.ts')).href);
   const facts = themeFacts(tokens, table.SIGNAL_UNLOCK.theme);
   const rows = table.prefRows(facts.ids);
+  const daylight = await import(pathToFileURL(join(root, 'src/world/daylight.ts')).href);
+  const backdrop = daylight.fieldPalette(BACKDROP_HOUR).map(daylight.rgbToHex);
 
-  writeFileSync(join(root, OUTPUTS.css), renderTokensCss(tokens));
+  writeFileSync(join(root, OUTPUTS.css), renderTokensCss(tokens, backdrop));
   mkdirSync(join(root, 'src/scripts/generated'), { recursive: true });
   writeFileSync(join(root, OUTPUTS.themes), renderThemesTs(facts));
   writeFileSync(join(root, OUTPUTS.boot), renderBoot(rows, facts, table.SIGNAL_UNLOCK));
   writeFileSync(join(root, OUTPUTS.breakpoints), renderBreakpointsTs(tokens));
 
   const themes = tokens.color.themes;
-  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length + (tokens.accent?.tokens.length ?? 0));
+  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length + (tokens.accent?.tokens.length ?? 0) + (tokens.field?.tokens.length ?? 0) + 5);
   console.log(`${OUTPUTS.css}: ${themes.length} themes, ${count} themed values, ${tokens.type.groups.reduce((n, g) => n + g.styles.length, 0)} type styles described in the token file`);
   console.log(`${OUTPUTS.themes}: ${facts.ids.join(', ')} (light: ${facts.light}, unlock: ${facts.signalTheme})`);
   console.log(`${OUTPUTS.boot}: ${rows.length} preference rows`);
