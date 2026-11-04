@@ -44,6 +44,10 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 
 ## Decisions for the owner
 
+**Answered 2026-11-04: the owner accepted all six recommendations** (D1 = B, D2 yes, D3 the label chrome
+everywhere, D4 location tags, D5 replace WinBar on the projects index, D6 delete). The plan below
+therefore keeps F5 and the full P1/P3/P4 estimates.
+
 | # | Question | Options | Recommendation |
 |---|---|---|---|
 | D1 | What sits behind the text pages? | **A** keep the signal field as it is · **B** the field takes the map's palette at the current Poznań hour (water, grass, path, fog, sun from `light.ts`), still mixed toward `bg` under the content column · **C** a static blurred render of the map | **B**. It ties every page to the map and the clock while keeping `field.ts`, its contrast lane and its fallbacks. The owner chose the signal field's references on 2026-10-29, so this replaces their colours; A is the answer if those references must stay. |
@@ -64,6 +68,8 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The map's chrome is built from the same seams the restyled pages will use, so F1 moves
   clean CSS rather than special cases.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. B1 had already been fixed with the review fixes (0ed6f96), so F0 was the
+  footer, the keys and the duplicate block.
 
 ### F1. A field kit stylesheet
 - **Description:** Move the map's reusable vocabulary out of `world.css` into `src/styles/field-kit.css`,

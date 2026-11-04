@@ -82,10 +82,10 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   </div>
 
   <aside class="world-dev" id="world-dev" hidden aria-label="Dev Mode">
-    <div class="world-dev-head"><span class="meta">Dev Mode</span><button class="world-x" id="world-dev-close" type="button" aria-label="Close Dev Mode">×</button></div>
+    <div class="world-dev-head"><span class="meta">Dev Mode</span><button class="key world-x" id="world-dev-close" type="button" aria-label="Close Dev Mode">×</button></div>
     <h4>Render pass <span class="world-k">1–5</span></h4>
     <div class="world-seg" id="world-views">
-      <button type="button" data-view="beauty" aria-pressed="true">Beauty</button><button type="button" data-view="wireframe" aria-pressed="false">Wire</button><button type="button" data-view="normals" aria-pressed="false">Normals</button><button type="button" data-view="clay" aria-pressed="false">Clay</button><button type="button" data-view="depth" aria-pressed="false">Depth</button>
+      <button class="key" type="button" data-view="beauty" aria-pressed="true">Beauty</button><button class="key" type="button" data-view="wireframe" aria-pressed="false">Wire</button><button class="key" type="button" data-view="normals" aria-pressed="false">Normals</button><button class="key" type="button" data-view="clay" aria-pressed="false">Clay</button><button class="key" type="button" data-view="depth" aria-pressed="false">Depth</button>
     </div>
     <h4>Overlays</h4>
     <div class="world-checks" id="world-overlays">
@@ -108,7 +108,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   </aside>
 
   <aside class="world-drawer" id="world-drawer" hidden aria-labelledby="world-drawer-title">
-    <button class="world-x world-drawer-x" id="world-drawer-close" type="button" aria-label="Close panel">×</button>
+    <button class="key world-x world-drawer-x" id="world-drawer-close" type="button" aria-label="Close panel">×</button>
     <div class="world-drawer-body" id="world-drawer-body"></div>
   </aside>
 
@@ -116,8 +116,8 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     <div class="world-lab-bar">
       <button class="btn" id="world-lab-close" type="button" data-crt-ripple>← Back to the map</button>
       <div class="world-seg" role="tablist" aria-label="Lab tabs">
-        <button role="tab" type="button" data-lab-tab="recall" aria-selected="true">Telegraph Recall</button>
-        <button role="tab" type="button" data-lab-tab="mess" aria-selected="false">Make a mess</button>
+        <button class="key" role="tab" type="button" data-lab-tab="recall" aria-selected="true">Telegraph Recall</button>
+        <button class="key" role="tab" type="button" data-lab-tab="mess" aria-selected="false">Make a mess</button>
       </div>
     </div>
     <div class="world-lab-tab" data-lab-panel="recall"><TelegraphMiniGame /></div>

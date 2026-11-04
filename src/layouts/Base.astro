@@ -103,7 +103,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <main id="main">
       <slot />
     </main>
-    <Footer />
+    {chrome !== 'world' && <Footer />}
     <script>
       import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
       import { CARRIED_ATTRIBUTES, prefs } from '../scripts/prefs';

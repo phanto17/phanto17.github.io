@@ -148,7 +148,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
     $('#world-log-count').textContent = `${done}/${locs.length} explored`;
     const list = $('#world-log-list'); list.replaceChildren();
     for (const l of locs) {
-      const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button'; b.style.setProperty('--acc', l.accent);
+      const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button'; b.className = 'key'; b.style.setProperty('--acc', l.accent);
       const dot = document.createElement('i'); dot.className = 'world-dot' + (visited.has(l.id) ? ' is-done' : ''); dot.setAttribute('aria-hidden', 'true');
       const t = document.createElement('span'); t.textContent = l.title;
       b.append(dot, t); if (visited.has(l.id)) { const v = document.createElement('span'); v.className = 'sr-only'; v.textContent = ' (visited)'; b.append(v); }
