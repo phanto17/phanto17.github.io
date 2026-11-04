@@ -58,7 +58,14 @@ conversation finds it fuzzy.
   The start screen above it is plain HTML with the CV title, the CV, the overview and the projects.
 - **Location** — a place on the map: a **project** (one per file in the projects collection), a
   **landmark** (Field Station = About, The Lab = mini-games, Guild Hall = activities, Radio Mast =
-  contact) or the **uncharted** marker, the free slot the next project will take.
+  contact) or the **uncharted** marker, the free slot the next project will take. The list is built
+  once in `src/data/locations.ts` (`buildLocations`, `LANDMARKS`): each has an `href` (its text page:
+  the write-up, or the overview section with the same content), a `mapHref` (`/#<id>`, which opens its
+  panel after Explore) and an accent. The nav (`NAV`) is built from the landmarks.
+- **Project view** — `src/lib/project-view.ts` `projectView`: a project's status ("Playable", "Released",
+  "Build in progress", "Rework planned"), its period and its live link ("▶ Play on itch.io" for a game,
+  "↓ Download on GitHub" for a tool), in one wording on the map, the overview, the projects index and
+  the write-up page.
 - **Slot** — a location's fixed position on a sunflower spiral (`gen.ts` `slotPos`): projects take
   slots in order, landmarks reserve theirs, so adding a project moves nothing.
 - **Diorama** — the small animated scene at a location (`dioramas.ts`), chosen by the project's

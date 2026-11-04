@@ -7,6 +7,7 @@ import WinBar from './WinBar.astro';
  * the transition names that morph into the project page.
  */
 import type { CollectionEntry } from 'astro:content';
+import { projectView } from '../lib/project-view';
 
 interface Props {
   project: CollectionEntry<'projects'>;
@@ -18,15 +19,8 @@ const { project, index, span } = Astro.props;
 const d = project.data;
 const href = `/projects/${project.id}/`;
 const cover = d.media[0];
-const statusLabel = {
-  playable: '▶ play on itch.io',
-  released: '↓ download on GitHub',
-  'in-progress': 'build in progress',
-  planned: 'rework planned',
-}[d.status];
-const liveUrl = d.status === 'playable' ? d.itchUrl : d.status === 'released' ? d.downloadUrl : undefined;
+const view = projectView(d);
 const numStr = String(index + 1).padStart(2, '0');
-const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
 ---
 
 <article class="tile" data-reveal data-tilt data-tilt-max="2" data-tile style={`--reveal-delay:${index};--span:${span}`}>
@@ -46,19 +40,19 @@ const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – no
   <div class="tile-body">
     <p class="tile-meta">
       <span class="genre">{d.genre}</span>
-      <span class="date">{period}</span>
+      <span class="date">{view.period}</span>
     </p>
     <h3><a href={href} transition:name={`title-${project.id}`}>{d.title}</a></h3>
     <p class="muted">{d.summary}</p>
     {d.highlights.length > 0 && <p class="meta tile-high"><b>{d.highlights.join(' · ')}</b></p>}
     <div class="tile-actions">
       {
-        liveUrl ? (
-          <a class="pill play" href={liveUrl}>
-            {statusLabel}
+        view.live ? (
+          <a class="pill play" href={view.live.href}>
+            {view.live.label}
           </a>
         ) : (
-          <span class="pill wip">{statusLabel}</span>
+          <span class="pill wip">{view.status}</span>
         )
       }
       <a class="pill" href={href}>

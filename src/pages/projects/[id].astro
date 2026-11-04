@@ -7,6 +7,7 @@ import NotesExplorer from '../../components/NotesExplorer.astro';
 import ShoveLab from '../../components/ShoveLab.astro';
 import { site, PERSON_ID } from '../../data/site';
 import { planWriteUp } from '../../lib/notes';
+import { projectView } from '../../lib/project-view';
 
 export async function getStaticPaths() {
   const projects = await getCollection('projects');
@@ -21,7 +22,8 @@ const { Content } = await render(project);
 const plan = project.rendered?.html ? planWriteUp({ html: project.rendered.html, media: d.media, widget: d.widget }) : null;
 const hero = d.media[0];
 const gallery = d.media.slice(1);
-const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
+const view = projectView(d);
+const period = view.period;
 
 // Structured data (schema.org), linked to the site's Person node by @id (see Base.astro).
 // VideoGame is a subtype of SoftwareApplication. All three games are free on itch.io and the tool is
@@ -90,20 +92,13 @@ const projectSchema = [
       }
       <div class="actions">
         {
-          d.kind === 'tool' ? (
-            d.downloadUrl ? (
-              <a class="btn primary" href={d.downloadUrl}>
-                ↓ Download (Windows)
-              </a>
-            ) : (
-              <span class="btn" aria-disabled="true">↓ Download — not released yet</span>
-            )
-          ) : d.itchUrl ? (
-            <a class="btn primary" href={d.itchUrl}>
-              ▶ Play on itch.io
+          view.live ? (
+            <a class="btn primary" href={view.live.href}>
+              {view.live.label}
+              {d.kind === 'tool' && ' (Windows)'}
             </a>
           ) : (
-            <span class="btn" aria-disabled="true">▶ Not on itch.io yet</span>
+            <span class="btn" aria-disabled="true">{view.pending}</span>
           )
         }
         {
@@ -153,19 +148,9 @@ const projectSchema = [
       <div class="box" data-reveal data-tilt data-tilt-max="3">
         <dl>
           <dt>Status</dt>
-          <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
-          <dt>{d.kind === 'tool' ? 'Download' : 'Play'}</dt>
-          <dd>
-            {
-              d.kind === 'tool' ? (
-                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="muted">Not released yet</span>
-              ) : d.itchUrl ? (
-                <a href={d.itchUrl}>itch.io ↗</a>
-              ) : (
-                <span class="muted">Not published yet</span>
-              )
-            }
-          </dd>
+          <dd>{view.status}</dd>
+          <dt>{view.liveTerm}</dt>
+          <dd>{view.live ? <a href={view.live.href}>{view.live.short}</a> : <span class="muted">{view.pending}</span>}</dd>
           <dt>Source</dt>
           <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="muted">Private repository</span>}</dd>
           <dt>Role</dt>

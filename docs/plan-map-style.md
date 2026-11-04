@@ -120,6 +120,17 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   exactly one location everywhere (`tests/world-gen.test.ts` keeps passing; a new test pins that every
   location has an href and a map link).
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. `src/data/locations.ts` holds `LANDMARKS` (title, eyebrow, `loc-*`
+  accent, slot, overview anchor, nav word), `buildLocations(projects)`, the seed adapters for the map and
+  `NAV` (site.ts no longer lists the nav). `src/lib/project-view.ts` is the one status / period / live
+  link; the map panel, `ProjectTile`, `ProjectRow` and the write-up page use it. `World.astro` builds
+  its seeds and panels from both; the map's embedded data is unchanged. `tests/locations.test.ts` pins
+  order, hrefs, map links, one location per project file (through `buildLayout`), a landmark id clash,
+  that every landmark anchor exists on the overview, the nav, and the project view. Visible wording:
+  the tile and row pills read "▶ Play on itch.io" / "↓ Download on GitHub" (sentence case, as on the
+  map and the write-up), and Eternity Keeper's write-up button "↓ Download on GitHub (Windows)". Not
+  done here: the overview, the projects index and the write-up pages don't show their location yet
+  (no map link, no accent); that is F7 (location bar) and P1–P4.
 
 ### F4. Three breakpoints
 - **Description:** Replace the fourteen widths with three named ones in the token file (`wide` ≥ 981,

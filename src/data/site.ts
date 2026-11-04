@@ -18,13 +18,6 @@ export const site = {
 /** JSON-LD @id of the site owner; every page's graph links its nodes to this Person. */
 export const PERSON_ID = `${site.url}/#person`;
 
-/** The home page is the field map; the text sections live on /overview/. */
+/** The home page is the field map; the text sections live on /overview/. The nav is built from the
+ * locations (src/data/locations.ts `NAV`). */
 export const OVERVIEW = '/overview/';
-export const nav = [
-  { href: '/', label: 'Map' },
-  { href: `${OVERVIEW}#about`, label: 'About' },
-  { href: `${OVERVIEW}#projects`, label: 'Projects' },
-  { href: `${OVERVIEW}#lab`, label: 'Lab' },
-  { href: `${OVERVIEW}#activities`, label: 'Activities' },
-  { href: `${OVERVIEW}#contact`, label: 'Contact' },
-];

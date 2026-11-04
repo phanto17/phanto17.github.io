@@ -115,7 +115,7 @@ file's header comment. Edit the HTML, reprint, never hand-edit the PDF.
 (`src/pages/overview.astro`; the About dossier now reads `src/data/about.ts`, shared with the Field
 Station panel). The start screen is static HTML (CV title, CV, overview, projects); `three` (≈555 KB of script, less gzipped) loads only after Explore; without WebGL the start screen points at the overview. Every
 location comes from data: projects from the collection (`world.kind` / `world.accent`, defaults
-`generic` / coral), landmarks from `site.ts` / `activities.ts` / `about.ts`. Adding a project file adds
+`generic` / coral), landmarks from `src/data/locations.ts` (since 2026-11-04 the one location list: `buildLocations(projects)` gives every project and landmark an `href`, a `mapHref` `/#<id>` and its accent; `LANDMARKS` carry the `loc-*` token accents and the overview anchors; `NAV` is built from them; `tests/locations.test.ts` pins it), their panels' text from `site.ts` / `activities.ts` / `about.ts`. A project's status, period and live link read in one wording everywhere through `src/lib/project-view.ts` `projectView`. Adding a project file adds
 a location on a fixed spiral slot and never moves another (`tests/world-gen.test.ts` pins it). The Lab
 location opens the real Telegraph cabinet (`TelegraphMiniGame.astro`, one engine, one set of tests) plus
 the "Make a mess" letters; ranks on the best score (`RANKS` in `signal-reward.ts`) show on the stamp and

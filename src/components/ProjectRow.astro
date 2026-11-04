@@ -1,6 +1,7 @@
 ---
 import WinBar from './WinBar.astro';
 import type { CollectionEntry } from 'astro:content';
+import { projectView } from '../lib/project-view';
 import Figure from './Figure.astro';
 
 interface Props {
@@ -11,13 +12,7 @@ const { project, index } = Astro.props;
 const d = project.data;
 const href = `/projects/${project.id}/`;
 const cover = d.media[0];
-const statusLabel = {
-  playable: '▶ play on itch.io',
-  released: '↓ download on GitHub',
-  'in-progress': 'build in progress',
-  planned: 'rework planned',
-}[d.status];
-const liveUrl = d.status === 'playable' ? d.itchUrl : d.status === 'released' ? d.downloadUrl : undefined;
+const view = projectView(d);
 const numStr = String(index + 1).padStart(2, '0');
 ---
 
@@ -37,7 +32,7 @@ const numStr = String(index + 1).padStart(2, '0');
     <div class="body">
       <div class="proj-top-meta">
         <span class="genre-badge">{d.genre}</span>
-        <span class="date-badge">{d.dates.start}{d.dates.end ? ` – ${d.dates.end}` : ' – now'}</span>
+        <span class="date-badge">{view.period}</span>
       </div>
       <h3><a href={href} transition:name={`title-${project.id}`}>{d.title}</a></h3>
       <p class="muted">{d.summary}</p>
@@ -54,15 +49,12 @@ const numStr = String(index + 1).padStart(2, '0');
       <p class="meta">{d.engine} · {d.role}</p>
       <div class="proj-actions">
         {
-          liveUrl ? (
-            <a
-              class="pill play"
-              href={liveUrl}
-            >
-              {statusLabel}
+          view.live ? (
+            <a class="pill play" href={view.live.href}>
+              {view.live.label}
             </a>
           ) : (
-            <span class="pill wip">{statusLabel}</span>
+            <span class="pill wip">{view.status}</span>
           )
         }
         <a class="pill" href={href}>

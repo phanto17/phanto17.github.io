@@ -15,31 +15,16 @@ import { site } from '../data/site';
 import { activities, experience, education } from '../data/activities';
 import { aboutFacets } from '../data/about';
 import '../styles/world.css';
-import tokens from '../../design/tokens.json';
+import { buildLocations, landmarkById, LANDMARKS, toLandmarkSeed, toProjectSeed, type ProjectLocation } from '../data/locations';
+import { projectView } from '../lib/project-view';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
-const seeds = projects.map((p) => ({
-  id: p.id,
-  title: p.data.title,
-  kind: p.data.world.kind,
-  accent: p.data.world.accent,
-  eyebrow: p.data.genre,
-}));
-/** A landmark's accent from the token file (loc-*): one colour for the 3D world; the interface tones it per theme. */
-const loc = (name: 'station' | 'lab' | 'guild' | 'mast'): string => {
-  const t = tokens.color.tokens.find((x) => x.name === `loc-${name}`);
-  if (!t || typeof t.value !== 'string') throw new Error(`design/tokens.json has no loc-${name}`);
-  return t.value;
-};
-const landmarks = [
-  { id: 'station', title: 'Field Station', kind: 'station', accent: loc('station'), eyebrow: 'About me' },
-  { id: 'lab', title: 'The Lab', kind: 'lab', accent: loc('lab'), eyebrow: 'Mini-games', slot: 4 },
-  { id: 'guild', title: 'Guild Hall', kind: 'guild', accent: loc('guild'), eyebrow: 'Team projects & channel', slot: 5 },
-  { id: 'mast', title: 'Radio Mast', kind: 'mast', accent: loc('mast'), eyebrow: 'Contact', slot: 6 },
-];
+// Every location from one list (src/data/locations.ts): the projects in their order, then the landmarks.
+const locations = buildLocations(projects);
+const seeds = locations.filter((l): l is ProjectLocation => l.type === 'project').map(toProjectSeed);
+const landmarks = LANDMARKS.map(toLandmarkSeed);
 const worldData = { seeds, landmarks, word: 'TYMOTEUSZ' };
-const statusLabel = { playable: 'Playable', released: 'Released', 'in-progress': 'In progress', planned: 'Planned' } as const;
-const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ?? 'now'}`;
+const acc = (id: 'station' | 'lab' | 'guild' | 'mast') => `--acc:${landmarkById(id).accent}`;
 ---
 
 <div class="world" id="world" data-world>
@@ -138,12 +123,12 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   </div>
 
   <!-- Panels: one template per location, cloned into the drawer by boot.ts. -->
-  {projects.map((p) => (
+  {projects.map((p) => [p, projectView(p.data)] as const).map(([p, view]) => (
     <template data-panel={p.id}>
       <div class="world-panel" style={`--acc:${p.data.world.accent}`}>
         <p class="eyebrow">{p.data.genre}</p>
         <h2 id="world-drawer-title">{p.data.title}</h2>
-        <p class="meta-row"><span class="pill">{statusLabel[p.data.status]}</span><span>{dates(p.data.dates)}</span><span>{p.data.engine}</span></p>
+        <p class="meta-row"><span class="pill">{view.status}</span><span>{view.period}</span><span>{p.data.engine}</span></p>
         {p.data.clip ? (
           <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video>
         ) : p.data.media[0]?.src ? (
@@ -157,8 +142,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
           </>
         )}
         <div class="actions">
-          {p.data.itchUrl && <a class="btn primary" href={p.data.itchUrl}>▶ Play on itch.io</a>}
-          {p.data.downloadUrl && <a class="btn primary" href={p.data.downloadUrl}>↓ Download on GitHub</a>}
+          {view.live && <a class="btn primary" href={view.live.href}>{view.live.label}</a>}
           <a class="btn" href={`/projects/${p.id}/`}>Read the write-up →</a>
           {p.data.githubUrl && <a class="btn" href={p.data.githubUrl}>Source ↗</a>}
         </div>
@@ -167,8 +151,8 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     </template>
   ))}
   <template data-panel="station">
-    <div class="world-panel" style={`--acc:${loc('station')}`}>
-      <p class="eyebrow">About me</p>
+    <div class="world-panel" style={acc('station')}>
+      <p class="eyebrow">{landmarkById('station').eyebrow}</p>
       <h2 id="world-drawer-title">{site.name}</h2>
       <p class="meta-row"><span>{site.title}</span><span>{site.location}</span></p>
       {aboutFacets.map((f) => (
@@ -185,15 +169,15 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
       <p class="meta">{education.title} ({education.period})</p>
       <div class="actions">
         <a class="btn primary" href={site.cv} download>↓ Download the CV</a>
-        <a class="btn" href="/overview/#about">Full dossier →</a>
+        <a class="btn" href={landmarkById('station').href}>Full dossier →</a>
         <a class="btn" href={site.github}>GitHub ↗</a>
       </div>
     </div>
   </template>
   <template data-panel="guild">
-    <div class="world-panel" style={`--acc:${loc('guild')}`}>
+    <div class="world-panel" style={acc('guild')}>
       <p class="eyebrow">Team projects, channel, community</p>
-      <h2 id="world-drawer-title">Guild Hall</h2>
+      <h2 id="world-drawer-title">{landmarkById('guild').title}</h2>
       <div class="world-team">
         {activities.map((a) => (
           <article>
@@ -204,13 +188,13 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
           </article>
         ))}
       </div>
-      <div class="actions"><a class="btn" href={site.youtube}>YouTube: phanto ↗</a><a class="btn" href="/overview/#activities">On the overview →</a></div>
+      <div class="actions"><a class="btn" href={site.youtube}>YouTube: phanto ↗</a><a class="btn" href={landmarkById('guild').href}>On the overview →</a></div>
     </div>
   </template>
   <template data-panel="mast">
-    <div class="world-panel" style={`--acc:${loc('mast')}`}>
-      <p class="eyebrow">Contact</p>
-      <h2 id="world-drawer-title">Radio Mast</h2>
+    <div class="world-panel" style={acc('mast')}>
+      <p class="eyebrow">{landmarkById('mast').eyebrow}</p>
+      <h2 id="world-drawer-title">{landmarkById('mast').title}</h2>
       <p class="lead">Looking for a junior gameplay programmer or an intern? I’d love to talk.</p>
       <div class="world-mail"><span class="meta">Email</span><code data-mail>{site.email}</code><button class="btn" type="button" data-copy-mail>Copy</button></div>
       <div class="actions">

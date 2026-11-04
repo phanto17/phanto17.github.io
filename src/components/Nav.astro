@@ -1,5 +1,6 @@
 ---
-import { site, nav } from '../data/site';
+import { site } from '../data/site';
+import { NAV } from '../data/locations';
 ---
 
 <!-- The nav persists across client-side page navigations: its state and listeners survive the swap. -->
@@ -7,7 +8,7 @@ import { site, nav } from '../data/site';
   <div class="wrap bar">
     <a class="brand" href="/">{site.name} <em>— field notes</em></a>
     <ul id="nav-links" class="nav-list">
-      {nav.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
+      {NAV.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
       <li class="mobile-motion">
         <button type="button" class="btn util-btn" data-motion-switcher aria-pressed="true">
           <span data-motion-label>Motion: ON</span>
