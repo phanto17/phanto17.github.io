@@ -30,7 +30,7 @@ body[data-chrome='world'] #main {
   display: block;
   cursor: pointer;
   touch-action: none;
-  background: #082a22;
+  background: var(--world-ground);
 }
 .world-gl.is-drag {
   cursor: grabbing;
@@ -70,7 +70,7 @@ body[data-chrome='world'] #main {
   bottom: -7px;
   width: 1px;
   height: 7px;
-  background: var(--acc);
+  background: var(--acc-ui);
 }
 .wl-eye {
   white-space: nowrap;
@@ -95,9 +95,9 @@ body[data-chrome='world'] #main {
   background: var(--surface);
   color: var(--text-2);
 }
-.world-ai-tag[data-s='WANDER'] { background: #15452f; color: #89f0bb; }
-.world-ai-tag[data-s='ALERT'] { background: #4c3f0d; color: #ffe36e; }
-.world-ai-tag[data-s='FLEE'] { background: #561c1f; color: #ff9d9d; }
+.world-ai-tag[data-s='WANDER'] { background: var(--ai-wander); color: var(--ai-wander-ink); }
+.world-ai-tag[data-s='ALERT'] { background: var(--ai-alert); color: var(--ai-alert-ink); }
+.world-ai-tag[data-s='FLEE'] { background: var(--ai-flee); color: var(--ai-flee-ink); }
 
 /* ── Start screen: the hero over the slowly turning map ───────────────────────── */
 .world-start {
@@ -296,8 +296,8 @@ body[data-chrome='world'] #main {
   font: 500 13px/1 var(--font-mono);
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #05130d;
-  background: #7dffc8;
+  color: var(--pass-ink);
+  background: var(--pass);
 }
 
 /* ── Dev Mode ─────────────────────────────────────────────────────────────────── */
@@ -421,8 +421,8 @@ body[data-chrome='world'] #main {
   width: min(500px, 100%);
   z-index: 5;
   background: var(--bg);
-  border-left: 1px solid var(--acc, var(--hairline));
-  box-shadow: -4px 0 0 color-mix(in srgb, var(--acc, #000) 30%, #000);
+  border-left: 1px solid var(--acc-ui);
+  box-shadow: -4px 0 0 color-mix(in srgb, var(--acc-ui) 30%, var(--ink-black));
   transform: translateX(102%);
   transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -477,7 +477,7 @@ body[data-chrome='world'] #main {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--r-xs);
-  background: #000;
+  background: var(--ink-black);
   object-fit: cover;
 }
 .world-dev-note {
@@ -643,8 +643,8 @@ body[data-chrome='world'] #main {
     height: 74%;
     width: 100%;
     border-left: 0;
-    border-top: 1px solid var(--acc, var(--hairline));
-    box-shadow: 0 -4px 0 color-mix(in srgb, var(--acc, #000) 30%, #000);
+    border-top: 1px solid var(--acc-ui);
+    box-shadow: 0 -4px 0 color-mix(in srgb, var(--acc-ui) 30%, var(--ink-black));
     transform: translateY(102%);
   }
   .world-drawer-body {

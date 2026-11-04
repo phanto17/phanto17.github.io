@@ -108,6 +108,13 @@ conversation finds it fuzzy.
   (mono uppercase in the accent pulled toward the text), `.diamond` / `.diamond-list`, `.hud-panel`,
   `.seg` (a row of keys with one on), `.uncharted` (on a tag: dashed, italic) and `.meta-row`. Each
   reads `--acc`, coral when unset; `world.css` only places them on the map.
+- **Location accent** — one colour per location: a project's `world.accent`, a landmark's `loc-*` token,
+  the free slot's `UNCHARTED_ACCENT`. The 3D world and the minimap use it as it is; the interface draws
+  with `--acc-ui`, the accent **toned** for the theme by the `accent` token family (`acc-tone`: share
+  kept before the pull toward `text`, 45 % on Paper; `acc-edge`: border opacity; `acc-ink`: share in
+  eyebrow text; `acc-offset`). `src/lib/accents.ts` does the same mixes in numbers;
+  `tests/accents.test.ts` holds every location to 4.5:1 eyebrows and 3:1 borders in every theme, and
+  keeps hex out of `World.astro`, `world.css` and `field-kit.css`.
 
 ## Themes and the Signal
 

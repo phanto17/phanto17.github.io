@@ -27,6 +27,8 @@ export function renderTokensCss(tokens) {
     let s = '';
     for (const t of tokens.color.tokens) s += `  --${t.name}: ${colour(value(t, id))};\n`;
     for (const t of tokens.shadow.tokens) s += `  --${t.name}: ${value(t, id)};\n`;
+    // How a location accent is drawn per theme (tone, edge, ink, offset): themed like the colours.
+    for (const t of tokens.accent?.tokens ?? []) s += `  --${t.name}: ${value(t, id)};\n`;
     s += `  color-scheme: ${scheme[id] ?? 'dark'};\n`;
     return s;
   }
@@ -156,7 +158,7 @@ async function main() {
   writeFileSync(join(root, OUTPUTS.boot), renderBoot(rows, facts, table.SIGNAL_UNLOCK));
 
   const themes = tokens.color.themes;
-  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length);
+  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length + (tokens.accent?.tokens.length ?? 0));
   console.log(`${OUTPUTS.css}: ${themes.length} themes, ${count} themed values, ${tokens.type.groups.reduce((n, g) => n + g.styles.length, 0)} type styles described in the token file`);
   console.log(`${OUTPUTS.themes}: ${facts.ids.join(', ')} (light: ${facts.light}, unlock: ${facts.signalTheme})`);
   console.log(`${OUTPUTS.boot}: ${rows.length} preference rows`);

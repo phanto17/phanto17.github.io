@@ -7,7 +7,10 @@
 import Base from '../layouts/Base.astro';
 import Prism from '../components/Prism.astro';
 import Figure from '../components/Figure.astro';
+import { getCollection } from 'astro:content';
 import tokens from '../../design/tokens.json';
+import { accentContrast, accentInks, accentTheme, contrast, ACCENT_MINIMUM, type AccentTokens } from '../lib/accents';
+import { UNCHARTED_ACCENT } from '../world/gen';
 
 type ThemeId = 'prism' | 'paper' | 'crt' | 'signal';
 const themes = tokens.color.themes as { id: ThemeId; name: string }[];
@@ -22,32 +25,25 @@ const resolve = (name: string, theme: ThemeId): string => {
   return /^\{[^}]+\}$/.test(v) ? resolve(v.slice(1, -1), theme) : v;
 };
 
-/** WCAG 2 contrast for hex or rgba colours; a translucent ink is composited over the ground first. */
-const parse = (c: string): [number, number, number, number] => {
-  const hex = c.match(/^#([0-9a-f]{6})$/i);
-  if (hex) return [parseInt(hex[1].slice(0, 2), 16), parseInt(hex[1].slice(2, 4), 16), parseInt(hex[1].slice(4, 6), 16), 1];
-  const rgba = c.match(/rgba?\(([^)]+)\)/);
-  if (rgba) {
-    const [r, g, b, a = '1'] = rgba[1].split(',').map((s) => s.trim());
-    return [Number(r), Number(g), Number(b), Number(a)];
-  }
-  return [0, 0, 0, 1];
-};
-const luminance = ([r, g, b]: number[]) => {
-  const f = (v: number) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
-  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
-};
-const contrast = (ink: string, ground: string): number => {
-  const i = parse(ink);
-  const g = parse(ground);
-  const over = [0, 1, 2].map((k) => i[k] * i[3] + g[k] * (1 - i[3]));
-  const [l1, l2] = [luminance(over), luminance(g)];
-  return Math.round(((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)) * 10) / 10;
+/** Every accent the map draws, toned per theme as the field kit does (contrast and mixes: src/lib/accents.ts). */
+const projectAccents = (await getCollection('projects'))
+  .sort((a, b) => a.data.order - b.data.order)
+  .map((p) => ({ name: p.data.title, accent: p.data.world.accent }));
+const accentRows = [
+  ...colourTokens.filter((t) => t.name.startsWith('loc-')).map((t) => ({ name: t.name, accent: t.value as string })),
+  ...projectAccents,
+  { name: 'Uncharted (free slot)', accent: UNCHARTED_ACCENT },
+];
+const accentRules = (tokens as unknown as AccentTokens).accent.tokens;
+const accentRow = (accent: string, theme: ThemeId) => {
+  const rules = accentTheme(tokens as unknown as AccentTokens, theme);
+  const c = accentContrast(accent, rules);
+  return { inks: accentInks(accent, rules), ...c, ok: c.eyebrow >= ACCENT_MINIMUM.eyebrow && c.edge >= ACCENT_MINIMUM.edge };
 };
 
 const grounds = ['bg', 'surface', 'surface-2'];
 const inks = ['text', 'text-2', 'text-3', 'steel', 'action-text', 'coral', 'peach', 'gold', 'mint', 'lavender', 'brick'];
-const decorative = ['bg-0', 'umber', 'hairline', 'nav-bg', 'scanline', 'teal', 'pink', 'sky', 'backdrop', 'glow-ink'];
+const decorative = ['bg-0', 'umber', 'hairline', 'nav-bg', 'scanline', 'teal', 'pink', 'sky', 'backdrop', 'glow-ink', 'panel', 'ink-black', 'world-ground', 'ai-wander', 'ai-alert', 'ai-flee', 'pass'];
 const bands = colourTokens.filter((t) => t.name.startsWith('prism-'));
 const cells = colourTokens.filter((t) => t.name.startsWith('cell-'));
 
@@ -124,6 +120,41 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
           </div>
         ))
       }
+      <h3 style="margin-top:36px">Location accents</h3>
+      <p class="muted">
+        A location keeps one accent, and the 3D world uses it as it is. The interface tones it for each theme
+        first ({accentRules.map((t) => t.name).join(', ')}), then draws the eyebrow (needs {ACCENT_MINIMUM.eyebrow}:1 on
+        bg) and the tag border ({ACCENT_MINIMUM.edge}:1). tests/accents.test.ts holds every location to these numbers.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Accent</th>
+              {themes.map((th) => (
+                <th>{th.name}: eyebrow · border</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {accentRows.map((row) => (
+              <tr>
+                <td>
+                  <span class="chip" style={`background:${row.accent}`} /> <code>{row.name}</code> <span class="hex">{row.accent}</span>
+                </td>
+                {themes.map((th) => {
+                  const r = accentRow(row.accent, th.id);
+                  return (
+                    <td class={r.ok ? 'ok' : 'warn'}>
+                      <span class="chip" style={`background:${r.inks.eyebrow}`} /> {r.eyebrow}:1 · <span class="chip" style={`background:${r.inks.edge}`} /> {r.edge}:1
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <h3 style="margin-top:36px">Decoration, bands and board fills</h3>
       <p class="muted">Never text. The usage note on each says where it may appear.</p>
       <div class="swatches">

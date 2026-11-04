@@ -21,6 +21,9 @@ export const FOOTPRINT: Readonly<Record<Kind, number>> = {
   arena: 1, board: 3, dungeon: 3, archive: 2, generic: 1, station: 2, lab: 2, guild: 2, mast: 1, uncharted: 0,
 };
 
+/** The free slot's accent (sage): the 3D world, the minimap and its dashed tag. */
+export const UNCHARTED_ACCENT = '#8fb5a6';
+
 export interface ProjectSeed {
   id: string;
   title: string;
@@ -83,7 +86,7 @@ export function buildLayout(projects: readonly ProjectSeed[], landmarks: readonl
     s++;
   }
   while (reserved.has(s)) s++;
-  locs.push({ id: 'uncharted', title: 'Uncharted', kind: 'uncharted', type: 'uncharted', accent: '#8fb5a6', eyebrow: 'Next project lands here', slot: s, ...slotPos(s) });
+  locs.push({ id: 'uncharted', title: 'Uncharted', kind: 'uncharted', type: 'uncharted', accent: UNCHARTED_ACCENT, eyebrow: 'Next project lands here', slot: s, ...slotPos(s) });
   return locs.sort((a, b) => a.slot - b.slot);
 }
 

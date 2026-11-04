@@ -15,6 +15,7 @@ import { site } from '../data/site';
 import { activities, experience, education } from '../data/activities';
 import { aboutFacets } from '../data/about';
 import '../styles/world.css';
+import tokens from '../../design/tokens.json';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
 const seeds = projects.map((p) => ({
@@ -24,11 +25,17 @@ const seeds = projects.map((p) => ({
   accent: p.data.world.accent,
   eyebrow: p.data.genre,
 }));
+/** A landmark's accent from the token file (loc-*): one colour for the 3D world; the interface tones it per theme. */
+const loc = (name: 'station' | 'lab' | 'guild' | 'mast'): string => {
+  const t = tokens.color.tokens.find((x) => x.name === `loc-${name}`);
+  if (!t || typeof t.value !== 'string') throw new Error(`design/tokens.json has no loc-${name}`);
+  return t.value;
+};
 const landmarks = [
-  { id: 'station', title: 'Field Station', kind: 'station', accent: '#f3e6d3', eyebrow: 'About me' },
-  { id: 'lab', title: 'The Lab', kind: 'lab', accent: '#7fd6ff', eyebrow: 'Mini-games', slot: 4 },
-  { id: 'guild', title: 'Guild Hall', kind: 'guild', accent: '#c6a8ff', eyebrow: 'Team projects & channel', slot: 5 },
-  { id: 'mast', title: 'Radio Mast', kind: 'mast', accent: '#f27c52', eyebrow: 'Contact', slot: 6 },
+  { id: 'station', title: 'Field Station', kind: 'station', accent: loc('station'), eyebrow: 'About me' },
+  { id: 'lab', title: 'The Lab', kind: 'lab', accent: loc('lab'), eyebrow: 'Mini-games', slot: 4 },
+  { id: 'guild', title: 'Guild Hall', kind: 'guild', accent: loc('guild'), eyebrow: 'Team projects & channel', slot: 5 },
+  { id: 'mast', title: 'Radio Mast', kind: 'mast', accent: loc('mast'), eyebrow: 'Contact', slot: 6 },
 ];
 const worldData = { seeds, landmarks, word: 'TYMOTEUSZ' };
 const statusLabel = { playable: 'Playable', released: 'Released', 'in-progress': 'In progress', planned: 'Planned' } as const;
@@ -107,7 +114,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     <p class="fine" id="world-add-msg">Adds one entry to the project list and regenerates the map.</p>
   </aside>
 
-  <aside class="world-drawer" id="world-drawer" hidden aria-labelledby="world-drawer-title">
+  <aside class="world-drawer accent" id="world-drawer" hidden aria-labelledby="world-drawer-title">
     <button class="key world-x world-drawer-x" id="world-drawer-close" type="button" aria-label="Close panel">×</button>
     <div class="world-drawer-body" id="world-drawer-body"></div>
   </aside>
@@ -160,7 +167,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     </template>
   ))}
   <template data-panel="station">
-    <div class="world-panel" style="--acc:#f3e6d3">
+    <div class="world-panel" style={`--acc:${loc('station')}`}>
       <p class="eyebrow">About me</p>
       <h2 id="world-drawer-title">{site.name}</h2>
       <p class="meta-row"><span>{site.title}</span><span>{site.location}</span></p>
@@ -184,7 +191,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     </div>
   </template>
   <template data-panel="guild">
-    <div class="world-panel" style="--acc:#c6a8ff">
+    <div class="world-panel" style={`--acc:${loc('guild')}`}>
       <p class="eyebrow">Team projects, channel, community</p>
       <h2 id="world-drawer-title">Guild Hall</h2>
       <div class="world-team">
@@ -201,7 +208,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
     </div>
   </template>
   <template data-panel="mast">
-    <div class="world-panel" style="--acc:#f27c52">
+    <div class="world-panel" style={`--acc:${loc('mast')}`}>
       <p class="eyebrow">Contact</p>
       <h2 id="world-drawer-title">Radio Mast</h2>
       <p class="lead">Looking for a junior gameplay programmer or an intern? I’d love to talk.</p>

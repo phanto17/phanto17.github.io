@@ -1,6 +1,9 @@
 /* Prism design system — the field kit: the field map's vocabulary, for any page. Part of global.css.
    The map (world.css) only places these; a page that wants the map's look uses the same classes.
-   Anything that takes an accent reads `--acc` (set per location; coral when unset).
+   Anything that takes an accent reads `--acc` (set per location; coral when unset) through `--acc-ui`:
+   the accent toned for the theme by the accent tokens (acc-tone / acc-edge / acc-ink / acc-offset,
+   design/tokens.json), so the 3D world keeps the colour as it is and Paper still gets readable inks.
+   src/lib/accents.ts does the same mixes in numbers for the style guide and tests/accents.test.ts.
 
    .tag          a map label: translucent ground, accent border, hard accent offset
    .tag-title    the label's display-type title
@@ -10,24 +13,28 @@
    .hud-panel    a hairline panel on the translucent ground
    .seg          a row of keys where one is on (aria-pressed / aria-selected); --seg-on sets the colour
    .uncharted    a tag for a place that is not there yet: dashed, no offset, italic title
-   .meta-row     a line of pills and mono facts */
-:root {
-  /* The translucent ground under tags and HUD panels. Moves to the token file in F2. */
-  --panel: color-mix(in srgb, var(--bg) 84%, transparent);
+   .meta-row     a line of pills and mono facts
+   .accent       any other element whose own CSS draws with --acc-ui (the map's drawer) */
+.tag,
+.eyebrow,
+.diamond,
+.diamond-list,
+.accent {
+  --acc-ui: color-mix(in srgb, var(--acc, var(--coral)) var(--acc-tone), var(--text));
 }
 
 .tag {
   background: var(--panel);
-  border: 1px solid color-mix(in srgb, var(--acc, var(--coral)) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
   border-radius: var(--r-xs);
-  box-shadow: 2px 2px 0 color-mix(in srgb, var(--acc, var(--coral)) 40%, #000);
+  box-shadow: var(--acc-offset) var(--acc-offset) 0 color-mix(in srgb, var(--acc-ui) 40%, var(--ink-black));
   color: var(--text);
 }
 a.tag:hover,
 button.tag:hover,
 .tag.is-near {
   background: var(--surface);
-  border-color: var(--acc, var(--coral));
+  border-color: var(--acc-ui);
 }
 .tag-title {
   font: 600 16px/1.15 var(--font-display);
@@ -46,7 +53,7 @@ button.tag:hover,
   letter-spacing: 0.1em;
   text-transform: uppercase;
   /* The accent, pulled toward the text colour so it reads on the Paper theme too. */
-  color: color-mix(in srgb, var(--acc, var(--coral)) 60%, var(--text));
+  color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
 }
 .tag .eyebrow {
   font-size: 9.5px;
@@ -58,11 +65,11 @@ button.tag:hover,
   flex: none;
   width: 9px;
   height: 9px;
-  border: 1.5px solid var(--acc, var(--coral));
+  border: 1.5px solid var(--acc-ui);
   transform: rotate(45deg);
 }
 .diamond.is-done {
-  background: var(--acc, var(--coral));
+  background: var(--acc-ui);
 }
 .diamond-list {
   display: grid;
@@ -81,7 +88,7 @@ button.tag:hover,
   top: 0.55em;
   width: 7px;
   height: 7px;
-  background: var(--acc, var(--coral));
+  background: var(--acc-ui);
   transform: rotate(45deg);
 }
 

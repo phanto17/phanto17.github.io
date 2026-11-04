@@ -97,6 +97,16 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** No hex in `World.astro` or `world.css`; every accent passes 3:1 for borders and 4.5:1
   for eyebrow text on all four themes (checked by the contrast table the style guide already builds).
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04, with one change of shape. A location keeps one accent (the 3D world and
+  the minimap need a single colour), so the per-theme part is not four landmark colours but how any
+  accent is drawn: a themed `accent` family (`acc-tone` 100 % / Paper 45 %, `acc-edge` 70 % / Paper
+  85 %, `acc-ink` 60 %, `acc-offset` 2px) that the kit applies through `--acc-ui`. `loc-*` hold the
+  landmark accents, plus `panel`, `ink-black`, `world-ground`, `ai-*` and `pass*`. The style guide's
+  new "Location accents" table and `tests/accents.test.ts` check all nine accents in all four themes
+  (lowest: 3.2:1 border and 7.3:1 eyebrow on Paper, 3.5:1 border on the dark themes); the test also fails
+  on any hex in `World.astro`, `world.css` or `field-kit.css`. Visible change: tag borders went from
+  55 % to 70 % on the dark themes; on Paper the eyebrows, borders and diamonds are now readable. The
+  design-system artifact's `tokens.json` matches `design/tokens.json` again (version 19).
 
 ### F3. One location list
 - **Description:** A data module (`src/data/locations.ts`) that builds the location list once: projects
