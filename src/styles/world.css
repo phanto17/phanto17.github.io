@@ -13,13 +13,14 @@ body[data-chrome='world'] .signal-field {
 body[data-chrome='world'] #main {
   min-height: 0;
 }
+/* Tags, eyebrows, diamonds, HUD panels, segmented keys and meta rows come from field-kit.css; this file
+   only places them on the map. */
 
 .world {
   position: fixed;
   inset: var(--nav-height) 0 0;
   --world-gx: max(16px, env(safe-area-inset-left, 0px));
   --world-gb: max(14px, env(safe-area-inset-bottom, 0px));
-  --world-panel: color-mix(in srgb, var(--bg) 84%, transparent);
 }
 .world-gl {
   position: absolute;
@@ -58,11 +59,6 @@ body[data-chrome='world'] #main {
   max-width: 220px;
   pointer-events: auto;
   cursor: pointer;
-  background: var(--world-panel);
-  border: 1px solid color-mix(in srgb, var(--acc) 55%, transparent);
-  border-radius: var(--r-xs);
-  box-shadow: 2px 2px 0 color-mix(in srgb, var(--acc) 40%, #000);
-  color: var(--text);
   text-align: center;
   font: inherit;
   will-change: transform;
@@ -76,35 +72,18 @@ body[data-chrome='world'] #main {
   height: 7px;
   background: var(--acc);
 }
-.world-label:hover,
-.world-label.is-near {
-  background: var(--surface);
-  border-color: var(--acc);
-}
 .wl-eye {
-  font: 500 9.5px/1.3 var(--font-mono);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  /* The accent, pulled toward the text colour so it reads on the Paper theme too. */
-  color: color-mix(in srgb, var(--acc) 60%, var(--text));
   white-space: nowrap;
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wl-title {
-  font: 600 16px/1.15 var(--font-display);
+.world-label .tag-title {
   white-space: nowrap;
 }
-.world-label.is-uncharted {
+.world-label.uncharted {
   cursor: default;
   pointer-events: none;
-  border-style: dashed;
-  box-shadow: none;
-  opacity: 0.8;
-}
-.world-label.is-uncharted .wl-title {
-  font-style: italic;
 }
 .world-ai-tag {
   position: absolute;
@@ -210,9 +189,6 @@ body[data-chrome='world'] #main {
   left: var(--world-gx);
   bottom: var(--world-gb);
   width: 218px;
-  background: var(--world-panel);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-xs);
   pointer-events: auto;
   overflow: hidden;
 }
@@ -252,24 +228,11 @@ body[data-chrome='world'] #main {
   text-align: left;
   cursor: pointer;
 }
-.world-dot {
-  flex: none;
-  width: 9px;
-  height: 9px;
-  border: 1.5px solid var(--acc);
-  transform: rotate(45deg);
-}
-.world-dot.is-done {
-  background: var(--acc);
-}
 .world-map {
   position: absolute;
   right: var(--world-gx);
   bottom: var(--world-gb);
   width: 200px;
-  background: var(--world-panel);
-  border: 1px solid var(--hairline);
-  border-radius: var(--r-xs);
   pointer-events: auto;
   overflow: hidden;
 }
@@ -303,7 +266,7 @@ body[data-chrome='world'] #main {
   padding: 7px 12px;
   font: 400 12px/1.4 var(--font-mono);
   color: var(--text-2);
-  background: var(--world-panel);
+  background: var(--panel);
   border-radius: var(--r-xs);
   white-space: nowrap;
   transition: opacity 1.6s;
@@ -382,25 +345,6 @@ body[data-chrome='world'] #main {
   color: var(--sky);
   letter-spacing: 0;
   text-transform: none;
-}
-.world-seg {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 3px;
-}
-.world-seg button {
-  flex: 1 1 auto;
-  padding: 5px 6px;
-  font: 500 11px/1.2 var(--font-mono);
-  color: inherit;
-  cursor: pointer;
-}
-.world-seg button[aria-pressed='true'],
-.world-seg button[aria-selected='true'] {
-  background: var(--sky);
-  background-blend-mode: normal;
-  color: var(--bg);
-  border-color: var(--sky);
 }
 .world-checks {
   display: grid;
@@ -507,25 +451,11 @@ body[data-chrome='world'] #main {
   flex: none;
   margin: 0;
 }
-.world-panel-eyebrow {
-  font: 500 11.5px/1.4 var(--font-mono);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--acc, var(--coral)) 60%, var(--text));
-}
 .world-panel h2 {
   font-size: clamp(30px, 4vw, 42px);
   line-height: 1.05;
   padding-right: 40px;
   text-wrap: balance;
-}
-.world-panel-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-  font: 400 12px/1.4 var(--font-mono);
-  color: var(--text-2);
 }
 .world-panel .lead {
   max-width: 62ch;
@@ -536,26 +466,6 @@ body[data-chrome='world'] #main {
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--text-2);
-}
-.world-sys {
-  display: grid;
-  gap: 6px;
-  padding: 0;
-  list-style: none;
-}
-.world-sys li {
-  position: relative;
-  padding-left: 16px;
-}
-.world-sys li::before {
-  content: '';
-  position: absolute;
-  left: 1px;
-  top: 0.55em;
-  width: 7px;
-  height: 7px;
-  background: var(--acc, var(--coral));
-  transform: rotate(45deg);
 }
 .world-panel .actions {
   display: flex;
@@ -643,10 +553,10 @@ body[data-chrome='world'] #main {
   background: var(--bg);
   border-bottom: 1px solid var(--hairline);
 }
-.world-lab-bar .world-seg {
+.world-lab-bar .seg {
   margin-left: auto;
 }
-.world-lab-bar .world-seg button {
+.world-lab-bar .seg > button {
   padding: 8px 12px;
   font-size: 12px;
 }
@@ -709,7 +619,7 @@ body[data-chrome='world'] #main {
     display: none;
   }
   .world-log.is-open ul {
-    display: block;
+    display: grid;
     max-height: 40vh;
     overflow: auto;
   }

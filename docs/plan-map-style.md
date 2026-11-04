@@ -81,6 +81,12 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** One definition of the map look that any page can use; `world.css` shrinks; nothing on
   the map changes visually (screenshot diff of `/` before/after).
 - **Estimate:** 4 h
+- **Status:** Done on 2026-11-04. The proof was a computed-style diff in place of screenshots (the map
+  moves): 22 states (start, map, Dev Mode, three panels, the Lab; Paper and Prism at 1440 px, Prism at
+  390 px with the log open), labels measured as clones at rest and near. The one difference is
+  intended: the open phone log keeps a gap between its rows, which F0's keys needed. `--panel` is
+  defined in the kit until F2 moves it to the tokens; the map's label is `.world-label.tag`, the
+  free slot `.tag.uncharted`.
 
 ### F2. Accent and panel tokens
 - **Description:** Add to `design/tokens.json` (and the design-system artifact copy): `panel` (the

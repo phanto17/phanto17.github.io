@@ -1,0 +1,121 @@
+/* Prism design system — the field kit: the field map's vocabulary, for any page. Part of global.css.
+   The map (world.css) only places these; a page that wants the map's look uses the same classes.
+   Anything that takes an accent reads `--acc` (set per location; coral when unset).
+
+   .tag          a map label: translucent ground, accent border, hard accent offset
+   .tag-title    the label's display-type title
+   .eyebrow      mono uppercase line in the accent pulled toward the text colour (smaller inside .tag)
+   .diamond      the location bullet; .is-done fills it
+   .diamond-list a list with filled accent diamonds as bullets
+   .hud-panel    a hairline panel on the translucent ground
+   .seg          a row of keys where one is on (aria-pressed / aria-selected); --seg-on sets the colour
+   .uncharted    a tag for a place that is not there yet: dashed, no offset, italic title
+   .meta-row     a line of pills and mono facts */
+:root {
+  /* The translucent ground under tags and HUD panels. Moves to the token file in F2. */
+  --panel: color-mix(in srgb, var(--bg) 84%, transparent);
+}
+
+.tag {
+  background: var(--panel);
+  border: 1px solid color-mix(in srgb, var(--acc, var(--coral)) 55%, transparent);
+  border-radius: var(--r-xs);
+  box-shadow: 2px 2px 0 color-mix(in srgb, var(--acc, var(--coral)) 40%, #000);
+  color: var(--text);
+}
+a.tag:hover,
+button.tag:hover,
+.tag.is-near {
+  background: var(--surface);
+  border-color: var(--acc, var(--coral));
+}
+.tag-title {
+  font: 600 16px/1.15 var(--font-display);
+}
+.tag.uncharted {
+  border-style: dashed;
+  box-shadow: none;
+  opacity: 0.8;
+}
+.tag.uncharted .tag-title {
+  font-style: italic;
+}
+
+.eyebrow {
+  font: 500 11.5px/1.4 var(--font-mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  /* The accent, pulled toward the text colour so it reads on the Paper theme too. */
+  color: color-mix(in srgb, var(--acc, var(--coral)) 60%, var(--text));
+}
+.tag .eyebrow {
+  font-size: 9.5px;
+  line-height: 1.3;
+  letter-spacing: 0.08em;
+}
+
+.diamond {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border: 1.5px solid var(--acc, var(--coral));
+  transform: rotate(45deg);
+}
+.diamond.is-done {
+  background: var(--acc, var(--coral));
+}
+.diamond-list {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+.diamond-list li {
+  position: relative;
+  padding-left: 16px;
+}
+.diamond-list li::before {
+  content: '';
+  position: absolute;
+  left: 1px;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  background: var(--acc, var(--coral));
+  transform: rotate(45deg);
+}
+
+.hud-panel {
+  background: var(--panel);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-xs);
+}
+
+.seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.seg > button {
+  flex: 1 1 auto;
+  padding: 5px 6px;
+  font: 500 11px/1.2 var(--font-mono);
+  color: inherit;
+  cursor: pointer;
+}
+.seg > button[aria-pressed='true'],
+.seg > button[aria-selected='true'] {
+  background: var(--seg-on, var(--sky));
+  background-blend-mode: normal;
+  color: var(--bg);
+  border-color: var(--seg-on, var(--sky));
+}
+
+.meta-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font: 400 12px/1.4 var(--font-mono);
+  color: var(--text-2);
+}

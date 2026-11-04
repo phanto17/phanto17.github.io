@@ -186,10 +186,10 @@ export function createEngine(canvas: HTMLCanvasElement, labelsEl: HTMLElement, o
     labelsEl.querySelectorAll('.world-label').forEach((n) => n.remove());
     labels = S.locs.map((l) => {
       const b = document.createElement(l.kind === 'uncharted' ? 'div' : 'button');
-      b.className = 'world-label' + (l.kind === 'uncharted' ? ' is-uncharted' : '');
+      b.className = 'world-label tag' + (l.kind === 'uncharted' ? ' uncharted' : '');
       b.style.setProperty('--acc', l.accent);
-      const eye = document.createElement('span'); eye.className = 'wl-eye'; eye.textContent = l.eyebrow;
-      const title = document.createElement('span'); title.className = 'wl-title'; title.textContent = l.title;
+      const eye = document.createElement('span'); eye.className = 'wl-eye eyebrow'; eye.textContent = l.eyebrow;
+      const title = document.createElement('span'); title.className = 'tag-title'; title.textContent = l.title;
       b.append(eye, title);
       if (b instanceof HTMLButtonElement) { b.type = 'button'; b.addEventListener('click', (ev) => { ev.stopPropagation(); on.open(l); }); }
       labelsEl.appendChild(b); return { el: b, loc: l };

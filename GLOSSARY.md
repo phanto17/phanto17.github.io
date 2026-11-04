@@ -102,7 +102,12 @@ conversation finds it fuzzy.
 - **Window bar** — `WinBar.astro`: the CRT title strip over a card (label left, status right), in a
   `row` and a tighter `tile` size.
 - **Stylesheet parts** — `global.css` imports `tokens.css` (generated), `fonts.css`, `base.css`,
-  `keys.css` and `motion.css`, in that order.
+  `keys.css`, `field-kit.css` and `motion.css`, in that order.
+- **Field kit** — `field-kit.css`: the field map's look as classes any page can use. `.tag` (a map
+  label: translucent `--panel` ground, accent border, hard accent offset) with `.tag-title`, `.eyebrow`
+  (mono uppercase in the accent pulled toward the text), `.diamond` / `.diamond-list`, `.hud-panel`,
+  `.seg` (a row of keys with one on), `.uncharted` (on a tag: dashed, italic) and `.meta-row`. Each
+  reads `--acc`, coral when unset; `world.css` only places them on the map.
 
 ## Themes and the Signal
 

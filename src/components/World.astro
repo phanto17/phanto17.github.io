@@ -67,11 +67,11 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
       <button class="btn world-key" id="world-sound" type="button" aria-pressed="false">Sound: off</button>
       <button class="btn world-key dev" id="world-dev-key" type="button" aria-pressed="false">Dev Mode: off</button>
     </div>
-    <section class="world-log" id="world-log" aria-label="Field log">
+    <section class="world-log hud-panel" id="world-log" aria-label="Field log">
       <button class="world-log-head" id="world-log-toggle" type="button"><span class="meta">Field log</span><span class="meta" id="world-log-count"></span></button>
       <ul id="world-log-list"></ul>
     </section>
-    <aside class="world-map" aria-label="Minimap">
+    <aside class="world-map hud-panel" aria-label="Minimap">
       <canvas id="world-mini" width="360" height="290" title="Click to travel"></canvas>
       <p class="world-clock"><span>Poznań <b id="world-clock-time">--:--</b></span><span id="world-clock-phase"></span></p>
     </aside>
@@ -84,7 +84,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   <aside class="world-dev" id="world-dev" hidden aria-label="Dev Mode">
     <div class="world-dev-head"><span class="meta">Dev Mode</span><button class="key world-x" id="world-dev-close" type="button" aria-label="Close Dev Mode">×</button></div>
     <h4>Render pass <span class="world-k">1–5</span></h4>
-    <div class="world-seg" id="world-views">
+    <div class="seg" id="world-views">
       <button class="key" type="button" data-view="beauty" aria-pressed="true">Beauty</button><button class="key" type="button" data-view="wireframe" aria-pressed="false">Wire</button><button class="key" type="button" data-view="normals" aria-pressed="false">Normals</button><button class="key" type="button" data-view="clay" aria-pressed="false">Clay</button><button class="key" type="button" data-view="depth" aria-pressed="false">Depth</button>
     </div>
     <h4>Overlays</h4>
@@ -115,7 +115,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   <div class="world-lab" id="world-lab" hidden role="region" aria-label="The Lab">
     <div class="world-lab-bar">
       <button class="btn" id="world-lab-close" type="button" data-crt-ripple>← Back to the map</button>
-      <div class="world-seg" role="tablist" aria-label="Lab tabs">
+      <div class="seg" role="tablist" aria-label="Lab tabs">
         <button class="key" role="tab" type="button" data-lab-tab="recall" aria-selected="true">Telegraph Recall</button>
         <button class="key" role="tab" type="button" data-lab-tab="mess" aria-selected="false">Make a mess</button>
       </div>
@@ -134,9 +134,9 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   {projects.map((p) => (
     <template data-panel={p.id}>
       <div class="world-panel" style={`--acc:${p.data.world.accent}`}>
-        <p class="world-panel-eyebrow">{p.data.genre}</p>
+        <p class="eyebrow">{p.data.genre}</p>
         <h2 id="world-drawer-title">{p.data.title}</h2>
-        <p class="world-panel-meta"><span class="pill">{statusLabel[p.data.status]}</span><span>{dates(p.data.dates)}</span><span>{p.data.engine}</span></p>
+        <p class="meta-row"><span class="pill">{statusLabel[p.data.status]}</span><span>{dates(p.data.dates)}</span><span>{p.data.engine}</span></p>
         {p.data.clip ? (
           <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video>
         ) : p.data.media[0]?.src ? (
@@ -146,7 +146,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
         {p.data.highlights.length > 0 && (
           <>
             <h3>Systems I built</h3>
-            <ul class="world-sys">{p.data.highlights.map((h) => <li>{h}</li>)}</ul>
+            <ul class="diamond-list">{p.data.highlights.map((h) => <li>{h}</li>)}</ul>
           </>
         )}
         <div class="actions">
@@ -161,9 +161,9 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   ))}
   <template data-panel="station">
     <div class="world-panel" style="--acc:#f3e6d3">
-      <p class="world-panel-eyebrow">About me</p>
+      <p class="eyebrow">About me</p>
       <h2 id="world-drawer-title">{site.name}</h2>
-      <p class="world-panel-meta"><span>{site.title}</span><span>{site.location}</span></p>
+      <p class="meta-row"><span>{site.title}</span><span>{site.location}</span></p>
       {aboutFacets.map((f) => (
         <>
           <h3>{f.title}</h3>
@@ -185,7 +185,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   </template>
   <template data-panel="guild">
     <div class="world-panel" style="--acc:#c6a8ff">
-      <p class="world-panel-eyebrow">Team projects, channel, community</p>
+      <p class="eyebrow">Team projects, channel, community</p>
       <h2 id="world-drawer-title">Guild Hall</h2>
       <div class="world-team">
         {activities.map((a) => (
@@ -202,7 +202,7 @@ const dates = (d: { start: string; end?: string }) => `${d.start} – ${d.end ??
   </template>
   <template data-panel="mast">
     <div class="world-panel" style="--acc:#f27c52">
-      <p class="world-panel-eyebrow">Contact</p>
+      <p class="eyebrow">Contact</p>
       <h2 id="world-drawer-title">Radio Mast</h2>
       <p class="lead">Looking for a junior gameplay programmer or an intern? I’d love to talk.</p>
       <div class="world-mail"><span class="meta">Email</span><code data-mail>{site.email}</code><button class="btn" type="button" data-copy-mail>Copy</button></div>
