@@ -15,13 +15,17 @@
    .seg          a row of keys where one is on (aria-pressed / aria-selected); --seg-on sets the colour
    .uncharted    a tag for a place that is not there yet: dashed, no offset, italic title
    .meta-row     a line of pills and mono facts
-   .accent       any other element whose own CSS draws with --acc-ui (the map's drawer) */
+   .accent       any other element whose own CSS draws with --acc-ui (the map's drawer, the Lab cabinet)
+
+   --acc-ui is the accent for borders, rules and glows; --acc-text is the same accent pulled toward the
+   text colour for type (the eyebrow's ink), set on the same elements. */
 .tag,
 .eyebrow,
 .diamond,
 .diamond-list,
 .accent {
   --acc-ui: color-mix(in srgb, var(--acc, var(--coral)) var(--acc-tone), var(--text));
+  --acc-text: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
 }
 
 .tag {
@@ -54,7 +58,7 @@ button.tag:hover,
   letter-spacing: 0.1em;
   text-transform: uppercase;
   /* The accent, pulled toward the text colour so it reads on the Paper theme too. */
-  color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
+  color: var(--acc-text);
 }
 .tag .eyebrow {
   font-size: 9.5px;

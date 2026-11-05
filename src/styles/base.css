@@ -610,8 +610,8 @@ details.changelog ul {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--coral);
-  box-shadow: 0 0 10px var(--coral);
+  background: var(--acc-ui, var(--coral));
+  box-shadow: 0 0 10px var(--acc-ui, var(--coral));
   display: inline-block;
 }
 

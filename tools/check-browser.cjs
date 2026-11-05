@@ -622,6 +622,26 @@ async function checkWorld(browser) {
   await page.evaluate(() => window.__world.openLab());
   await page.waitForTimeout(300);
   assert.equal(await page.locator('#world-lab #tg-open-popup').isVisible(), true, 'The Telegraph cabinet is not in the Lab');
+  // One cabinet, one look: its chrome (frame, LED, popup monitor, status line) reads the Lab accent
+  // on the map exactly as on the overview.
+  const chrome = (p, root) => p.evaluate((r) => {
+    const q = (sel) => document.querySelector(`${r} ${sel}`);
+    return [
+      getComputedStyle(q('.cabinet')).borderTopColor,
+      getComputedStyle(q('.crt-launchpad .crt-led')).backgroundColor,
+      getComputedStyle(q('.crt-popup-monitor')).borderTopColor,
+      getComputedStyle(q('.tg-status')).color,
+    ];
+  }, root);
+  const onMap = await chrome(page, '#world-lab');
+  const twin = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await serveBuild(twin);
+  await twin.goto(HOME, { waitUntil: 'networkidle' });
+  const onOverview = await chrome(twin, '#lab');
+  const labAccent = await twin.evaluate(() => getComputedStyle(document.querySelector('#lab .loc-head-line')).color);
+  await twin.close();
+  assert.deepEqual(onMap, onOverview, `The cabinet differs on the map: ${JSON.stringify({ onMap, onOverview })}`);
+  assert.equal(onOverview[3], labAccent, 'The cabinet status line is not in the Lab accent ink');
   await page.locator('[data-lab-tab="mess"]').click();
   await page.waitForTimeout(800);
   assert.ok((await page.evaluate(() => window.__world.letters()?.state().length)) >= 8, 'The letters did not start');

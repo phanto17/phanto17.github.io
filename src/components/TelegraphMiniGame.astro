@@ -42,6 +42,11 @@ const designNotes = [
 <section id="lab" class="section accent" style={`--acc: ${lab.accent}`} data-crt-interactive-root>
   <noscript>
     <style>
+  /* The cabinet's bold readouts (wave, streak, score) read in the Lab accent, not the site-wide gold. */
+  .crt-launchpad :global(.meta b),
+  .cabinet :global(.meta b) {
+    color: var(--acc-text);
+  }
       #lab .crt-launchpad, #lab .nonlinear-section, #lab .cabinet { display: none; }
     </style>
   </noscript>
@@ -217,7 +222,7 @@ const designNotes = [
     gap: 16px;
     flex-wrap: wrap;
     background: var(--surface);
-    border: 1px solid var(--umber);
+    border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
     padding: 14px 20px;
     margin-bottom: 24px;
@@ -245,7 +250,7 @@ const designNotes = [
   /* 4x4 Tactical Board Cabinet */
   .cabinet {
     background: var(--surface);
-    border: 1px solid var(--umber);
+    border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
     padding: 20px;
   }
@@ -276,12 +281,12 @@ const designNotes = [
     transition: transform 0.15s, border-color 0.15s, background 0.15s;
   }
   .tg-cell:hover {
-    border-color: var(--peach);
+    border-color: var(--acc-ui);
   }
   .tg-cell.telegraph {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(0, 0, 0, 0.1)), var(--cell-telegraph);
-    border-color: var(--coral);
-    box-shadow: var(--glow);
+    border-color: var(--acc-ui);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--acc-ui) 55%, transparent), 0 0 40px color-mix(in srgb, var(--acc-ui) 25%, transparent);
     color: var(--text);
   }
   /* Shove cue: the arrow in the badge says which way the tile is pushed; the answer is where it lands. */
@@ -317,7 +322,7 @@ const designNotes = [
   .tg-status {
     font-family: var(--mono);
     font-size: 12px;
-    color: var(--gold);
+    color: var(--acc-text);
     min-height: 2.8em;
     margin-bottom: 12px;
   }
@@ -347,7 +352,7 @@ const designNotes = [
     content: counter(tg-note, decimal-leading-zero) ' ';
     font-family: var(--mono);
     font-size: 12px;
-    color: var(--coral);
+    color: var(--acc-text);
     margin-right: 4px;
   }
   .tg-notes-list p {

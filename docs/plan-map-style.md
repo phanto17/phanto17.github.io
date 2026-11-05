@@ -380,6 +380,24 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** The cabinet looks the same in the Lab overlay and on the overview; no hex left in
   components (a test greps `src/components` for `#[0-9a-f]{3,6}` outside tokens).
 - **Estimate:** 5 h
+- **Status:** Done on 2026-11-05. No component held a hex value any more (Prism.astro was retired on
+  2026-11-04, Figure's frame moved to the accent chrome in P1); what was left were theme-tinted
+  `rgba()` literals and the coral/gold/peach chrome. The field kit now sets `--acc-text` (the accent
+  pulled toward the text, the eyebrow's ink) beside `--acc-ui`. The cabinet (launchpad, board frame,
+  portal cards, inspector, status line, design-note numbers, bold readouts), the popup monitor (border,
+  glow, active tab, close key, kickers, prompt, lit mini-cells, wave bars, stage-3 title) and ShoveLab
+  (panel edge and offset, selected ring, reset key) draw with `--acc-ui`/`--acc-text`, so they wear
+  the Lab accent on the map and on the overview and Push Comes to Shove's on its write-up; the popup and
+  ShoveLab roots carry `.accent`. The CRT LED (`base.css`) reads `--acc-ui` with coral as the fallback.
+  Game states keep their own tokens: hit (mint), miss and unavailable (coral), the shove cue (gold),
+  pits (sky), allies and enemies; the primary key stays the site's coral action. The popup's backdrop
+  is `--backdrop`, its scanlines mix `--text`/`--bg-0`. SignalStamp sits outside any place and was
+  already tokens plus neutral bevels, so it kept its gold. `tests/component-colours.test.ts` fails on
+  any hex or tinted `rgb()`/`hsl()` in `src/components` (pure black or white at an alpha — the glass
+  gloss and shade — may stay); the `world` check compares the cabinet's computed chrome in the Lab
+  overlay with the overview's and checks its status line is the Lab's accent ink. Measured on the
+  cabinet's own ground, the accent text is at least 5.4:1 in every theme; all thirteen browser checks
+  pass.
 
 ## Phase 2 — clean-up and proof
 

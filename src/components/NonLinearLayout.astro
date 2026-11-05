@@ -83,9 +83,14 @@ import InteractivePanel from './InteractivePanel.astro';
     }
   }
   /* Portal Inspector */
+  /* The kickers and bold readouts read in the Lab accent. */
+  .nonlinear-section :global(.kicker),
+  .nonlinear-section :global(.meta b) {
+    color: var(--acc-text);
+  }
   .portal-inspector {
     background: var(--surface);
-    border: 1px solid var(--umber);
+    border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
     padding: 18px 22px;
     position: relative;
@@ -104,7 +109,7 @@ import InteractivePanel from './InteractivePanel.astro';
     font-family: var(--display);
     font-size: 20px;
     margin: 0 0 8px;
-    color: var(--gold);
+    color: var(--acc-text);
   }
   .inspector-detail {
     margin: 0 0 14px;
