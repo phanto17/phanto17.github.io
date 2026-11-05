@@ -78,10 +78,12 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   }
   async function begin() {
     syncAmbient();
-    start.classList.add('is-leaving'); eng.start(); hud.hidden = false;
-    await montage();
-    setTimeout(() => { start.hidden = true; }, 500);
     const hash = location.hash.replace(/^#/, '').split('?')[0];
+    start.classList.add('is-leaving'); eng.start(); hud.hidden = false;
+    // A deep link (coming back from a write-up's "Back to the map") goes straight to the place: the
+    // render-pass montage is the first-arrival intro.
+    if (!hash) await montage();
+    setTimeout(() => { start.hidden = true; }, 500);
     if (hash === 'lab') openLab();
     else if (hash) { const l = eng.locOf(hash); if (l) openLoc(l); }
   }
@@ -161,6 +163,17 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   $('#world-log-toggle').addEventListener('click', () => $('#world-log').classList.toggle('is-open'), { signal });
   $('#world-prompt-open').addEventListener('click', () => { if (eng.S.near) openLoc(eng.S.near); }, { signal });
   $('#world-drawer-close').addEventListener('click', () => closeDrawer(), { signal });
+  // "Read the write-up" morphs the panel's eyebrow, title and clip into the page (their transition
+  // names, World.astro). A part the visitor has scrolled out of the drawer would fly in from off
+  // screen, so it sits the morph out and arrives with the page. Runs before the router's own click.
+  $('#world-drawer-body').addEventListener('click', (e) => {
+    if (!(e.target as Element | null)?.closest?.('a[href^="/projects/"]')) return;
+    const body = $('#world-drawer-body'), box = body.getBoundingClientRect();
+    body.querySelectorAll<HTMLElement>('[data-astro-transition-scope]').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      if (r.bottom <= box.top || r.top >= box.bottom) el.style.viewTransitionName = 'none';
+    });
+  }, { signal });
   $<HTMLCanvasElement>('#world-mini').addEventListener('click', (e) => {
     const cv = e.currentTarget as HTMLCanvasElement, b = cv.getBoundingClientRect(), k = cv.width / b.width, w = eng.minimapToWorld((e.clientX - b.left) * k, (e.clientY - b.top) * k);
     const hit = eng.S.locs.filter((l) => l.kind !== 'uncharted').map((l) => ({ l, d: Math.hypot(l.x - w.x, l.z - w.z) })).sort((a, c) => a.d - c.d)[0];

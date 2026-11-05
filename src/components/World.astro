@@ -122,17 +122,19 @@ const acc = (id: 'station' | 'lab' | 'guild' | 'mast') => `--acc:${landmarkById(
     </div>
   </div>
 
-  <!-- Panels: one template per location, cloned into the drawer by boot.ts. -->
+  <!-- Panels: one template per location, cloned into the drawer by boot.ts. A project panel's eyebrow,
+       title and clip carry the write-up hero's transition names (the location bar's line, the h1, the
+       cover), so "Read the write-up" morphs the panel into the page. -->
   {projects.map((p) => [p, projectView(p.data)] as const).map(([p, view]) => (
     <template data-panel={p.id}>
       <div class="world-panel" style={`--acc:${p.data.world.accent}`}>
-        <p class="eyebrow">{p.data.genre}</p>
-        <h2 id="world-drawer-title">{p.data.title}</h2>
+        <p class="eyebrow" transition:name={`eyebrow-${p.id}`}>{p.data.genre}</p>
+        <h2 id="world-drawer-title" transition:name={`title-${p.id}`}>{p.data.title}</h2>
         <p class="meta-row"><span class="pill">{view.status}</span><span>{view.period}</span><span>{p.data.engine}</span></p>
         {p.data.clip ? (
-          <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true"></video>
+          <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true" transition:name={`cover-${p.id}`}></video>
         ) : p.data.media[0]?.src ? (
-          <img class="world-clip" src={p.data.media[0].src} alt={p.data.media[0].alt} width="960" height="540" loading="lazy" decoding="async" />
+          <img class="world-clip" transition:name={`cover-${p.id}`} src={p.data.media[0].src} alt={p.data.media[0].alt} width="960" height="540" loading="lazy" decoding="async" />
         ) : null}
         <p class="lead">{p.data.summary}</p>
         {p.data.highlights.length > 0 && (

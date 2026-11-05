@@ -749,6 +749,82 @@ async function checkNav(browser) {
   console.log('HUD nav: Map link per page and section, Projects current, persisted, status line read.');
 }
 
+/**
+ * Map -> write-up -> map is one place: the drawer's eyebrow, title and clip morph into the write-up's
+ * location bar, h1 and cover (their view-transition groups animate), and the location bar's "Back to
+ * the map" reopens the drawer at once, without the first-arrival render-pass montage.
+ */
+async function checkMorph(browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await serveBuild(page);
+  await page.addInitScript(() => {
+    const watch = () => { if (document.getElementById('world-pass')?.hidden === false) window.__passShown = true; requestAnimationFrame(watch); };
+    requestAnimationFrame(watch);
+  });
+  const drawerOpen = (id, title) => page.waitForFunction(([t]) => {
+    const d = document.getElementById('world-drawer');
+    return d && !d.hidden && d.classList.contains('is-open') && document.getElementById('world-drawer-title')?.textContent === t;
+  }, [title], { timeout: 60000 });
+
+  await page.goto('http://portfolio.test/#cinderhold', { waitUntil: 'domcontentloaded' });
+  await drawerOpen('cinderhold', 'Cinderhold');
+  const names = await page.evaluate(() => ['.world-panel .eyebrow', '#world-drawer-title', '.world-clip']
+    .map((sel) => getComputedStyle(document.querySelector(`#world-drawer ${sel}`)).viewTransitionName));
+  assert.deepEqual(names, ['eyebrow-cinderhold', 'title-cinderhold', 'cover-cinderhold'], 'The drawer does not carry the write-up names');
+
+  // Record the view-transition groups that animate while the next page comes in.
+  // The router swaps inside the transition's update callback; the groups animate from the next frames.
+  const watchGroups = () => page.evaluate(() => {
+    const seen = new Set();
+    window.__vtSeen = seen;
+    window.__vtDone = false;
+    document.addEventListener('astro:after-swap', () => {
+      const end = performance.now() + 1500;
+      const look = () => {
+        for (const a of document.getAnimations()) if (a.effect?.pseudoElement) seen.add(a.effect.pseudoElement);
+        if (performance.now() < end) requestAnimationFrame(look);
+        else window.__vtDone = true;
+      };
+      requestAnimationFrame(look);
+    }, { once: true });
+  });
+  const groups = async () => {
+    await page.waitForFunction(() => window.__vtDone, null, { timeout: 30000 });
+    return page.evaluate(() => [...window.__vtSeen]);
+  };
+  const group = (name) => `::view-transition-group(${name})`;
+
+  // The panel as it opens (scrolled to the top): all three parts morph. A script click, so the drawer stays put.
+  await watchGroups();
+  await page.evaluate(() => document.querySelector('#world-drawer a[href="/projects/cinderhold/"]').click());
+  await page.waitForURL('**/projects/cinderhold/');
+  let seen = await groups();
+  for (const name of ['title-cinderhold', 'cover-cinderhold', 'eyebrow-cinderhold']) {
+    assert.ok(seen.includes(group(name)), `${name} did not morph (saw ${seen.join(', ') || 'nothing'})`);
+  }
+
+  await page.evaluate(() => { window.__passShown = false; });
+  await page.locator('.locbar-links a', { hasText: 'Back to the map' }).click();
+  await page.waitForURL((u) => u.pathname === '/' && u.hash === '#cinderhold');
+  await drawerOpen('cinderhold', 'Cinderhold');
+  assert.equal(await page.evaluate(() => window.__passShown), false, 'The montage played on the way back');
+
+  // Scrolled down to the link: the title and eyebrow are out of the drawer and sit the morph out.
+  await page.evaluate(() => { const b = document.getElementById('world-drawer-body'); b.scrollTop = b.scrollHeight; });
+  await watchGroups();
+  await page.locator('#world-drawer a[href="/projects/cinderhold/"]').click();
+  await page.waitForURL('**/projects/cinderhold/');
+  seen = await groups();
+  assert.ok(!seen.includes(group('title-cinderhold')) && !seen.includes(group('eyebrow-cinderhold')),
+    `A part scrolled out of the drawer still morphed (saw ${seen.join(', ')})`);
+  assert.ok(seen.includes(group('cover-cinderhold')), `The clip still in view did not morph (saw ${seen.join(', ') || 'nothing'})`);
+  assert.deepEqual(errors, []);
+  await page.close();
+  console.log('Morph: drawer eyebrow, title and clip grow into the write-up; Back to the map reopens the drawer.');
+}
+
 /** three.js loads only on the map: no script a text page fetches contains the renderer. */
 async function checkBundle(browser) {
   const marker = 'WebGLRenderer';
@@ -783,7 +859,7 @@ async function checkBundle(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
-      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle,
+      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle, morph: checkMorph,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

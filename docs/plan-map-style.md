@@ -267,6 +267,18 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   (the deep link exists in `World.astro:238`).
 - **Objective:** Map → write-up → map feels like one place; under reduced motion it is an instant swap.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-05. The project panels in `World.astro` carry `eyebrow-<id>`, `title-<id>`
+  and `cover-<id>` on their genre line, h2 and clip (video or image); the write-up pairs them with the
+  location bar's line (new `eyebrow-<id>`), its h1 and its cover. The map's canvas fades with the root
+  power-cycle (no extra rule needed). Found while testing: a visitor scrolls the drawer to reach "Read the
+  write-up", and a named element scrolled out of the drawer is still captured, so the title flew in from
+  above the screen; `boot.ts` now sets `view-transition-name: none` on any named part outside the
+  drawer's visible box when a write-up link is clicked (before the router's own click handler), and it
+  arrives with the page. Coming back: `/#<id>` already reopened the drawer; `begin()` now skips the
+  render-pass montage on a deep link, so the drawer opens at once. Reduced motion: the existing
+  `motion.css` rules zero every view-transition animation. Check: `check-browser` `morph` — the three
+  groups animate from a panel at the top, only the clip from a panel scrolled to the link, and "Back to
+  the map" reopens the drawer without the montage; the other twelve checks pass.
 
 ### P3. Projects index (`/projects/`) as the location index
 - **Description:** Replace ProjectRow's WinBar card with the map label grown into a row: accent border

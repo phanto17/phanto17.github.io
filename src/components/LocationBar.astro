@@ -25,7 +25,15 @@ const showAll = path !== PROJECTS_INDEX;
 <!-- The accent comes from <main> (Base sets it on a location's page). -->
 <nav class="locbar wrap" aria-label="Location">
   <span class="diamond" aria-hidden="true"></span>
-  {line && <span class="eyebrow">{line}</span>}
+  {
+    line &&
+      (location ? (
+        // Pairs with the map drawer's eyebrow: the panel's genre line grows into this one.
+        <span class="eyebrow" transition:name={`eyebrow-${location}`}>{line}</span>
+      ) : (
+        <span class="eyebrow">{line}</span>
+      ))
+  }
   <span class="locbar-links">
     <a href={mapHrefFor(location)}>← Back to the map</a>
     {showAll && <a href={PROJECTS_INDEX}>All projects</a>}
