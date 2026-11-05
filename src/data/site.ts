@@ -21,3 +21,7 @@ export const PERSON_ID = `${site.url}/#person`;
 /** The home page is the field map; the text sections live on /overview/. The nav is built from the
  * locations (src/data/locations.ts `NAV`). */
 export const OVERVIEW = '/overview/';
+/** The projects index; every write-up page sits under it. */
+export const PROJECTS_INDEX = '/projects/';
+/** The nav's Map link for a page: that page's place on the map (a location id), or the map itself. */
+export const mapHrefFor = (locationId?: string | null): string => (locationId ? `/#${locationId}` : '/');

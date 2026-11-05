@@ -1,16 +1,38 @@
 ---
-import { site } from '../data/site';
-import { NAV } from '../data/locations';
+import { site, PROJECTS_INDEX, mapHrefFor } from '../data/site';
+import { LANDMARKS, NAV } from '../data/locations';
+
+interface Props {
+  /** This page's place on the map (a location id); the Map link opens it. */
+  location?: string;
+}
+const { location } = Astro.props;
+/**
+ * The overview sections the scroll-spy follows: the nav link each one lights and the place on the map
+ * the Map link points at while it is in view. Rendered as data, so the script needs no location list.
+ */
+const spySections = [
+  ...LANDMARKS.map((l) => ({ id: l.href.split('#')[1], nav: l.href, map: l.mapHref })),
+  { id: 'projects', nav: PROJECTS_INDEX, map: mapHrefFor(null) },
+];
 ---
 
 <!-- The nav persists across client-side page navigations: its state and listeners survive the swap. -->
-<nav class="nav" aria-label="Main" transition:persist="site-nav">
+<nav class="nav" aria-label="Main" transition:persist="site-nav" data-spy-sections={JSON.stringify(spySections)}>
   <div class="wrap bar">
     <a class="brand" href="/">{site.name} <em>— field notes</em></a>
     <ul id="nav-links" class="nav-list">
-      {NAV.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
+      {NAV.map((item, i) => (
+        <li>
+          {i === 0 ? (
+            <a href={mapHrefFor(location)} data-nav-link={item.href} data-nav-map>{item.label}</a>
+          ) : (
+            <a href={item.href} data-nav-link={item.href}>{item.label}</a>
+          )}
+        </li>
+      ))}
       <li class="mobile-motion">
-        <button type="button" class="btn util-btn" data-motion-switcher aria-pressed="true">
+        <button type="button" class="btn hud-key util-btn" data-motion-switcher aria-pressed="true">
           <span data-motion-label>Motion: ON</span>
         </button>
       </li>
@@ -19,7 +41,7 @@ import { NAV } from '../data/locations';
       <button
         type="button"
         id="theme-switcher"
-        class="btn util-btn"
+        class="btn hud-key util-btn"
         aria-label="Cycle visual theme (Prism Darkroom, Daylight Paper, CRT Terminal)"
         title="Switch Theme: Prism / Paper / CRT"
       >
@@ -30,7 +52,7 @@ import { NAV } from '../data/locations';
         type="button"
         id="motion-switcher"
         data-motion-switcher
-        class="btn util-btn"
+        class="btn hud-key util-btn"
         aria-pressed="true"
         aria-label="Toggle kinetic animations and motion effects"
         title="Toggle Motion (Full / Reduced)"
@@ -39,7 +61,7 @@ import { NAV } from '../data/locations';
       </button>
       <button
         type="button"
-        class="btn menu-toggle"
+        class="btn hud-key menu-toggle"
         aria-expanded="false"
         aria-controls="nav-links"
         aria-label="Toggle navigation menu"
@@ -47,7 +69,7 @@ import { NAV } from '../data/locations';
         <span class="menu-icon" aria-hidden="true">☰</span>
         <span class="menu-text">Menu</span>
       </button>
-      <a class="btn cv" href={site.cv} download data-astro-prefetch="false">
+      <a class="btn hud-key cv" href={site.cv} download data-astro-prefetch="false">
         <span class="long">Download CV</span><span class="short">CV</span>
       </a>
     </div>
@@ -58,7 +80,7 @@ import { NAV } from '../data/locations';
   import type { ThemeId } from '../scripts/generated/themes';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
-  import { OVERVIEW } from '../data/site';
+  import { OVERVIEW, PROJECTS_INDEX, mapHrefFor } from '../data/site';
   import { MEDIA } from '../scripts/generated/breakpoints';
 
   const root = document.documentElement;
@@ -169,50 +191,57 @@ import { NAV } from '../data/locations';
     document.addEventListener('astro:after-swap', () => setOpen(false));
   }
 
-  // 4. Active section scroll-spy on the overview (re-armed for every page the router brings in);
-  // on the map, the Map link is current.
-  let spy: IntersectionObserver | null = null;
+  // 4. Where the visitor is. The Map link always points at this page's place on the map (body
+  // data-location, set by Base from the page's location), or at the place of the overview section in
+  // view; Projects is current on the index and on every write-up; the scroll-spy lights the overview
+  // section in view; on the map, Map is current.
+  interface SpySection { id: string; nav: string; map: string }
+  const spySections: SpySection[] = JSON.parse(navEl?.dataset.spySections ?? '[]');
   const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
+  const mapLink = document.querySelector<HTMLAnchorElement>('[data-nav-map]');
+  const mark = (current: (link: HTMLAnchorElement) => 'page' | 'location' | null) =>
+    links.forEach((l) => {
+      const state = current(l);
+      l.classList.toggle('active', state !== null);
+      if (state) l.setAttribute('aria-current', state);
+      else l.removeAttribute('aria-current');
+    });
+  const navHref = (l: HTMLAnchorElement) => l.dataset.navLink ?? '';
+  let spy: IntersectionObserver | null = null;
   const armScrollSpy = () => {
     spy?.disconnect();
     spy = null;
     const path = window.location.pathname;
     const onMap = path === '/' || path === '/index.html';
     const onOverview = path === OVERVIEW || path === `${OVERVIEW}index.html`;
+    const onProjects = path.startsWith(PROJECTS_INDEX);
+    if (mapLink) mapLink.href = mapHrefFor(document.body.dataset.location);
     if (!onOverview) {
-      links.forEach((l) => {
-        const match = onMap && l.getAttribute('href') === '/';
-        l.classList.toggle('active', match);
-        if (match) l.setAttribute('aria-current', 'page');
-        else l.removeAttribute('aria-current');
+      mark((l) => {
+        if (onMap && navHref(l) === '/') return 'page';
+        if (onProjects && navHref(l) === PROJECTS_INDEX) return path === PROJECTS_INDEX ? 'page' : 'location';
+        return null;
       });
       return;
     }
-    const sections = links
-      .map((l) => {
-        const hash = l.getAttribute('href')?.split('#')[1];
-        return hash ? document.getElementById(hash) : null;
-      })
-      .filter((s): s is HTMLElement => Boolean(s));
-
-    if ('IntersectionObserver' in window && sections.length > 0) {
-      spy = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const activeHref = `${OVERVIEW}#${entry.target.id}`;
-            links.forEach((l) => {
-              const match = l.getAttribute('href') === activeHref;
-              l.classList.toggle('active', match);
-              if (match) l.setAttribute('aria-current', 'location');
-              else l.removeAttribute('aria-current');
-            });
-          });
-        },
-        { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
-      );
-      sections.forEach((s) => spy?.observe(s));
-    }
+    mark(() => null);
+    const sections = spySections
+      .map((sec) => ({ sec, el: document.getElementById(sec.id) }))
+      .filter((x): x is { sec: SpySection; el: HTMLElement } => Boolean(x.el));
+    if (!('IntersectionObserver' in window) || sections.length === 0) return;
+    spy = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const hit = sections.find((x) => x.el === entry.target)?.sec;
+          if (!hit) return;
+          mark((l) => (navHref(l) === hit.nav ? 'location' : null));
+          if (mapLink) mapLink.href = hit.map;
+        });
+      },
+      { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
+    );
+    sections.forEach((x) => spy?.observe(x.el));
   };
   onPage(armScrollSpy);
 </script>
@@ -222,10 +251,10 @@ import { NAV } from '../data/locations';
     position: sticky;
     top: 0;
     z-index: 20;
-    background: var(--nav-bg);
+    background: var(--panel);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border-bottom: 2px solid var(--umber);
+    border-bottom: var(--line);
   }
   .bar {
     display: flex;
@@ -279,10 +308,6 @@ import { NAV } from '../data/locations';
     gap: 8px;
   }
   .util-btn {
-    padding: 7px 11px;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
     gap: 5px;
   }
   .util-dot {
@@ -291,9 +316,6 @@ import { NAV } from '../data/locations';
   }
   .menu-toggle {
     display: none;
-    padding: 7px 12px;
-    font-family: var(--mono);
-    font-size: 11px;
     gap: 6px;
   }
   .mobile-motion {
@@ -304,9 +326,7 @@ import { NAV } from '../data/locations';
     display: none;
   }
   .cv {
-    white-space: nowrap;
-    padding: 8px 14px;
-    font-size: 13px;
+    padding-inline: 12px;
   }
   .cv .short {
     display: none;
@@ -333,7 +353,7 @@ import { NAV } from '../data/locations';
       flex-direction: column;
       gap: 0;
       background: var(--surface);
-      border-bottom: 2px solid var(--umber);
+      border-bottom: var(--line);
       padding: 8px 20px 16px;
       box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65);
     }

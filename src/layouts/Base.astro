@@ -22,10 +22,13 @@ interface Props {
   schema?: Record<string, unknown>[];
   /** `world`: the field map fills the viewport; the signal field and the footer stay off. */
   chrome?: 'default' | 'world';
+  /** This page's place on the map (a location id): the nav's Map link opens it there. */
+  location?: string;
 }
 const {
   title,
   chrome = 'default',
+  location,
   description = site.description,
   image = '/media/og/default.jpg',
   noindex = false,
@@ -95,11 +98,11 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <ClientRouter />
     <script is:inline set:html={prefsBoot} />
   </head>
-  <body data-chrome={chrome}>
+  <body data-chrome={chrome} data-location={location}>
     <a class="skip-link" href="#main">Skip to content</a>
     <canvas id="signal-field" class="signal-field" aria-hidden="true" transition:persist="signal-field"></canvas>
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
-    <Nav />
+    <Nav location={location} />
     <main id="main">
       <slot />
     </main>

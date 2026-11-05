@@ -72,7 +72,11 @@ conversation finds it fuzzy.
   contact) or the **uncharted** marker, the free slot the next project will take. The list is built
   once in `src/data/locations.ts` (`buildLocations`, `LANDMARKS`): each has an `href` (its text page:
   the write-up, or the overview section with the same content), a `mapHref` (`/#<id>`, which opens its
-  panel after Explore) and an accent. The nav (`NAV`) is built from the landmarks.
+  panel after Explore) and an accent. The nav (`NAV`) is built from the landmarks; its Map link opens
+  the current page's place (`mapHrefFor`, from `body[data-location]` or the overview section in view).
+- **Status line** — the footer's first row on every text page (`src/lib/status-line.ts`): the Poznań
+  clock and phase the map is lit at and the field log's "n/N explored" (read from
+  `portfolio-world-visited`); absent without JavaScript.
 - **Project view** — `src/lib/project-view.ts` `projectView`: a project's status ("Playable", "Released",
   "Build in progress", "Rework planned"), its period and its live link ("▶ Play on itch.io" for a game,
   "↓ Download on GitHub" for a tool), in one wording on the map, the overview, the projects index and

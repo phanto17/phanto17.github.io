@@ -11,6 +11,7 @@
    .diamond      the location bullet; .is-done fills it
    .diamond-list a list with filled accent diamonds as bullets
    .hud-panel    a hairline panel on the translucent ground
+   .hud-key      the HUD's key size: mono 11.5px on a glass key (the map's keys, the nav's utility keys)
    .seg          a row of keys where one is on (aria-pressed / aria-selected); --seg-on sets the colour
    .uncharted    a tag for a place that is not there yet: dashed, no offset, italic title
    .meta-row     a line of pills and mono facts
@@ -96,6 +97,12 @@ button.tag:hover,
   background: var(--panel);
   border: 1px solid var(--hairline);
   border-radius: var(--r-xs);
+}
+
+.hud-key {
+  font: 500 11.5px/1.2 var(--font-mono);
+  padding: 7px 10px;
+  white-space: nowrap;
 }
 
 .seg {

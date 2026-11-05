@@ -159,11 +159,11 @@ async function checkAnchorNavigation(browser) {
   await page.goto(HOME, { waitUntil: 'networkidle' });
   await readyLab(page);
   await page.locator('.menu-toggle').click();
-  await page.locator('#nav-links a[href="/overview/#projects"]').click();
-  const heading = await page.locator('#projects h2').boundingBox();
+  await page.locator('#nav-links a[href="/overview/#activities"]').click();
+  const heading = await page.locator('#activities h2').boundingBox();
   const navigation = await page.locator('nav.nav').boundingBox();
   assert.ok(heading && navigation && heading.y >= navigation.y + navigation.height,
-    'The sticky navigation obscures the project heading');
+    'The sticky navigation obscures the section heading');
   await page.close();
   console.log('Anchor navigation remains visible below the sticky header.');
 }
@@ -662,6 +662,88 @@ async function checkWorld(browser) {
   console.log('Field map: boot, walk, panel, Dev Mode, test project, Lab and phone tap passed.');
 }
 
+/**
+ * The HUD nav on every page: the Map link points at the page's place (a write-up, the overview section
+ * in view), Projects is current under /projects/, the nav element survives view transitions, the keys
+ * share the map's size and the footer's status line reads the clock and the field log.
+ */
+async function checkNav(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  await serveBuild(page);
+  await page.addInitScript(() => localStorage.setItem('portfolio-world-visited', JSON.stringify(['lab', 'not-a-place'])));
+  const nav = () => page.evaluate(() => {
+    const link = (label) => [...document.querySelectorAll('#nav-links a')].find((a) => a.textContent.trim() === label);
+    return {
+      map: link('Map').getAttribute('href'),
+      projects: link('Projects').getAttribute('aria-current'),
+      lab: link('Lab').getAttribute('aria-current'),
+      mapCurrent: link('Map').getAttribute('aria-current'),
+      tag: document.querySelector('nav.nav').__tag ?? null,
+    };
+  });
+
+  await page.goto('http://portfolio.test/projects/push-comes-to-shove/', { waitUntil: 'networkidle' });
+  let n = await nav();
+  assert.equal(n.map, '/#push-comes-to-shove', "A write-up's Map link does not open its place");
+  assert.equal(n.projects, 'location', 'Projects is not current on a write-up');
+  const status = (await page.locator('[data-status-line]').textContent()).replace(/\s*·\s*/g, ' · ').replace(/\s+/g, ' ').trim();
+  assert.match(status, /^Poznań \d\d:\d\d · \S.* · 1\/\d+ explored · Style guide$/, `Status line reads "${status}"`);
+  const ground = await page.evaluate(() => {
+    const css = getComputedStyle(document.querySelector('nav.nav'));
+    const key = getComputedStyle(document.querySelector('#theme-switcher'));
+    return { border: css.borderBottomWidth, bg: css.backgroundColor, panel: getComputedStyle(document.documentElement).getPropertyValue('--panel').trim(), font: key.fontSize };
+  });
+  assert.equal(ground.border, '1px', 'The nav still has the thick rule');
+  assert.equal(ground.font, '11.5px', 'The nav keys are not the HUD key size');
+
+  // A client-side move keeps the same nav element and updates the Map link.
+  await page.evaluate(() => { document.querySelector('nav.nav').__tag = 'kept'; });
+  await page.locator('#nav-links a', { hasText: 'Projects' }).click();
+  await page.waitForURL('**/projects/');
+  await page.waitForFunction(() => document.querySelector('[data-nav-map]').getAttribute('href') === '/');
+  n = await nav();
+  assert.equal(n.tag, 'kept', 'The nav was re-created by the page move');
+  assert.equal(n.projects, 'page', 'Projects is not current on the projects index');
+
+  // On the overview the Map link follows the section in view.
+  await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });
+  await page.locator('#lab').scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.getElementById('lab').scrollIntoView({ block: 'start' }));
+  await page.waitForFunction(() => document.querySelector('[data-nav-map]').getAttribute('href') === '/#lab', null, { timeout: 5000 });
+  n = await nav();
+  assert.equal(n.lab, 'location', 'The Lab link is not current over the Lab section');
+
+  // On the map the keys are the same size and Map is the current page.
+  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  n = await nav();
+  assert.equal(n.mapCurrent, 'page', 'Map is not current on the map');
+  const sizes = await page.evaluate(() => [...document.querySelectorAll('.world-key, .nav .util-btn')].map((k) => getComputedStyle(k).fontSize));
+  assert.ok(sizes.length > 2 && sizes.every((x) => x === '11.5px'), `Map and nav keys differ: ${sizes.join(', ')}`);
+  await page.close();
+  console.log('HUD nav: Map link per page and section, Projects current, persisted, status line read.');
+}
+
+/** three.js loads only on the map: no script a text page fetches contains the renderer. */
+async function checkBundle(browser) {
+  const marker = 'WebGLRenderer';
+  const chunks = fs.readdirSync(path.join(dist, '_astro')).filter((x) => x.endsWith('.js'));
+  const threeChunks = chunks.filter((x) => fs.readFileSync(path.join(dist, '_astro', x), 'utf8').includes(marker));
+  assert.ok(threeChunks.length > 0, 'No built chunk contains three.js: the bundle check would pass vacuously');
+  for (const route of routes.filter((r) => r !== '/')) {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await serveBuild(page);
+    const loaded = [];
+    page.on('response', (r) => { if (r.url().endsWith('.js')) loaded.push(path.basename(new URL(r.url()).pathname)); });
+    await page.goto(`http://portfolio.test${route}`, { waitUntil: 'networkidle' });
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    const bad = loaded.filter((x) => threeChunks.includes(x));
+    assert.deepEqual(bad, [], `${route} loads three.js (${bad.join(', ')})`);
+    await page.close();
+  }
+  console.log(`Bundle: three.js (${threeChunks.join(', ')}) stays off ${routes.length - 1} text pages.`);
+}
+
 (async () => {
   assert.ok(fs.existsSync(path.join(dist, 'index.html')), 'Run npm run build first.');
   const browser = await chromium.launch({
@@ -675,7 +757,7 @@ async function checkWorld(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
-      world: checkWorld, field: checkFieldLane,
+      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

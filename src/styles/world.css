@@ -172,11 +172,6 @@ body[data-chrome='world'] #main {
   gap: 6px;
   pointer-events: auto;
 }
-.world-key {
-  font: 500 11.5px/1.2 var(--font-mono);
-  padding: 7px 10px;
-  white-space: nowrap;
-}
 .world-key[aria-pressed='true'] {
   color: var(--mint, var(--gold));
 }

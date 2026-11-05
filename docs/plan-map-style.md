@@ -194,6 +194,21 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** Moving between the map and any page keeps the same chrome; the persisted nav still
   carries across view transitions; no three.js on text pages (bundle check).
 - **Estimate:** 4 h
+- **Status:** Done on 2026-11-05. `Nav.astro` sits on the `panel` ground with a hairline (the drawer
+  too); the theme, motion, menu and CV keys take the new field-kit `.hud-key` (mono 11.5px, the map's
+  keys use it as well, `.world-key` keeps only its pressed colours). The Map link points at
+  `mapHrefFor(body[data-location])` — Base's new `location` prop, set by every write-up — and on the
+  overview at the landmark of the section in view (the scroll-spy reads its sections as data, so no
+  location list ships to the client); Projects now opens `/projects/` and is current on the index and
+  on every write-up. The footer's first row is the status line "Poznań 08:22 · Day · 3/8 explored ·
+  Style guide" (`src/lib/status-line.ts`, the field log's count over `buildLocations`, re-read every
+  30 s, hidden without JavaScript); the second row keeps the © line and the GitHub / YouTube / email
+  links, so text pages still carry the contact links. The `nav-bg` token stays for the design-system
+  artifact's nav component; the site no longer reads it. Checks: `tests/status-line.test.ts`, the nav
+  cases in `tests/locations.test.ts`, and two new `check-browser` checks — `nav` (Map link per write-up
+  and per overview section, Projects current, the nav element survives a client-side move, key sizes
+  match the map's, the status line reads) and `bundle` (no script fetched by the eight text pages
+  contains three.js, and some chunk does); the other ten checks and the link check pass.
 
 ### F7. Location bar
 - **Description:** A `LocationBar.astro` for the top of every page under the nav: a diamond in the

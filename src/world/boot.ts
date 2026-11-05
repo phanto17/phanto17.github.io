@@ -13,10 +13,11 @@ import { sound, audioContext } from '../scripts/sound';
 import { parseLabHash } from '../scripts/telegraph-popup';
 import { MEDIA } from '../scripts/generated/breakpoints';
 
-interface WorldData { seeds: ProjectSeed[]; landmarks: LandmarkSeed[]; word: string }
-const VISITED_KEY = 'portfolio-world-visited';
+import { VISITED_KEY, parseVisited } from '../lib/status-line';
 
-const read = (k: string): string[] => { try { return JSON.parse(localStorage.getItem(k) ?? '[]') as string[]; } catch { return []; } };
+interface WorldData { seeds: ProjectSeed[]; landmarks: LandmarkSeed[]; word: string }
+
+const readVisited = (): string[] => { try { return parseVisited(localStorage.getItem(VISITED_KEY)); } catch { return []; } };
 const write = (k: string, v: string[]) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch { /* storage blocked: the log just does not persist */ } };
 /** Rewrites only the fragment: the ClientRouter keeps its own entry in `history.state`, so it stays. */
 const replaceHash = (hash: string) => { try { history.replaceState(history.state, '', `${location.pathname}${location.search}${hash}`); } catch { /* history unavailable */ } };
@@ -26,7 +27,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   const $$ = <T extends HTMLElement>(sel: string): T[] => Array.from(root.querySelectorAll<T>(sel));
   const data = JSON.parse($('#world-data').textContent ?? '{}') as WorldData;
   const canvas = $<HTMLCanvasElement>('#world-gl'), start = $('#world-start'), hud = $('#world-hud'), dev = $('#world-dev'), drawer = $('#world-drawer'), lab = $('#world-lab');
-  const visited = new Set(read(VISITED_KEY));
+  const visited = new Set(readVisited());
   let engine: Engine | null = null, openId: string | null = null, hintDone = false, lastTick = 0, ambient: Ambient | null = null, letters: ReturnType<typeof mountLetters> | null = null;
 
   // ── Sound: the site's cues, plus the ambient bed while sound is on ──────────────

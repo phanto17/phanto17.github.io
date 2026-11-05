@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildLocations, LANDMARKS, NAV, toLandmarkSeed, toProjectSeed, type ProjectEntryLike, type ProjectLocation } from '../src/data/locations';
-import { OVERVIEW } from '../src/data/site';
+import { buildLocations, LANDMARKS, NAV, landmarkForSection, toLandmarkSeed, toProjectSeed, type ProjectEntryLike, type ProjectLocation } from '../src/data/locations';
+import { OVERVIEW, PROJECTS_INDEX, mapHrefFor } from '../src/data/site';
 import { projectView } from '../src/lib/project-view';
 import { buildLayout } from '../src/world/gen';
 
@@ -52,6 +52,19 @@ describe('the location list', () => {
   it('builds the nav from the map and the landmarks', () => {
     expect(NAV.map((n) => n.label)).toEqual(['Map', 'About', 'Projects', 'Lab', 'Activities', 'Contact']);
     for (const l of LANDMARKS) expect(NAV).toContainEqual({ href: l.href, label: l.nav });
+  });
+
+  it('links Projects to the index, not the overview section', () => {
+    expect(NAV.find((n) => n.label === 'Projects')?.href).toBe(PROJECTS_INDEX);
+    expect(NAV[0]).toEqual({ href: '/', label: 'Map' });
+  });
+
+  it("points the Map link at the page's place, and an overview section at its landmark", () => {
+    expect(mapHrefFor('cinderhold')).toBe('/#cinderhold');
+    expect(mapHrefFor(undefined)).toBe('/');
+    expect(mapHrefFor(null)).toBe('/');
+    for (const l of LANDMARKS) expect(landmarkForSection(l.href.split('#')[1])).toBe(l);
+    expect(landmarkForSection('projects')).toBeUndefined();
   });
 });
 

@@ -55,9 +55,9 @@ const acc = (id: 'station' | 'lab' | 'guild' | 'mast') => `--acc:${landmarkById(
 
   <div class="world-hud" id="world-hud" hidden>
     <div class="world-keys">
-      <a class="btn world-key" href="/overview/">Overview</a>
-      <button class="btn world-key" id="world-sound" type="button" aria-pressed="false">Sound: off</button>
-      <button class="btn world-key dev" id="world-dev-key" type="button" aria-pressed="false">Dev Mode: off</button>
+      <a class="btn hud-key world-key" href="/overview/">Overview</a>
+      <button class="btn hud-key world-key" id="world-sound" type="button" aria-pressed="false">Sound: off</button>
+      <button class="btn hud-key world-key dev" id="world-dev-key" type="button" aria-pressed="false">Dev Mode: off</button>
     </div>
     <section class="world-log hud-panel" id="world-log" aria-label="Field log">
       <button class="world-log-head" id="world-log-toggle" type="button"><span class="meta">Field log</span><span class="meta" id="world-log-count"></span></button>
@@ -93,9 +93,9 @@ const acc = (id: 'station' | 'lab' | 'guild' | 'mast') => `--acc:${landmarkById(
       <div><dt>Last BFS</dt><dd id="world-stat-bfs">–</dd></div><div><dt>Here</dt><dd id="world-stat-near">–</dd></div>
     </dl>
     <h4>Time of day <span class="world-k" id="world-time-val"></span></h4>
-    <div class="world-time"><input id="world-time-range" type="range" min="0" max="23.99" step="0.05" aria-label="Time of day override" /><button class="btn world-key" id="world-time-now" type="button">Now</button></div>
+    <div class="world-time"><input id="world-time-range" type="range" min="0" max="23.99" step="0.05" aria-label="Time of day override" /><button class="btn hud-key world-key" id="world-time-now" type="button">Now</button></div>
     <h4>World data</h4>
-    <div class="row"><button class="btn world-key" id="world-add" type="button">+ Add test project</button><button class="btn world-key" id="world-remove" type="button" disabled>Remove</button></div>
+    <div class="row"><button class="btn hud-key world-key" id="world-add" type="button">+ Add test project</button><button class="btn hud-key world-key" id="world-remove" type="button" disabled>Remove</button></div>
     <p class="fine" id="world-add-msg">Adds one entry to the project list and regenerates the map.</p>
   </aside>
 

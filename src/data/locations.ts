@@ -9,7 +9,7 @@
  */
 import tokens from '../../design/tokens.json';
 import type { LandmarkKind, LandmarkSeed, ProjectKind, ProjectSeed } from '../world/gen';
-import { OVERVIEW } from './site';
+import { OVERVIEW, PROJECTS_INDEX } from './site';
 
 interface LocationBase {
   id: string;
@@ -59,6 +59,10 @@ export const LANDMARKS: readonly LandmarkLocation[] = [
 
 export const landmarkById = (id: LandmarkKind): LandmarkLocation => LANDMARKS.find((l) => l.id === id)!;
 
+/** The landmark whose overview section has this id (`about` → Field Station), if any. */
+export const landmarkForSection = (sectionId: string): LandmarkLocation | undefined =>
+  LANDMARKS.find((l) => l.href === `${OVERVIEW}#${sectionId}`);
+
 /** The fields of a project entry this reads (a `getCollection('projects')` entry fits). */
 export interface ProjectEntryLike {
   id: string;
@@ -99,10 +103,13 @@ export const toLandmarkSeed = (l: LandmarkLocation): LandmarkSeed => ({
   ...(l.slot === undefined ? {} : { slot: l.slot }),
 });
 
-/** The main nav: the map, then the landmarks in their overview order with the projects after About. */
+/**
+ * The main nav: the map, then the landmarks in their overview order with the projects index after
+ * About. The Map link's href here is the plain map; each page points it at its own place (Nav.astro).
+ */
 export const NAV: readonly { href: string; label: string }[] = [
   { href: '/', label: 'Map' },
   { href: landmarkById('station').href, label: landmarkById('station').nav },
-  { href: `${OVERVIEW}#projects`, label: 'Projects' },
+  { href: PROJECTS_INDEX, label: 'Projects' },
   ...LANDMARKS.slice(1).map((l) => ({ href: l.href, label: l.nav })),
 ];
