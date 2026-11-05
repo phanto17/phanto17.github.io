@@ -44,6 +44,8 @@ export function renderTokensCss(tokens, backdrop) {
     const mapLit = mapToken ? value(mapToken, id) === '1' : false;
     if (mapLit && backdrop?.length !== 5) throw new Error('renderTokensCss: a map-lit theme needs the five backdrop colours');
     for (let i = 1; i <= 5; i++) s += `  --field-fallback-${i}: ${mapLit ? backdrop[i - 1] : `var(--field-${i})`};\n`;
+    // The fallback's content lane: the same share of colour as the field's lane in this theme.
+    s += `  --field-fallback-lane: ${mapLit ? 'var(--field-map-lane)' : 'var(--field-lane)'};\n`;
     s += `  color-scheme: ${scheme[id] ?? 'dark'};\n`;
     return s;
   }

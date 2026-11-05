@@ -106,7 +106,51 @@ async function checkNoJavaScript(browser) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await page.close();
   }
-  console.log('Script-free navigation and game fallback passed.');
+  // Without scripts nothing draws the field: the hero text sits on the static backdrop. Read each
+  // hero line's own colour against the ground under it (the text made transparent, layout kept).
+  // A blurred prism band behind the heroes washed them out until 2026-11-04.
+  const decoder = await browser.newPage();
+  const low = [];
+  for (const theme of ['prism', 'paper', 'crt']) {
+    for (const [url, width] of [['/overview/', 390], ['/overview/', 1440], ['/projects/push-comes-to-shove/', 1440], ['/404.html', 390]]) {
+      const page = await browser.newPage({ viewport: { width, height: 800 }, javaScriptEnabled: false, colorScheme: theme === 'paper' ? 'light' : 'dark' });
+      await page.route('http://portfolio.test/**', async (route) => {
+        const pathname = decodeURIComponent(new URL(route.request().url()).pathname);
+        let file = path.resolve(dist, `.${pathname}`);
+        if (pathname.endsWith('/')) file = path.join(file, 'index.html');
+        if (!file.startsWith(`${dist}${path.sep}`) || !fs.existsSync(file)) return route.fulfill({ status: 404, body: 'Not found' });
+        let body = fs.readFileSync(file);
+        if (file.endsWith('.html')) {
+          let html = body.toString('utf8');
+          // Without scripts the theme can only come from the OS scheme; CRT is set on the element.
+          if (theme === 'crt') html = html.replace('<html ', '<html data-theme="crt" ');
+          if (new URL(route.request().url()).searchParams.has('bare')) {
+            html = html.replace('</head>', '<style>* { color: transparent !important; text-shadow: none !important; }</style></head>');
+          }
+          body = html;
+        }
+        return route.fulfill({ status: 200, contentType: mimeTypes[path.extname(file)] || 'application/octet-stream', body });
+      });
+      await page.goto(`http://portfolio.test${url}`, { waitUntil: 'load' });
+      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta')]
+        .map((el) => ({ el, r: el.getBoundingClientRect(), s: getComputedStyle(el) }))
+        .filter(({ r }) => r.width > 0 && r.bottom <= innerHeight)
+        .map(({ el, r, s }) => ({
+          name: el.tagName.toLowerCase() + (el.classList[0] ? `.${el.classList[0]}` : ''),
+          x: r.left, y: r.top, w: r.width, h: r.height, ink: s.color,
+          need: parseFloat(s.fontSize) >= 24 || (Number(s.fontWeight) >= 700 && parseFloat(s.fontSize) >= 18.66) ? 3 : 4.5,
+        })));
+      assert.ok(regions.length > 0, `No hero text found on ${url}`);
+      await page.goto(`http://portfolio.test${url}?bare`, { waitUntil: 'load' });
+      const png = (await page.screenshot()).toString('base64');
+      const ratios = await groundContrast(decoder, png, regions);
+      regions.forEach((r, i) => { if (ratios[i] < r.need) low.push(`${theme} ${url}@${width} ${r.name}: ${ratios[i].toFixed(2)}:1 (needs ${r.need})`); });
+      await page.close();
+    }
+  }
+  await decoder.close();
+  assert.deepEqual(low, [], 'Hero text without scripts falls under its WCAG minimum');
+  console.log('Script-free navigation, game fallback and hero contrast passed.');
 }
 
 async function checkAnchorNavigation(browser) {
@@ -369,6 +413,37 @@ function contrastRatio(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
+/**
+ * The lowest contrast each region's ink reaches on the ground in a screenshot (base64 PNG), read as
+ * 8×8 block means so film grain averages out. `decoder` is any page with JavaScript on (the image
+ * decodes there); a region is { x, y, w, h, ink } in CSS pixels with ink as #rrggbb or rgb().
+ */
+async function groundContrast(decoder, png, regions) {
+  return decoder.evaluate(async ({ png, regions }) => {
+    const img = await new Promise((resolve) => { const i = new Image(); i.onload = () => resolve(i); i.src = `data:image/png;base64,${png}`; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const w = img.width, data = ctx.getImageData(0, 0, w, img.height).data;
+    const lin = (v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
+    const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    const channels = (c) => (c.startsWith('#') ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : c.match(/[\d.]+/g).slice(0, 3).map(Number));
+    const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    return regions.map((r) => {
+      const li = lum(...channels(r.ink));
+      let worst = Infinity;
+      const x0 = Math.max(0, Math.round(r.x)), y0 = Math.max(0, Math.round(r.y));
+      for (let by = y0; by + 8 <= Math.min(img.height, r.y + r.h); by += 8) for (let bx = x0; bx + 8 <= Math.min(w, r.x + r.w); bx += 8) {
+        let R = 0, G = 0, B = 0;
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const k = ((by + y) * w + bx + x) * 4; R += data[k]; G += data[k + 1]; B += data[k + 2]; }
+        worst = Math.min(worst, ratio(li, lum(R / 64, G / 64, B / 64)));
+      }
+      return worst;
+    });
+  }, { png, regions });
+}
+
 async function checkThemeContrast(browser) {
   for (const theme of ['prism', 'paper', 'crt']) {
     const page = await browser.newPage({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
@@ -421,29 +496,9 @@ async function checkFieldLane(browser) {
       await page.addStyleTag({ content: 'body > *:not(.signal-field) { opacity: 0 !important; } body { background: transparent !important; }' });
       await page.waitForTimeout(150);
       const png = (await page.screenshot()).toString('base64');
-      const worst = await page.evaluate(async ({ png, inks }) => {
-        const img = await new Promise((resolve) => { const i = new Image(); i.onload = () => resolve(i); i.src = `data:image/png;base64,${png}`; });
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width; canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const w = img.width, x0 = Math.round(w / 2 - 520), x1 = Math.round(w / 2 + 520);
-        const data = ctx.getImageData(0, 0, w, img.height).data;
-        const lin = (v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
-        const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-        let hi = 0, lo = 1;
-        for (let by = 0; by + 8 <= img.height; by += 8) for (let bx = x0; bx + 8 <= x1; bx += 8) {
-          let r = 0, g = 0, b = 0;
-          for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const k = ((by + y) * w + bx + x) * 4; r += data[k]; g += data[k + 1]; b += data[k + 2]; }
-          const l = lum(r / 64, g / 64, b / 64);
-          hi = Math.max(hi, l); lo = Math.min(lo, l);
-        }
-        const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
-        return Math.min(...inks.map((ink) => {
-          const li = lum(...[1, 3, 5].map((i) => parseInt(ink.slice(i, i + 2), 16)));
-          return Math.min(ratio(li, hi), ratio(li, lo));
-        }));
-      }, { png, inks });
+      const width = 1440, height = 900;
+      const lane = { x: width / 2 - 520, y: 0, w: 1040, h: height };
+      const worst = Math.min(...(await groundContrast(page, png, inks.map((ink) => ({ ...lane, ink })))));
       if (worst < 4.5) low.push(`${theme} at ${name}: ${worst.toFixed(2)}:1`);
       await context.close();
     }

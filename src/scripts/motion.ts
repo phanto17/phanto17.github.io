@@ -128,7 +128,6 @@ function kineticHeadings() {
  * Scroll choreography (Phase 2). Everything is scrubbed by scroll position or fires once on entry;
  * the document always scrolls natively (no pinning spacers, no scroll-jacking, no parallax).
  * - The outlined section numeral (01–06) fills with coral as its section arrives.
- * - The prism band (shown when the WebGL field is unavailable) turns a few degrees with scroll.
  * - Timeline cards tip up from a rotateX tied to their tilt limit when they enter.
  * The Projects head bar stays in view while the rows scroll under it: that is CSS `position: sticky`
  * (global.css), toggled to its stuck look by index.astro, so it also works without this module.
@@ -143,18 +142,6 @@ function scrollChoreography() {
         '--fill': '100%',
         ease: 'none',
         scrollTrigger: { trigger: section, start: 'top 85%', end: 'top 30%', scrub: 0.4 },
-      },
-    );
-  });
-
-  document.querySelectorAll<HTMLElement>('.prism-wrap').forEach((wrap) => {
-    gsap.fromTo(
-      wrap,
-      { rotate: -2.5 },
-      {
-        rotate: 2.5,
-        ease: 'none',
-        scrollTrigger: { trigger: wrap.parentElement ?? wrap, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
       },
     );
   });

@@ -5,7 +5,6 @@
  * file at build time, so this page cannot drift from src/styles/tokens.css.
  */
 import Base from '../layouts/Base.astro';
-import Prism from '../components/Prism.astro';
 import Figure from '../components/Figure.astro';
 import { getCollection } from 'astro:content';
 import tokens from '../../design/tokens.json';
@@ -63,7 +62,6 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
   description="Living design system and component reference for Tymoteusz Jaskólski's game-dev portfolio, generated from the token file."
 >
   <header class="sg-hero">
-    <Prism />
     <div class="wrap">
       <p class="kicker"><a href="/">← Portfolio Home</a> · Living Design Document · generated from design/tokens.json</p>
       <h1>Prism <em>CRT</em></h1>

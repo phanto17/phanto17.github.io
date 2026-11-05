@@ -59,7 +59,7 @@ conversation finds it fuzzy.
 - **Map-lit** — a theme whose `field-map` token is 1 (Prism, Paper): the five stops are the field map
   seen from far away at the current Poznań hour (`fieldPalette` in `src/world/daylight.ts`: sun, lit
   path, ground, water, fog), drawn at `field-map-lane`. Other themes use their `field-1..5` at
-  `field-lane`. The no-WebGL fallback reads `--field-fallback-1..5` (noon when map-lit).
+  `field-lane`. The no-WebGL fallback reads `--field-fallback-1..5` (noon when map-lit) under a lane layer at `--field-fallback-lane`, so it keeps the same contrast rule; the edge `vignette` token is transparent on Paper.
 - **Daylight** — `src/world/daylight.ts`: the hour table and the Poznań clock without three.js; the
   map's `light.ts` wraps it.
 

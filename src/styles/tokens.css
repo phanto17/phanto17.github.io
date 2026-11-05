@@ -55,6 +55,7 @@ html[data-theme='prism'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(11, 7, 11, 0.86);
+  --vignette: rgba(11, 7, 11, 0.75);
   --panel: rgba(26, 23, 19, 0.84);
   --ink-black: #000000;
   --world-ground: #082a22;
@@ -94,6 +95,7 @@ html[data-theme='prism'] {
   --field-fallback-3: #46573f;
   --field-fallback-4: #2f8c84;
   --field-fallback-5: #a9d4c7;
+  --field-fallback-lane: var(--field-map-lane);
   color-scheme: dark;
 }
 
@@ -143,6 +145,7 @@ html[data-theme='paper'] {
   --key-border: rgba(43, 33, 24, 0.35);
   --key-border-hover: rgba(43, 33, 24, 0.35);
   --backdrop: rgba(43, 33, 24, 0.6);
+  --vignette: rgba(11, 7, 11, 0);
   --panel: rgba(244, 237, 225, 0.84);
   --ink-black: #000000;
   --world-ground: #082a22;
@@ -182,6 +185,7 @@ html[data-theme='paper'] {
   --field-fallback-3: #46573f;
   --field-fallback-4: #2f8c84;
   --field-fallback-5: #a9d4c7;
+  --field-fallback-lane: var(--field-map-lane);
   color-scheme: light;
 }
 
@@ -231,6 +235,7 @@ html[data-theme='crt'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(2, 4, 3, 0.88);
+  --vignette: rgba(11, 7, 11, 0.75);
   --panel: rgba(7, 11, 9, 0.84);
   --ink-black: #000000;
   --world-ground: #082a22;
@@ -270,6 +275,7 @@ html[data-theme='crt'] {
   --field-fallback-3: var(--field-3);
   --field-fallback-4: var(--field-4);
   --field-fallback-5: var(--field-5);
+  --field-fallback-lane: var(--field-lane);
   color-scheme: dark;
 }
 
@@ -319,6 +325,7 @@ html[data-theme='signal'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(6, 4, 10, 0.86);
+  --vignette: rgba(11, 7, 11, 0.75);
   --panel: rgba(13, 10, 20, 0.84);
   --ink-black: #000000;
   --world-ground: #082a22;
@@ -358,6 +365,7 @@ html[data-theme='signal'] {
   --field-fallback-3: var(--field-3);
   --field-fallback-4: var(--field-4);
   --field-fallback-5: var(--field-5);
+  --field-fallback-lane: var(--field-lane);
   color-scheme: dark;
 }
 
@@ -408,6 +416,7 @@ html[data-theme='signal'] {
     --key-border: rgba(43, 33, 24, 0.35);
     --key-border-hover: rgba(43, 33, 24, 0.35);
     --backdrop: rgba(43, 33, 24, 0.6);
+    --vignette: rgba(11, 7, 11, 0);
     --panel: rgba(244, 237, 225, 0.84);
     --ink-black: #000000;
     --world-ground: #082a22;
@@ -447,6 +456,7 @@ html[data-theme='signal'] {
     --field-fallback-3: #46573f;
     --field-fallback-4: #2f8c84;
     --field-fallback-5: #a9d4c7;
+    --field-fallback-lane: var(--field-map-lane);
     color-scheme: light;
   }
 }

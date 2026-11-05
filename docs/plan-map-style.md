@@ -178,8 +178,11 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   map-lit themes, `field-1..5` otherwise). Checks: `tests/field-lane.test.ts` bounds the lane by the
   stops (`src/lib/field-lane.ts`) in every theme at every quarter hour, the new `check-browser` `field`
   check measures the rendered still frame at night, dawn, day and dusk in all four themes (worst 4.9:1;
-  a 0.35 lane fails it), and the other nine checks pass. Found, not fixed: without WebGL or JavaScript
-  the hero's prism band sits right behind the H1 and washes it out (since 2026-10-29, not F5).
+  a 0.35 lane fails it), and the other nine checks pass. Found and fixed right after (2026-11-04): without WebGL or
+  JavaScript the hero text sat on the fallback backdrop and fell under WCAG minimums — the prism band
+  behind it (retired), no lane in the body gradient (now a CSS lane layer at `--field-fallback-lane`,
+  which also covers the brighter noon palette in Prism) and a dark vignette on Paper (a themed
+  `vignette` token, transparent on Paper). The `nojs` check now measures the hero lines on four pages.
 
 ### F6. HUD nav and status line
 - **Description:** Restyle `Nav.astro` as the map's HUD bar on every page: translucent `panel` ground with

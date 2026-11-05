@@ -2,7 +2,6 @@
 import WinBar from '../components/WinBar.astro';
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import Prism from '../components/Prism.astro';
 import ProjectTile from '../components/ProjectTile.astro';
 import TelegraphMiniGame from '../components/TelegraphMiniGame.astro';
 import SignalStamp from '../components/SignalStamp.astro';
@@ -27,7 +26,6 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
 
 <Base title="Overview" description={site.description}>
   <header class="hero">
-    <Prism />
     <div class="wrap grid">
       <div>
         <SignalStamp />
@@ -113,7 +111,6 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
 
   <!-- Projects as a bento (R4): covers lift, and crossfade to a clip where one exists (R7). -->
   <section id="projects" class="section">
-    <Prism small top="45%" />
     <div class="wrap">
       <div class="section-head-bar" data-reveal>
         <div>

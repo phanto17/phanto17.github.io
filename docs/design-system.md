@@ -47,6 +47,10 @@ headline, primary button, hover states. Everything else is matte.
 `#e95c3a` → `#f27c52` → `#f6d370` → `#9fd3a8` → `#8fc3df` → `#cab5ce` → `#faa193`
 Rendered as a rotated, heavily blurred (28–40 px) linear gradient at 35–75 % opacity, one per hero
 and at most one per page section. Never behind body text at full opacity.
+**Retired on the site 2026-11-04:** the signal field replaced the band on 2026-10-29, and where the
+field cannot run the band still sat behind the hero title and lead, washing them out (measured below
+WCAG minimums on every page that had one). The stops remain the design system's (OG images, the
+artifact's PrismBand component).
 
 ### Glow
 `text-shadow: 0 0 14px rgba(242,124,82,.55), 0 0 48px rgba(242,177,128,.28)` on the H1 and the
@@ -54,7 +58,7 @@ primary button; a lighter `0 0 24px rgba(242,124,82,.25)` on H2.
 
 ### Grain
 Fixed full-page SVG `feTurbulence` (fractalNoise, baseFrequency .9, 3 octaves), `opacity .14`,
-`mix-blend-mode: soft-light`. Plus a radial vignette to `--bg-0` at the edges.
+`mix-blend-mode: soft-light`. Plus a radial vignette to `--bg-0` at the edges (the themed `vignette` token since 2026-11-04: none on Paper, where it darkened text on phones).
 
 Contrast check (WCAG): `--text` on `--bg` ≈ 14.5:1; `--text-2` on `--bg` ≈ 8:1; `--coral` on
 `--bg` ≈ 6.4:1; `#1a1713` text on `--coral` button ≈ 6.4:1. All pass AA for body text.
@@ -105,8 +109,8 @@ Scale (desktop → mobile):
 ## 6. Motion
 
 - Hover: translateY(−1…−3 px) + glow box-shadow, 200–250 ms ease.
-- Prism band: slow drift (`transform` over 28 s), paused offscreen and disabled under
-  `prefers-reduced-motion` or the site motion setting, as is every transition.
+- Prism band (retired on the site 2026-11-04): slow drift (`transform` over 28 s), paused offscreen
+  and disabled under `prefers-reduced-motion` or the site motion setting, as is every transition.
 - Page transitions (2026-10-29): Astro's ClientRouter with a CRT power-cycle root animation (160ms out, 420ms in),
   project covers and titles morphing into the subpage hero (`transition:name`), nav / signal field / reticle persisted.
   A theme change cross-fades colours for one lift and flickers the page once (360ms); the `theme-color` meta follows

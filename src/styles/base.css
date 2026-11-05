@@ -29,7 +29,18 @@ body {
   margin: 0;
   /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into
      bg — the theme's own, or the map's at noon in a map-lit theme (--field-fallback-n, generated). */
+  /* The top layer is the field's content lane: over the content column (container + 32px, feathered
+     over 260px, as in field.ts) only --field-fallback-lane of the colour shows, so text keeps 4.5:1. */
+  --lane-ground: color-mix(in srgb, var(--bg) calc((1 - var(--field-fallback-lane)) * 100%), transparent);
+  --lane-half: calc(var(--container) / 2 + 32px);
   background:
+    linear-gradient(
+      90deg,
+      transparent calc(50% - var(--lane-half) - 260px),
+      var(--lane-ground) calc(50% - var(--lane-half)),
+      var(--lane-ground) calc(50% + var(--lane-half)),
+      transparent calc(50% + var(--lane-half) + 260px)
+    ),
     radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-fallback-1) 38%, var(--bg)), transparent 70%),
     radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-fallback-2) 30%, var(--bg)), transparent 70%),
     radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-fallback-4) 45%, var(--bg)), transparent 72%),
@@ -52,7 +63,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(11, 7, 11, 0.75) 100%);
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, var(--vignette) 100%);
 }
 body::after {
   content: '';
@@ -237,7 +248,7 @@ th {
   padding: var(--section) 0;
   /* No rule between sections (owner, 2026-11-01): the field and the spacing do the separating. */
   position: relative;
-  overflow-x: clip; /* decorative prism bands must not widen the page */
+  overflow-x: clip; /* nothing decorative may widen the page */
 }
 .kicker {
   font-family: var(--mono);
@@ -607,7 +618,4 @@ details.changelog ul {
 }
 html.has-field .signal-field {
   opacity: 1;
-}
-html.has-field .prism-wrap {
-  display: none; /* the field replaces the blurred prism band */
 }
