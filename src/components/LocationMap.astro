@@ -4,11 +4,22 @@
  * (src/lib/minimap.ts, built at build time, no three.js), with a diamond per place. A project's
  * diamond is a link to its row below; a landmark's is a plain marker; the uncharted slot is a dashed
  * one. With JavaScript, places the visitor has explored on the map are filled (portfolio-world-visited).
+ * The projects index links each project to its row; the 404 (P5) links them onto the map instead and
+ * marks the uncharted slot as where the visitor is.
  */
 import { getCollection } from 'astro:content';
 import { buildLocations, LANDMARKS, toLandmarkSeed, toProjectSeed, type ProjectLocation } from '../data/locations';
 import { minimap } from '../lib/minimap';
 
+interface Props {
+  /** Where a project's diamond goes: its row on this page, or its place on the map. */
+  links?: 'rows' | 'map';
+  /** A place to mark "You are here" with a visible label. */
+  here?: string;
+  /** Replaces the default caption (the projects index's). */
+  caption?: string;
+}
+const { links = 'rows', here, caption } = Astro.props;
 const locations = buildLocations(await getCollection('projects'));
 const projects = locations.filter((l): l is ProjectLocation => l.type === 'project');
 const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
@@ -23,9 +34,14 @@ const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
     <ul class="locmap-places">
       {
         map.places.map((p) => (
-          <li class:list={['place', `is-${p.type}`, `label-${p.label}`]} style={`left: ${p.left}%; top: ${p.top}%; --acc: ${p.accent}`}>
-            {p.type === 'project' ? (
-              <a href={`#${p.id}`} class="place-link">
+          <li class:list={['place', `is-${p.type}`, `label-${p.label}`, { 'is-here': p.id === here }]} style={`left: ${p.left}%; top: ${p.top}%; --acc: ${p.accent}`}>
+            {p.id === here ? (
+              <span class="place-link">
+                <i class="diamond" aria-hidden="true" />
+                <span class="place-name">You are here</span>
+              </span>
+            ) : p.type === 'project' ? (
+              <a href={links === 'map' ? `/#${p.id}` : `#${p.id}`} class="place-link">
                 <i class="diamond" data-visit-dot={p.id} aria-hidden="true" />
                 <span class="place-name">{p.title}</span>
               </a>
@@ -41,7 +57,7 @@ const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
     </ul>
   </div>
   <figcaption class="meta">
-    The field map from above: projects as diamonds in their colours, landmarks smaller, the dashed one is where the next project lands.{' '}
+    {caption ?? 'The field map from above: projects as diamonds in their colours, landmarks smaller, the dashed one is where the next project lands.'}{' '}
     <a href="/">Walk it in 3D →</a>
   </figcaption>
 </figure>
@@ -137,11 +153,32 @@ const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
     height: 8px;
     border-color: var(--acc);
   }
+  /* Same box as a project's link, so the label hangs from the diamond the same way. */
+  .is-here .place-link {
+    padding: 6px;
+    margin: -6px;
+  }
+  .is-here.label-right .place-link {
+    transform: translateX(calc(50% - 6px));
+  }
+  .is-here.label-left .place-link {
+    flex-direction: row-reverse;
+    transform: translateX(calc(-50% + 6px));
+  }
+  .is-here .place-name {
+    font-style: italic;
+  }
   .is-uncharted .diamond {
     width: 8px;
     height: 8px;
     border: 1.5px dashed var(--acc);
     opacity: 0.8;
+  }
+  .is-uncharted.is-here .diamond {
+    width: 12px;
+    height: 12px;
+    border-width: 2px;
+    opacity: 1;
   }
   .place-name {
     padding: 2px 6px;
@@ -163,7 +200,9 @@ const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
       padding: 1px 4px;
     }
     .is-project.label-right .place-link,
-    .is-project.label-left .place-link {
+    .is-project.label-left .place-link,
+    .is-here.label-right .place-link,
+    .is-here.label-left .place-link {
       flex-direction: column;
       gap: 3px;
       /* The diamond (12px + 2 × 6px padding) stays on the place; the label hangs below it. */

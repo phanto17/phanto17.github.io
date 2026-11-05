@@ -343,6 +343,15 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   overview and the projects.
 - **Objective:** The error page belongs to the same world and offers the three ways back.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-05. `404.astro` is a `.tag.uncharted` card in the uncharted accent
+  (`UNCHARTED_ACCENT` from `gen.ts`): dashed border, no offset, the italic title "This tile isn't on the
+  grid." with a dashed diamond and "Uncharted · no location here"; the card keeps full opacity (the
+  map's label fades, a page of text must not). Its keys are Back to the map, Overview and All projects.
+  Beside it (under it on narrow screens) is the P3 minimap: `LocationMap` gained `links="map"` (a
+  project's diamond opens `/#<id>` instead of its row), `here` (the uncharted slot shows "You are
+  here" with a full-size dashed diamond) and `caption`. The `nav` check reads the 404 (dashed, no
+  offset, italic, the three keys, "You are here" on the uncharted slot, four map links); all thirteen
+  browser checks pass.
 
 ### P6. Style guide: the field kit
 - **Description:** Add a section to `/style-guide/` that renders the kit: a label, the uncharted

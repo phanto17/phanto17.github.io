@@ -745,6 +745,26 @@ async function checkNav(browser) {
   assert.deepEqual(legend.onMap, legend.rows.map((r) => `/${r}`), 'A row has no way onto the map');
   assert.deepEqual(legend.filled, ['lab'], `Explored places filled: ${legend.filled.join(', ')}`);
 
+  // The 404 is the uncharted tile: the dashed marker without the offset, the three ways back, and the
+  // minimap marking the uncharted slot as "You are here" with every project opening its place on the map.
+  await page.goto('http://portfolio.test/404.html', { waitUntil: 'networkidle' });
+  const lost = await page.evaluate(() => {
+    const card = document.querySelector('.lost-card');
+    const cs = card && getComputedStyle(card);
+    return {
+      dashed: cs?.borderTopStyle, shadow: cs?.boxShadow, italic: getComputedStyle(card.querySelector('h1')).fontStyle,
+      keys: [...card.querySelectorAll('.actions a')].map((a) => a.getAttribute('href')),
+      here: document.querySelector('.locmap .is-here')?.className.includes('is-uncharted') && document.querySelector('.locmap .is-here').textContent.trim(),
+      links: [...document.querySelectorAll('.locmap a.place-link')].map((a) => a.getAttribute('href')),
+    };
+  });
+  assert.equal(lost.dashed, 'dashed', 'The 404 card is not the dashed uncharted marker');
+  assert.equal(lost.shadow, 'none', 'The 404 card has an offset');
+  assert.equal(lost.italic, 'italic', 'The 404 title is not italic');
+  assert.deepEqual(lost.keys, ['/', '/overview/', '/projects/'], `404 keys: ${lost.keys.join(', ')}`);
+  assert.equal(lost.here, 'You are here', 'The 404 minimap does not mark the uncharted slot');
+  assert.ok(lost.links.length === 4 && lost.links.every((h) => /^\/#[a-z-]+$/.test(h)), `404 minimap links: ${lost.links.join(', ')}`);
+
   // On the overview the Map link follows the section in view.
   await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });
   await page.locator('#lab').scrollIntoViewIfNeeded();
