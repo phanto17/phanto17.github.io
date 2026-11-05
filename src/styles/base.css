@@ -298,6 +298,16 @@ th {
   gap: 48px;
 }
 
+/* Text for assistive tech only (the map's field log, the projects minimap). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* pills */
 .pill {
   display: inline-block;

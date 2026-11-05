@@ -289,6 +289,22 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** The list reads as the map's legend and shows where each project sits; the page works
   without JavaScript.
 - **Estimate:** 6 h
+- **Status:** Done on 2026-11-05. `ProjectRow.astro` is an `article.loc-row.tag` (accent border + hard
+  offset) with the place's line ("Location 0N · genre" from `locationEyebrow`, the same as the location
+  bar) and its explored diamond, the Fraunces title (h2 now, under the page's h1), the meta row, the
+  summary, the highlights as a `.diamond-list` and glass keys (Play, Read the write-up, On the map
+  `/#<id>`, Source); WinBar, the brick numeral, the kind tag and the metric chips are gone from the index
+  (the metrics stay on the write-up). The row's id is the place id. `src/lib/minimap.ts` builds the
+  minimap at build time from `buildLayout` + `generate` — land and path tiles as merged row runs
+  (102×85 tiles, ~4.6 KB of path) — and `LocationMap.astro` draws it as an SVG under HTML markers in
+  percent: project diamonds link to their rows and carry their titles (labels toward the middle on
+  wide screens, centred under the diamond on phones), landmarks are small diamonds, the uncharted slot
+  is dashed; with JavaScript the places in `portfolio-world-visited` fill. On wide screens the page
+  title sits beside the map. Found on the way: no `.sr-only` class existed, so the map's field log
+  showed its "(visited)" text on screen; `base.css` has it now. Checks: `tests/minimap.test.ts` (the
+  runs cover exactly the generated land and path tiles, every place inside the map, label sides), the
+  `nav` check reads the legend (minimap links = rows, the place lines, On the map links, the explored
+  Lab filled); all thirteen browser checks pass.
 
 ### P4. Overview (`/overview/`) as the field log in text
 - **Description:** Each section is a location: the section head becomes a location tag (diamond,

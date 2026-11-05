@@ -1,0 +1,173 @@
+---
+/**
+ * The projects index's minimap: the field map's islands and paths from the same generator
+ * (src/lib/minimap.ts, built at build time, no three.js), with a diamond per place. A project's
+ * diamond is a link to its row below; a landmark's is a plain marker; the uncharted slot is a dashed
+ * one. With JavaScript, places the visitor has explored on the map are filled (portfolio-world-visited).
+ */
+import { getCollection } from 'astro:content';
+import { buildLocations, LANDMARKS, toLandmarkSeed, toProjectSeed, type ProjectLocation } from '../data/locations';
+import { minimap } from '../lib/minimap';
+
+const locations = buildLocations(await getCollection('projects'));
+const projects = locations.filter((l): l is ProjectLocation => l.type === 'project');
+const map = minimap(projects.map(toProjectSeed), LANDMARKS.map(toLandmarkSeed));
+---
+
+<figure class="locmap">
+  <div class="locmap-board hud-panel" style={`aspect-ratio: ${map.w} / ${map.d}`}>
+    <svg viewBox={`0 0 ${map.w} ${map.d}`} preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <path class="land" d={map.land} />
+      <path class="paths" d={map.path} />
+    </svg>
+    <ul class="locmap-places">
+      {
+        map.places.map((p) => (
+          <li class:list={['place', `is-${p.type}`, `label-${p.label}`]} style={`left: ${p.left}%; top: ${p.top}%; --acc: ${p.accent}`}>
+            {p.type === 'project' ? (
+              <a href={`#${p.id}`} class="place-link">
+                <i class="diamond" data-visit-dot={p.id} aria-hidden="true" />
+                <span class="place-name">{p.title}</span>
+              </a>
+            ) : (
+              <span class="place-link" title={p.type === 'uncharted' ? 'Next project lands here' : p.title}>
+                <i class="diamond" data-visit-dot={p.type === 'landmark' ? p.id : undefined} aria-hidden="true" />
+                <span class="sr-only">{p.type === 'uncharted' ? 'Uncharted: the next project lands here' : p.title}</span>
+              </span>
+            )}
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+  <figcaption class="meta">
+    The field map from above: projects as diamonds in their colours, landmarks smaller, the dashed one is where the next project lands.{' '}
+    <a href="/">Walk it in 3D →</a>
+  </figcaption>
+</figure>
+
+<script>
+  import { onPage } from '../scripts/page';
+  import { VISITED_KEY, parseVisited } from '../lib/status-line';
+
+  // Places explored on the map show filled, here and on the rows' diamonds.
+  onPage(() => {
+    let raw: string | null = null;
+    try {
+      raw = localStorage.getItem(VISITED_KEY);
+    } catch {
+      /* storage blocked: nothing explored */
+    }
+    const seen = new Set(parseVisited(raw));
+    document.querySelectorAll<HTMLElement>('[data-visit-dot]').forEach((dot) => {
+      dot.classList.toggle('is-done', seen.has(dot.dataset.visitDot ?? ''));
+    });
+  });
+</script>
+
+<style>
+  .locmap {
+    margin: 0;
+  }
+  .locmap-board {
+    position: relative;
+    width: min(100%, 620px);
+    background: var(--world-ground);
+    overflow: hidden;
+  }
+  .locmap-board svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    shape-rendering: crispEdges;
+  }
+  /* The map's own ground colours, toned from tokens so no hex lives here. */
+  .land {
+    fill: color-mix(in srgb, var(--teal) 55%, var(--world-ground));
+  }
+  .paths {
+    fill: color-mix(in srgb, var(--text-3) 70%, var(--world-ground));
+  }
+  .locmap-places {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .place {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+  .place-link {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* The map's ground is dark in every theme, so the labels keep light ink. */
+    color: var(--loc-station);
+    font: 500 11px/1.2 var(--font-mono);
+    white-space: nowrap;
+    text-decoration: none;
+  }
+  .is-project .place-link {
+    padding: 6px;
+    margin: -6px;
+  }
+  /* Centre the diamond, not the diamond + label, on the place; the label points toward the middle. */
+  .is-project.label-right .place-link {
+    transform: translateX(calc(50% - 6px));
+  }
+  .is-project.label-left .place-link {
+    flex-direction: row-reverse;
+    transform: translateX(calc(-50% + 6px));
+  }
+  .is-project .diamond {
+    width: 12px;
+    height: 12px;
+    border-width: 2px;
+    border-color: var(--acc);
+    background: color-mix(in srgb, var(--acc) 25%, var(--world-ground));
+  }
+  .diamond.is-done,
+  .is-project .diamond.is-done {
+    background: var(--acc);
+  }
+  .is-landmark .diamond {
+    width: 8px;
+    height: 8px;
+    border-color: var(--acc);
+  }
+  .is-uncharted .diamond {
+    width: 8px;
+    height: 8px;
+    border: 1.5px dashed var(--acc);
+    opacity: 0.8;
+  }
+  .place-name {
+    padding: 2px 6px;
+    background: color-mix(in srgb, var(--world-ground) 78%, transparent);
+    border-radius: var(--r-xs);
+  }
+  a.place-link:hover .place-name,
+  a.place-link:focus-visible .place-name {
+    color: var(--acc);
+  }
+  figcaption {
+    margin-top: 10px;
+    max-width: 620px;
+  }
+  /* Phones: side labels would run into each other, so every label sits centred under its diamond. */
+  @media (max-width: 760px) {
+    .place-name {
+      font-size: 10px;
+      padding: 1px 4px;
+    }
+    .is-project.label-right .place-link,
+    .is-project.label-left .place-link {
+      flex-direction: column;
+      gap: 3px;
+      /* The diamond (12px + 2 × 6px padding) stays on the place; the label hangs below it. */
+      transform: translateY(calc(50% - 12px));
+    }
+  }
+</style>

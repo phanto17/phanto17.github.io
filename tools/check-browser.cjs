@@ -730,6 +730,20 @@ async function checkNav(browser) {
   assert.equal(n.projects, 'page', 'Projects is not current on the projects index');
   assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.locbar-links a')].map((a) => a.getAttribute('href'))), ['/'],
     'The projects index bar should lead to the map only');
+  // The index is the map's legend: a minimap diamond per project linking to its row, label rows with
+  // the place's line, a way onto the map, and the explored places filled (the seed above has the Lab).
+  const legend = await page.evaluate(() => ({
+    links: [...document.querySelectorAll('.locmap a.place-link')].map((a) => a.getAttribute('href')),
+    rows: [...document.querySelectorAll('article.loc-row.tag')].map((r) => `#${r.id}`),
+    lines: [...document.querySelectorAll('.loc-row .eyebrow')].map((e) => e.textContent.trim()),
+    onMap: [...document.querySelectorAll('.loc-row a')].filter((a) => a.textContent.trim() === 'On the map').map((a) => a.getAttribute('href')),
+    filled: [...document.querySelectorAll('.locmap .diamond.is-done')].map((d) => d.dataset.visitDot),
+  }));
+  assert.ok(legend.rows.length === 4, `Expected four project rows, got ${legend.rows.length}`);
+  assert.deepEqual([...legend.links].sort(), [...legend.rows].sort(), 'The minimap does not link each project to its row');
+  assert.ok(legend.lines.every((l, i) => l.startsWith(`Location 0${i + 1} · `)), `Row lines: ${legend.lines.join(' | ')}`);
+  assert.deepEqual(legend.onMap, legend.rows.map((r) => `/${r}`), 'A row has no way onto the map');
+  assert.deepEqual(legend.filled, ['lab'], `Explored places filled: ${legend.filled.join(', ')}`);
 
   // On the overview the Map link follows the section in view.
   await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });

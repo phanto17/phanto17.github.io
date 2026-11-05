@@ -76,6 +76,8 @@ conversation finds it fuzzy.
   the current page's place (`mapHrefFor`, from `body[data-location]` or the overview section in view).
 - **Dossier** — a write-up page dressed as the map's drawer panel grown to full size (P1): the
   project's accent on `<main>`, the meta row and label metrics, HUD panels, diamond lists and note marks.
+- **Location index** — the projects index since P3: the minimap (`LocationMap.astro`, built from
+  `gen.ts` by `src/lib/minimap.ts`) over one label row per project; the map's legend in text.
 - **Location bar** — the row under the nav on every text page (`LocationBar.astro`, rendered by Base):
   the place's diamond and line ("Location 03 · 2D dungeon crawler / roguelite" for a write-up, the
   page's `place` label elsewhere), "← Back to the map" and "All projects".

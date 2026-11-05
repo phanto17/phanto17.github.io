@@ -2,9 +2,12 @@
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import ProjectRow from '../../components/ProjectRow.astro';
+import LocationMap from '../../components/LocationMap.astro';
+import { buildLocations, locationEyebrow } from '../../data/locations';
 import { site } from '../../data/site';
 
 const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const locations = buildLocations(projects);
 const listSchema = [
   {
     '@type': 'CollectionPage',
@@ -28,9 +31,14 @@ const listSchema = [
 <Base title="Projects" place={`Projects · ${projects.length} locations on the map`} schema={listSchema} description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
   <section class="section index-top">
     <div class="wrap">
-      <h1>Projects</h1>
-      <p class="sub-h">Play the games on itch.io, or explore the open-source tool. Each has its own write-up.</p>
-      {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
+      <div class="index-head">
+        <div>
+          <h1>Projects</h1>
+          <p class="sub-h">Play the games on itch.io, or explore the open-source tool. Each has its own write-up.</p>
+        </div>
+        <LocationMap />
+      </div>
+      {projects.map((p, i) => <ProjectRow project={p} index={i} eyebrow={locationEyebrow(locations, p.id)} />)}
     </div>
   </section>
 </Base>
@@ -39,4 +47,13 @@ const listSchema = [
   h1 { font-size: clamp(36px, 5vw, 56px); }
   /* The location bar sits above; the section keeps its bottom space. */
   .index-top { padding-top: 32px; }
+  .index-head { margin-bottom: 40px; }
+  @media (min-width: 981px) {
+    .index-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
+      gap: 40px;
+      align-items: start;
+    }
+  }
 </style>
