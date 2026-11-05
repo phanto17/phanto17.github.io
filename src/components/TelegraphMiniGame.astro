@@ -6,6 +6,10 @@
  */
 import NonLinearLayout from './NonLinearLayout.astro';
 import PopupCRT from './PopupCRT.astro';
+import LocationHead from './LocationHead.astro';
+import { landmarkById } from '../data/locations';
+
+const lab = landmarkById('lab');
 
 const designNotes = [
   {
@@ -35,20 +39,14 @@ const designNotes = [
 ];
 ---
 
-<section id="lab" class="section" data-crt-interactive-root>
+<section id="lab" class="section accent" style={`--acc: ${lab.accent}`} data-crt-interactive-root>
   <noscript>
     <style>
       #lab .crt-launchpad, #lab .nonlinear-section, #lab .cabinet { display: none; }
     </style>
   </noscript>
   <div class="wrap">
-    <div class="section-head-bar" data-reveal>
-      <div>
-        <h2>Telegraph Recall</h2>
-        <p class="sub-h">Watch the signal, then repeat the sequence.</p>
-      </div>
-      <span class="section-index-tag" aria-hidden="true">03</span>
-    </div>
+    <LocationHead num="03" place={lab.title} title="Telegraph Recall" sub="Watch the signal, then repeat the sequence." mapHref={lab.mapHref} />
     <noscript><p>Telegraph Recall needs JavaScript. You can still explore the <a href="/overview/#projects">playable projects</a>.</p></noscript>
 
     <!-- Top Terminal Control Strip: Launch CRT Popup + Live Per-Click Telemetry -->

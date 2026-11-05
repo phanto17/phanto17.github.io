@@ -125,29 +125,6 @@ function kineticHeadings() {
 }
 
 /**
- * Scroll choreography (Phase 2). Everything is scrubbed by scroll position or fires once on entry;
- * the document always scrolls natively (no pinning spacers, no scroll-jacking, no parallax).
- * - The outlined section numeral (01–06) fills with coral as its section arrives.
- * - Timeline cards tip up from a rotateX tied to their tilt limit when they enter.
- * The Projects head bar stays in view while the rows scroll under it: that is CSS `position: sticky`
- * (global.css), toggled to its stuck look by index.astro, so it also works without this module.
- */
-function scrollChoreography() {
-  document.querySelectorAll<HTMLElement>('.section-index-tag').forEach((tag) => {
-    const section = tag.closest('section') ?? tag;
-    gsap.fromTo(
-      tag,
-      { '--fill': '0%' },
-      {
-        '--fill': '100%',
-        ease: 'none',
-        scrollTrigger: { trigger: section, start: 'top 85%', end: 'top 30%', scrub: 0.4 },
-      },
-    );
-  });
-}
-
-/**
  * Decode reveal (R1): sub-heads, kickers and the hero lead resolve from scrambled glyphs, left to
  * right, the first time they scroll into view (the "uncoding" the owner asked for). The real text
  * stays in the DOM: SplitText's aria option keeps it as the accessible name while the fragments are
@@ -331,7 +308,6 @@ export function init(): void {
       takeOverReveals();
       kineticHeadings();
       decodeReveals();
-      scrollChoreography();
     });
     smoothScroll();
   };

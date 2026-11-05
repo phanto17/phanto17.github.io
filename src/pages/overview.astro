@@ -1,5 +1,6 @@
 ---
 import WinBar from '../components/WinBar.astro';
+import LocationHead from '../components/LocationHead.astro';
 import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
 import ProjectTile from '../components/ProjectTile.astro';
@@ -8,10 +9,17 @@ import SignalStamp from '../components/SignalStamp.astro';
 import { site } from '../data/site';
 import { activities, experience, education } from '../data/activities';
 import { aboutFacets } from '../data/about';
+import { buildLocations, landmarkById, locationEyebrow } from '../data/locations';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const entries = await getCollection('projects');
+const projects = [...entries].sort((a, b) => a.data.order - b.data.order);
+const locations = buildLocations(entries);
 /** Bento spans in a six-column grid: the first project wide, then a small one, then two halves. */
 const spans: (2 | 3 | 4)[] = [4, 2, 3, 3];
+/** Each section is a place on the map (P4): its head names it, its cards take its accent. */
+const station = landmarkById('station');
+const guild = landmarkById('guild');
+const mast = landmarkById('mast');
 
 const systemSpecs = [
   { label: 'RUNTIME', val: 'Unity 6 (URP) & C#' },
@@ -47,7 +55,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
       </div>
 
       <div class="hero-stage" data-reveal style="--reveal-delay:2">
-        <div class="note brutal-note" role="note" data-tilt data-tilt-max="3">
+        <div class="note hud-panel accent" role="note" data-tilt data-tilt-max="3">
           "Read the board, set up the perfect turn." — the one-line pillar I wrote for my tactics game. It's also how
           I approach systems work.
           <small>field note</small>
@@ -57,7 +65,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
 
     <!-- Static CRT Hardware Readout Bar (replaces any moving slider below the title) -->
     <div class="wrap">
-      <dl class="crt-spec-grid" aria-label="System and portfolio summary">
+      <dl class="crt-spec-grid hud-panel" aria-label="System and portfolio summary">
         {
           systemSpecs.map((s) => (
             <div class="crt-spec-cell">
@@ -71,15 +79,9 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   </header>
 
   <!-- About as a dossier (R4): four facets, one open at a time; native <details> so it reads without JavaScript. -->
-  <section id="about" class="section">
+  <section id="about" class="section accent" style={`--acc: ${station.accent}`}>
     <div class="wrap">
-      <div class="section-head-bar" data-reveal>
-        <div>
-          <h2>About me</h2>
-          <p class="sub-h">who · specialisation · interests · goals</p>
-        </div>
-        <span class="section-index-tag" aria-hidden="true">01</span>
-      </div>
+      <LocationHead num="01" place={station.title} title="About me" sub="who · specialisation · interests · goals" mapHref={station.mapHref} />
       <div class="dossier" data-reveal style="--reveal-delay:1">
         {
           aboutFacets.map((f, i) => (
@@ -112,34 +114,22 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   <!-- Projects as a bento (R4): covers lift, and crossfade to a clip where one exists (R7). -->
   <section id="projects" class="section">
     <div class="wrap">
-      <div class="section-head-bar" data-reveal>
-        <div>
-          <h2>Projects</h2>
-          <p class="sub-h">personal — games playable on itch.io, tools released on GitHub — each has its own write-up</p>
-        </div>
-        <span class="section-index-tag" aria-hidden="true">02</span>
-      </div>
+      <LocationHead num="02" place={`${projects.length} locations`} title="Projects" sub="personal — games playable on itch.io, tools released on GitHub — each has its own write-up" mapHref={'/'} />
       <div class="bento" data-bento>
-        {projects.map((p, i) => <ProjectTile project={p} index={i} span={spans[i] ?? 3} />)}
+        {projects.map((p, i) => <ProjectTile project={p} index={i} span={spans[i] ?? 3} eyebrow={locationEyebrow(locations, p.id)} />)}
       </div>
     </div>
   </section>
 
   <TelegraphMiniGame />
 
-  <section id="activities" class="section">
+  <section id="activities" class="section accent" style={`--acc: ${guild.accent}`}>
     <div class="wrap">
-      <div class="section-head-bar" data-reveal>
-        <div>
-          <h2>Activities</h2>
-          <p class="sub-h">team projects, channel, community</p>
-        </div>
-        <span class="section-index-tag" aria-hidden="true">04</span>
-      </div>
+      <LocationHead num="04" place={guild.title} title="Activities" sub="team projects, channel, community" mapHref={guild.mapHref} />
       <div class="tl">
         {
           activities.map((a, idx) => (
-            <article data-reveal data-tilt data-tilt-max="3" style={`--reveal-delay:${idx % 3}`}>
+            <article class="tag" data-reveal data-tilt data-tilt-max="3" style={`--reveal-delay:${idx % 3}`}>
               <time>{a.period}</time>
               <h3 class="entry">{a.title}</h3>
               <p class="kind">{a.kind}</p>
@@ -153,20 +143,14 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   </section>
 
   <!-- Experience as expandable cards (R4): the first sentence shows, the full entry opens. -->
-  <section id="experience" class="section">
+  <section id="experience" class="section accent" style={`--acc: ${station.accent}`}>
     <div class="wrap">
-      <div class="section-head-bar" data-reveal>
-        <div>
-          <h2>Experience</h2>
-          <p class="sub-h">outside games — what transfers</p>
-        </div>
-        <span class="section-index-tag" aria-hidden="true">05</span>
-      </div>
+      <LocationHead num="05" place={station.title} title="Experience" sub="outside games — what transfers" mapHref={station.mapHref} />
       <div class="two">
         <div data-reveal style="--reveal-delay:1">
           {
             experience.map((e) => (
-              <details class="exp brutal-panel" data-tilt data-tilt-max="2.5">
+              <details class="exp tag" data-tilt data-tilt-max="2.5">
                 <summary>
                   <time class="meta">{e.period}</time>
                   <h3 class="entry">{e.title}</h3>
@@ -178,7 +162,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
             ))
           }
         </div>
-        <div class="note brutal-note" role="note" data-reveal style="--reveal-delay:2">
+        <div class="note hud-panel" role="note" data-reveal style="--reveal-delay:2">
           I don't have game-industry employment yet. The projects above are where I've done my real gameplay work.
           <small>honest note</small>
         </div>
@@ -187,15 +171,9 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   </section>
 
   <!-- Contact as a terminal card (R4) with a copy key for the address. -->
-  <section id="contact" class="section">
+  <section id="contact" class="section accent" style={`--acc: ${mast.accent}`}>
     <div class="wrap">
-      <div class="section-head-bar" data-reveal>
-        <div>
-          <h2>Contact</h2>
-          <p class="sub-h">email · github · youtube · cv</p>
-        </div>
-        <span class="section-index-tag" aria-hidden="true">06</span>
-      </div>
+      <LocationHead num="06" place={mast.title} title="Contact" sub="email · github · youtube · cv" mapHref={mast.mapHref} />
       <div class="two">
         <div class="tty crt-frame" data-reveal data-tilt data-tilt-max="2" style="--reveal-delay:1">
           <WinBar label="[■] CONTACT // TTY_01" status="ONLINE" />
@@ -222,7 +200,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
           </dl>
           <p class="tty-prompt" aria-hidden="true"><span aria-hidden="true">&gt;</span> <span class="tty-caret"></span></p>
         </div>
-        <div class="cta brutal-panel" data-reveal data-tilt data-tilt-max="3" style="--reveal-delay:2">
+        <div class="cta tag" data-reveal data-tilt data-tilt-max="3" style="--reveal-delay:2">
           <p class="lead">Looking for a junior gameplay programmer or an intern? I'd love to talk.</p>
           <a class="btn primary" href={`mailto:${site.email}`}>
             ✉ Write to me
@@ -342,7 +320,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     font-style: italic;
     font-size: 16px;
     color: var(--lavender);
-    border-left: 2px solid var(--coral);
+    border-left: 2px solid var(--acc-ui);
     padding-left: 16px;
     line-height: 1.5;
     font-variation-settings: 'SOFT' 60;
@@ -354,33 +332,31 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     font-size: 10px;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--coral);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     margin-top: 10px;
   }
-  .brutal-note {
-    background: var(--surface);
-    border: 1.5px solid var(--umber);
-    border-left: 4px solid var(--coral);
-    border-radius: var(--r-sm);
+  /* Field notes are HUD panels with an accent rule; the cards (activities, experience, the call to
+     action) are map labels (.tag): the section's accent border and hard offset. */
+  .note.hud-panel {
+    border-left: 3px solid var(--acc-ui);
     padding: 20px;
-    box-shadow: var(--card-depth);
     align-self: start;
   }
-  .brutal-panel {
-    background: var(--surface);
-    border: 1.5px solid var(--umber);
-    border-radius: var(--r-md);
+  .exp,
+  .cta {
     padding: 22px;
-    box-shadow: var(--card-depth);
+  }
+  .exp + .exp {
+    margin-top: 20px;
   }
 
   /* ---- About: the dossier ---- */
   .dossier {
     max-width: 760px;
-    border-top: 1px solid var(--umber);
+    border-top: 1px solid var(--hairline);
   }
   .facet {
-    border-bottom: 1px solid var(--umber);
+    border-bottom: 1px solid var(--hairline);
   }
   .facet summary {
     display: grid;
@@ -401,14 +377,14 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     background: color-mix(in srgb, var(--surface) 70%, transparent);
   }
   .facet summary:focus-visible {
-    outline: 2px solid var(--coral);
+    outline: 2px solid var(--acc-ui);
     outline-offset: 2px;
   }
   .facet-code {
     font-family: var(--mono);
     font-size: 12px;
     letter-spacing: 0.12em;
-    color: var(--gold);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .facet-title {
     font-family: var(--display);
@@ -426,20 +402,20 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   }
   /* Owner rule: hovered titles grow, never tighten. */
   .facet summary:hover .facet-title {
-    color: var(--peach);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     letter-spacing: 0.02em;
     transform: scale(1.02);
     font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
   }
   .facet[open] .facet-title {
-    color: var(--peach);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .facet-hint::before {
     content: '[ + ]';
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.1em;
-    color: var(--coral);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .facet[open] .facet-hint::before {
     content: '[ − ]';
@@ -483,17 +459,13 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   }
   .tl article {
     padding: 20px 22px 20px 26px;
-    background: var(--surface);
-    border: 1px solid var(--umber);
-    border-left: 3px solid var(--coral);
-    border-radius: var(--r-sm);
-    box-shadow: var(--card-depth);
     position: relative;
   }
   .tl article:hover {
-    border-color: var(--peach);
-    box-shadow: var(--card-depth-hover);
+    background: var(--surface);
+    border-color: var(--acc-ui);
   }
+  /* The timeline marker is the map's diamond, sitting on the card's left edge. */
   .tl article::before {
     content: '';
     position: absolute;
@@ -501,14 +473,13 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     top: 24px;
     width: 9px;
     height: 9px;
-    border-radius: 50%;
-    background: var(--coral);
-    box-shadow: 0 0 10px var(--coral);
+    background: var(--acc-ui);
+    transform: rotate(45deg);
   }
   .tl time {
     font-family: var(--mono);
     font-size: 12px;
-    color: var(--gold);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     letter-spacing: 0.06em;
   }
   .tl h3 {
@@ -545,7 +516,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     display: none;
   }
   .exp summary:focus-visible {
-    outline: 2px solid var(--coral);
+    outline: 2px solid var(--acc-ui);
     outline-offset: 6px;
     border-radius: var(--r-xs);
   }
@@ -570,7 +541,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.1em;
-    color: var(--coral);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     white-space: nowrap;
   }
   .exp[open] .exp-hint::before {
@@ -594,7 +565,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   /* ---- Contact: the terminal ---- */
   .tty {
     background: var(--surface);
-    border: 1.5px solid var(--umber);
+    border: 1.5px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
     overflow: hidden;
     align-self: start;
@@ -613,7 +584,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     align-items: center;
   }
   .tty-lines dt {
-    color: var(--gold);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     letter-spacing: 0.04em;
     margin: 0;
   }
@@ -629,7 +600,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     color: var(--text);
   }
   .tty-lines a:hover {
-    color: var(--peach);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .tty-copy {
     --key-radius: var(--r-xs);
@@ -637,7 +608,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     font-size: 11px;
     letter-spacing: 0.08em;
     padding: 3px 9px;
-    color: var(--gold);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
     cursor: pointer;
   }
   .tty-copy > * {
@@ -649,14 +620,14 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     padding: 4px 18px 16px;
     font-family: var(--mono);
     font-size: 14px;
-    color: var(--coral);
+    color: var(--acc-ui);
   }
   .tty-caret {
     display: inline-block;
     width: 9px;
     height: 16px;
     vertical-align: -3px;
-    background: var(--coral);
+    background: var(--acc-ui);
   }
   :global(html.js-motion) .tty-caret {
     animation: tty-blink 1.1s steps(1) infinite;
@@ -670,24 +641,20 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   .crt-spec-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 1px;
     margin: 44px 0 0;
-    background: var(--umber);
-    border: 1.5px solid var(--umber);
-    border-radius: var(--r-sm);
-    overflow: hidden;
-    box-shadow: var(--card-depth);
   }
   .crt-spec-cell {
-    background: var(--surface);
     padding: 14px 16px;
+  }
+  .crt-spec-cell + .crt-spec-cell {
+    border-left: 1px solid var(--hairline);
   }
   .crt-spec-cell dt {
     font-family: var(--mono);
     font-size: 10px;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: var(--text-2);
     margin: 0 0 4px;
   }
   .crt-spec-cell dd {
@@ -707,6 +674,12 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
     .crt-spec-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+    .crt-spec-cell:nth-child(odd) {
+      border-left: 0;
+    }
+    .crt-spec-cell:nth-child(n + 3) {
+      border-top: 1px solid var(--hairline);
+    }
     .facet summary {
       grid-template-columns: 36px minmax(0, 1fr) auto;
       gap: 12px;
@@ -724,6 +697,10 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   @media (max-width: 760px) {
     .crt-spec-grid {
       grid-template-columns: 1fr;
+    }
+    .crt-spec-cell + .crt-spec-cell {
+      border-left: 0;
+      border-top: 1px solid var(--hairline);
     }
     .tty-lines > div {
       grid-template-columns: minmax(0, 1fr);

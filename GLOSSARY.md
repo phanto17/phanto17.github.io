@@ -78,6 +78,9 @@ conversation finds it fuzzy.
   project's accent on `<main>`, the meta row and label metrics, HUD panels, diamond lists and note marks.
 - **Location index** — the projects index since P3: the minimap (`LocationMap.astro`, built from
   `gen.ts` by `src/lib/minimap.ts`) over one label row per project; the map's legend in text.
+- **Location head** — an overview section's head since P4 (`LocationHead.astro`): "03 · The Lab" with
+  the place's diamond in its accent, the h2, and "On the map →" to the same place; the overview is the
+  field log in text, one section per place.
 - **Location bar** — the row under the nav on every text page (`LocationBar.astro`, rendered by Base):
   the place's diamond and line ("Location 03 · 2D dungeon crawler / roguelite" for a write-up, the
   page's `place` label elsewhere), "← Back to the map" and "All projects".

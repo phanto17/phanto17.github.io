@@ -318,6 +318,24 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** The overview is visibly the text twin of the map: same accents, same labels, same
   order; every section links to its place; the no-JS and keyboard checks still pass.
 - **Estimate:** 8 h
+- **Status:** Done on 2026-11-05. `src/components/LocationHead.astro` is every section head: the filled
+  diamond and "NN · Place" in the section's accent, the h2 and sub-head, and an "On the map →" key
+  (`/#station`, `/#lab`, `/#guild`, `/#mast`; Projects, "02 · 4 locations", opens the map itself). It
+  keeps the `.section-head-bar` class, so the kinetic heading and the sticky Projects head work as
+  before; inside the map's Lab overlay the key is hidden (the visitor is already on the map). The
+  sections take their landmark's accent (`landmarkById`): About and Experience the station, the Lab
+  the lab (set in `TelegraphMiniGame.astro`), Activities the guild, Contact the mast. The big outlined
+  numerals and their scroll scrub are gone (`scrollChoreography` was only that scrub and was deleted;
+  the timeline tip-up lives in the reveal takeover and stays); the head rule is a hairline. Cards are
+  `.tag`s: the activities, the experience entries and the call to action; the timeline dots are
+  diamonds; the dossier's rules are hairlines and its codes, titles and hints use the accent ink. The
+  hero's field note and the experience note are `.hud-panel`s with an accent rule, the spec grid a
+  `.hud-panel` with hairline cell rules. `ProjectTile` is a `.tag` in the project's accent with the
+  map's label ("Location 0N · genre", `eyebrow-<id>` for the morph) pinned over the cover in place of
+  the WinBar; the cover numeral is gone and the meta line is period · engine. The contact terminal
+  keeps its CRT chrome in the mast's accent. The Telegraph cabinet keeps its own colours until P7 moves
+  them to tokens and `--acc`. The `nav` check reads the overview's heads (line, map link, accent),
+  asserts no numerals and the tiles' labels; all thirteen browser checks pass.
 
 ### P5. 404 as the uncharted tile
 - **Description:** Use the map's uncharted marker (dashed border, italic title, no offset) for the

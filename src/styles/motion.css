@@ -105,24 +105,10 @@ html.js-motion [data-reveal].is-visible {
   gap: 16px;
   margin-bottom: 32px;
   padding-bottom: 16px;
-  border-bottom: 2px solid var(--umber);
+  border-bottom: 1px solid var(--hairline);
 }
 .section-head-bar .sub-h {
   margin: 4px 0 0;
-}
-.section-index-tag {
-  font-family: var(--display);
-  font-size: clamp(36px, 5vw, 56px);
-  font-weight: 700;
-  line-height: 0.9;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--coral);
-  font-variation-settings: 'SOFT' 100, 'WONK' 1;
-  user-select: none;
-  /* Fill level, scrubbed by scroll in motion.ts (0% = the outline alone, the static look). */
-  background: linear-gradient(to top, var(--coral) var(--fill, 0%), transparent var(--fill, 0%));
-  -webkit-background-clip: text;
-  background-clip: text;
 }
 
 /* Custom Tactical Cursor Reticle (fine pointer only) */

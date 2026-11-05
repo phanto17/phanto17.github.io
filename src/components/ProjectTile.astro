@@ -1,10 +1,10 @@
 ---
-import WinBar from './WinBar.astro';
 /**
- * One tile of the home page's project bento (R4). The cover fills the tile; when the project has a
- * `clip` (an R7 WebM loop) the tile crossfades to it on hover or focus, otherwise the cover just
- * lifts. Hovering one tile dims its siblings (a pattern from the R8 notes). The cover and title keep
- * the transition names that morph into the project page.
+ * One tile of the overview's project bento (R4), as its place on the map (P4): a map label (.tag) in
+ * the project's accent, with the map's own label ("Location 03 · genre") over the cover. When the
+ * project has a `clip` (an R7 WebM loop) the tile crossfades to it on hover or focus, otherwise the
+ * cover just lifts. Hovering one tile dims its siblings. The cover and title keep the transition names
+ * that morph into the write-up.
  */
 import type { CollectionEntry } from 'astro:content';
 import { projectView } from '../lib/project-view';
@@ -14,17 +14,19 @@ interface Props {
   index: number;
   /** Column span in the six-column bento. */
   span: 2 | 3 | 4;
+  /** "Location 03 · 2D dungeon crawler / roguelite" (locationEyebrow). */
+  eyebrow: string;
 }
-const { project, index, span } = Astro.props;
+const { project, index, span, eyebrow } = Astro.props;
 const d = project.data;
 const href = `/projects/${project.id}/`;
 const cover = d.media[0];
 const view = projectView(d);
-const numStr = String(index + 1).padStart(2, '0');
 ---
 
-<article class="tile" data-reveal data-tilt data-tilt-max="2" data-tile style={`--reveal-delay:${index};--span:${span}`}>
-  <WinBar size="tile" label={`[■] CH_${numStr} // ${project.id.toUpperCase()}.${d.kind === 'tool' ? 'JAR' : 'WASM'}`} status={d.status.toUpperCase()} />
+<article class="tile tag" data-reveal data-tilt data-tilt-max="2" data-tile style={`--reveal-delay:${index};--span:${span};--acc:${d.world.accent}`}>
+  <!-- The map's label for this place, pinned over the cover as it hangs over the diorama on the map. -->
+  <p class="tile-label tag eyebrow" transition:name={`eyebrow-${project.id}`}><i class="diamond is-done" aria-hidden="true"></i>{eyebrow}</p>
   <!-- transition:name pairs this cover with the subpage hero figure: it morphs across the page change. -->
   <a class="tile-cover crt-frame" href={href} aria-label={`${d.title} write-up`} transition:name={`cover-${project.id}`}>
     {
@@ -35,12 +37,10 @@ const numStr = String(index + 1).padStart(2, '0');
       )
     }
     {d.clip && <video class="tile-clip" src={d.clip} muted loop playsinline preload="none" aria-hidden="true" data-tile-clip></video>}
-    <span class="tile-num" aria-hidden="true">{numStr}</span>
   </a>
   <div class="tile-body">
-    <p class="tile-meta">
-      <span class="genre">{d.genre}</span>
-      <span class="date">{view.period}</span>
+    <p class="tile-meta meta-row">
+      <span>{view.period}</span><span>{d.engine}</span>
     </p>
     <h3><a href={href} transition:name={`title-${project.id}`}>{d.title}</a></h3>
     <p class="muted">{d.summary}</p>
@@ -75,20 +75,31 @@ const numStr = String(index + 1).padStart(2, '0');
     display: flex;
     flex-direction: column;
     min-width: 0;
-    background: var(--surface);
-    border: 1.5px solid var(--umber);
-    border-radius: var(--r-md);
-    box-shadow: var(--card-depth);
+    position: relative;
     overflow: hidden;
     transition:
       opacity 0.25s ease,
-      border-color 0.25s ease,
-      box-shadow 0.25s ease;
+      background-color 0.25s ease,
+      border-color 0.25s ease;
   }
   .tile:hover,
   .tile:focus-within {
-    border-color: var(--coral);
-    box-shadow: var(--card-depth-hover);
+    background: var(--surface);
+    border-color: var(--acc-ui);
+  }
+  .tile-label {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 4;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    max-width: calc(100% - 24px);
+    margin: 0;
+    padding: 5px 9px;
+    /* The cover link under it takes the hover and the click. */
+    pointer-events: none;
   }
   .tile-cover {
     display: block;
@@ -123,26 +134,6 @@ const numStr = String(index + 1).padStart(2, '0');
   .tile.is-playing .tile-clip {
     opacity: 1;
   }
-  .tile-num {
-    position: absolute;
-    right: 14px;
-    bottom: 10px;
-    z-index: 3;
-    font-family: var(--display);
-    font-size: 44px;
-    line-height: 1;
-    font-weight: 700;
-    font-variation-settings: 'SOFT' 100, 'WONK' 1;
-    color: var(--text);
-    opacity: 0.85;
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
-    transition: transform 0.35s var(--ease-out-expo), color 0.35s ease, font-variation-settings 0.35s ease;
-  }
-  .tile:hover .tile-num {
-    color: var(--peach);
-    transform: translateY(-3px) scale(1.06);
-    font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
-  }
   .placeholder {
     position: absolute;
     inset: 0;
@@ -160,20 +151,8 @@ const numStr = String(index + 1).padStart(2, '0');
     flex: 1;
   }
   .tile-meta {
-    display: flex;
-    flex-wrap: wrap;
     gap: 6px 12px;
     margin: 0;
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .tile-meta .genre {
-    color: var(--gold);
-  }
-  .tile-meta .date {
-    color: var(--steel);
   }
   h3 {
     margin: 2px 0 2px;
@@ -186,7 +165,7 @@ const numStr = String(index + 1).padStart(2, '0');
     color: var(--text);
   }
   h3 a:hover {
-    color: var(--peach);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .tile-body > p.muted {
     margin: 0;
@@ -194,6 +173,9 @@ const numStr = String(index + 1).padStart(2, '0');
   }
   .tile-high {
     margin: 2px 0 0;
+  }
+  .tile-high b {
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .tile-actions {
     margin-top: auto;

@@ -753,6 +753,28 @@ async function checkNav(browser) {
   n = await nav();
   assert.equal(n.lab, 'location', 'The Lab link is not current over the Lab section');
 
+  // The overview is the field log in text: every section head names its place and links to it on the
+  // map, the landmark sections carry their accent, and each project tile wears its map label.
+  const log = await page.evaluate(() => ({
+    heads: [...document.querySelectorAll('main section[id]')].map((s) => {
+      const head = s.querySelector('.loc-head');
+      return [s.id, head?.querySelector('.loc-head-line')?.textContent.trim(), head?.querySelector('.loc-head-map')?.getAttribute('href'), s.style.getPropertyValue('--acc') !== ''];
+    }),
+    numerals: document.querySelectorAll('.section-index-tag').length,
+    tiles: [...document.querySelectorAll('.tile')].map((t) => [t.querySelector('.tile-label')?.textContent.trim(), t.style.getPropertyValue('--acc') !== '']),
+  }));
+  const expected = [
+    ['about', '01 · Field Station', '/#station', true],
+    ['projects', '02 · 4 locations', '/', false],
+    ['lab', '03 · The Lab', '/#lab', true],
+    ['activities', '04 · Guild Hall', '/#guild', true],
+    ['experience', '05 · Field Station', '/#station', true],
+    ['contact', '06 · Radio Mast', '/#mast', true],
+  ];
+  assert.deepEqual(log.heads, expected, `Overview section heads: ${JSON.stringify(log.heads)}`);
+  assert.equal(log.numerals, 0, 'The big section numerals are back');
+  assert.ok(log.tiles.length === 4 && log.tiles.every(([line, acc], i) => line?.startsWith(`Location 0${i + 1} · `) && acc), `Tiles: ${JSON.stringify(log.tiles)}`);
+
   // On the map the keys are the same size and Map is the current page.
   await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
   n = await nav();
