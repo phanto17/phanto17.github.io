@@ -25,8 +25,8 @@ const listSchema = [
 ];
 ---
 
-<Base title="Projects" schema={listSchema} description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
-  <section class="section">
+<Base title="Projects" place={`Projects · ${projects.length} locations on the map`} schema={listSchema} description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
+  <section class="section index-top">
     <div class="wrap">
       <h1>Projects</h1>
       <p class="sub-h">Play the games on itch.io, or explore the open-source tool. Each has its own write-up.</p>
@@ -37,4 +37,6 @@ const listSchema = [
 
 <style>
   h1 { font-size: clamp(36px, 5vw, 56px); }
+  /* The location bar sits above; the section keeps its bottom space. */
+  .index-top { padding-top: 32px; }
 </style>

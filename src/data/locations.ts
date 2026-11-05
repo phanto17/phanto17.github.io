@@ -92,6 +92,18 @@ export function buildLocations(projects: readonly ProjectEntryLike[]): SiteLocat
   return all;
 }
 
+/**
+ * The location bar's line for a place: "Location 03 · 2D dungeon crawler" for a project (its number in
+ * the projects' order, as on the overview's tiles and the projects index), the eyebrow for a landmark.
+ */
+export function locationEyebrow(all: readonly SiteLocation[], id: string): string {
+  const loc = all.find((l) => l.id === id);
+  if (!loc) throw new Error(`No location "${id}"`);
+  if (loc.type === 'landmark') return loc.eyebrow;
+  const n = all.filter((l) => l.type === 'project').indexOf(loc) + 1;
+  return `Location ${String(n).padStart(2, '0')} · ${loc.eyebrow}`;
+}
+
 /** What the map engine needs from a location (src/world/gen.ts seeds), and nothing else. */
 export const toProjectSeed = (l: ProjectLocation): ProjectSeed => ({ id: l.id, title: l.title, kind: l.kind, accent: l.accent, eyebrow: l.eyebrow });
 export const toLandmarkSeed = (l: LandmarkLocation): LandmarkSeed => ({

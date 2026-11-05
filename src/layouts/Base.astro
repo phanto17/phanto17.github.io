@@ -3,6 +3,7 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import LocationBar from '../components/LocationBar.astro';
 import { site, PERSON_ID } from '../data/site';
 // The preference boot (theme, motion, sound, CRT) runs inline before first paint; generated from
 // src/scripts/prefs-table.ts and design/tokens.json by tools/build-tokens.mjs.
@@ -22,13 +23,16 @@ interface Props {
   schema?: Record<string, unknown>[];
   /** `world`: the field map fills the viewport; the signal field and the footer stay off. */
   chrome?: 'default' | 'world';
-  /** This page's place on the map (a location id): the nav's Map link opens it there. */
+  /** This page's place on the map (a location id): the nav's Map link and the location bar open it. */
   location?: string;
+  /** The location bar's line on a page that is not a location ("Overview · …"). */
+  place?: string;
 }
 const {
   title,
   chrome = 'default',
   location,
+  place,
   description = site.description,
   image = '/media/og/default.jpg',
   noindex = false,
@@ -104,6 +108,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
     <Nav location={location} />
     <main id="main">
+      {chrome !== 'world' && <LocationBar location={location} label={place} />}
       <slot />
     </main>
     {chrome !== 'world' && <Footer />}

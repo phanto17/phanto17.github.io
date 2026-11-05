@@ -24,7 +24,7 @@ const systemSpecs = [
 const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? text;
 ---
 
-<Base title="Overview" description={site.description}>
+<Base title="Overview" place="Overview · every location as text" description={site.description}>
   <header class="hero">
     <div class="wrap grid">
       <div>
@@ -312,7 +312,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
 <style>
   .hero {
     position: relative;
-    padding: 96px 0 72px;
+    padding: 56px 0 72px;
     overflow: hidden;
   }
   .hero .grid {
@@ -698,7 +698,7 @@ const teaser = (text: string): string => /^(.+?\.)(\s|$)/.exec(text)?.[1] ?? tex
   }
   @media (max-width: 980px) {
     .hero {
-      padding: 64px 0 48px;
+      padding: 32px 0 48px;
     }
     .hero .grid,
     .tl {

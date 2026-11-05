@@ -132,7 +132,7 @@ async function checkNoJavaScript(browser) {
         return route.fulfill({ status: 200, contentType: mimeTypes[path.extname(file)] || 'application/octet-stream', body });
       });
       await page.goto(`http://portfolio.test${url}`, { waitUntil: 'load' });
-      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta')]
+      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta, main .locbar .eyebrow, main .locbar-links a')]
         .map((el) => ({ el, r: el.getBoundingClientRect(), s: getComputedStyle(el) }))
         .filter(({ r }) => r.width > 0 && r.bottom <= innerHeight)
         .map(({ el, r, s }) => ({
@@ -428,7 +428,12 @@ async function groundContrast(decoder, png, regions) {
     const w = img.width, data = ctx.getImageData(0, 0, w, img.height).data;
     const lin = (v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
     const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-    const channels = (c) => (c.startsWith('#') ? [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16)) : c.match(/[\d.]+/g).slice(0, 3).map(Number));
+    // color-mix() computes to `color(srgb r g b)` with channels in 0–1, rgb() to 0–255.
+    const channels = (c) => {
+      if (c.startsWith('#')) return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+      const v = c.replace(/^color\(srgb/, '').match(/[\d.]+/g).slice(0, 3).map(Number);
+      return c.startsWith('color(srgb') ? v.map((x) => x * 255) : v;
+    };
     const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
     return regions.map((r) => {
       const li = lum(...channels(r.ink));
@@ -686,6 +691,12 @@ async function checkNav(browser) {
   let n = await nav();
   assert.equal(n.map, '/#push-comes-to-shove', "A write-up's Map link does not open its place");
   assert.equal(n.projects, 'location', 'Projects is not current on a write-up');
+  const bar = await page.evaluate(() => ({
+    line: document.querySelector('.locbar .eyebrow')?.textContent,
+    links: [...document.querySelectorAll('.locbar-links a')].map((a) => a.getAttribute('href')),
+  }));
+  assert.match(bar.line ?? '', /^Location \d\d · /, 'The location bar does not name the place');
+  assert.deepEqual(bar.links, ['/#push-comes-to-shove', '/projects/'], 'The location bar does not lead back to the place');
   const status = (await page.locator('[data-status-line]').textContent()).replace(/\s*·\s*/g, ' · ').replace(/\s+/g, ' ').trim();
   assert.match(status, /^Poznań \d\d:\d\d · \S.* · 1\/\d+ explored · Style guide$/, `Status line reads "${status}"`);
   const ground = await page.evaluate(() => {
@@ -704,6 +715,8 @@ async function checkNav(browser) {
   n = await nav();
   assert.equal(n.tag, 'kept', 'The nav was re-created by the page move');
   assert.equal(n.projects, 'page', 'Projects is not current on the projects index');
+  assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.locbar-links a')].map((a) => a.getAttribute('href'))), ['/'],
+    'The projects index bar should lead to the map only');
 
   // On the overview the Map link follows the section in view.
   await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });

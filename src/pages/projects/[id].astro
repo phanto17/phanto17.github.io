@@ -75,7 +75,6 @@ const projectSchema = [
 <Base title={d.title} description={d.summary} image={`/media/og/${project.id}.jpg`} schema={projectSchema} location={project.id}>
   <header class="phero">
     <div class="wrap">
-      <p class="kicker" data-reveal style="--reveal-delay:0"><a href="/overview/#projects">← Projects</a> · {d.genre}</p>
       <h1><span class="kinetic-word" style="--word-idx:0" transition:name={`title-${project.id}`}>{d.title}</span></h1>
       <p class="lead" data-reveal style="--reveal-delay:1">{d.summary}</p>
       <p class="meta" data-reveal style="--reveal-delay:1">{d.engine} · {d.role} · {period}</p>
@@ -278,7 +277,7 @@ const projectSchema = [
 <style>
   .phero {
     position: relative;
-    padding: 96px 0 48px;
+    padding: 56px 0 48px;
     overflow: hidden;
   }
   .phero h1 {
@@ -293,14 +292,6 @@ const projectSchema = [
     gap: 12px;
     flex-wrap: wrap;
     margin-top: 24px;
-  }
-  .phero .kicker a {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .phero .kicker a:hover {
-    color: var(--peach);
   }
   .layout {
     display: grid;
@@ -408,7 +399,7 @@ const projectSchema = [
   }
   @media (max-width: 980px) {
     .phero {
-      padding: 64px 0 32px;
+      padding: 32px 0 32px;
     }
     .gallery {
       grid-template-columns: minmax(0, 1fr);

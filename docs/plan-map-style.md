@@ -217,6 +217,18 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   section kicker on the projects index.
 - **Objective:** Every page says where on the map it is and gets back there in one click.
 - **Estimate:** 2 h
+- **Status:** Done on 2026-11-05. `src/components/LocationBar.astro` is rendered by `Base.astro` at the
+  top of `<main>` on every text page (not on the map). A write-up passes `location` and gets its
+  accent diamond, "Location 03 · 2D dungeon crawler / roguelite" (`locationEyebrow` in
+  `src/data/locations.ts`: the project's number in the projects' order, the same number as the tiles
+  and the index rows) and "← Back to the map" to `/#<id>`; the other pages pass `place` (projects
+  index "Projects · 4 locations on the map", overview, 404, style guide) and go back to `/`. "All
+  projects" shows on every page but the index. It replaced the write-up's "← Projects" kicker, the
+  404's kicker and the style guide's "← Portfolio Home" link; the hero tops were tightened (96 → 56px,
+  phones 64 → 32px). The projects index had no section kicker to replace. Checks: a `locationEyebrow`
+  test, the `nav` check reads the bar's line and links, the `nojs` check measures the bar's text — and
+  its shared `groundContrast` now reads `color(srgb …)` inks (what `color-mix()` computes to) in
+  0–1, which it had read as near-black.
 
 ## Phase 1 — pages
 

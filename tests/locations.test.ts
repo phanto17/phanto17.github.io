@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildLocations, LANDMARKS, NAV, landmarkForSection, toLandmarkSeed, toProjectSeed, type ProjectEntryLike, type ProjectLocation } from '../src/data/locations';
+import { buildLocations, LANDMARKS, NAV, landmarkForSection, locationEyebrow, toLandmarkSeed, toProjectSeed, type ProjectEntryLike, type ProjectLocation } from '../src/data/locations';
 import { OVERVIEW, PROJECTS_INDEX, mapHrefFor } from '../src/data/site';
 import { projectView } from '../src/lib/project-view';
 import { buildLayout } from '../src/world/gen';
@@ -65,6 +65,14 @@ describe('the location list', () => {
     expect(mapHrefFor(null)).toBe('/');
     for (const l of LANDMARKS) expect(landmarkForSection(l.href.split('#')[1])).toBe(l);
     expect(landmarkForSection('projects')).toBeUndefined();
+  });
+
+  it('names a place for the location bar: projects by their number, landmarks by their eyebrow', () => {
+    const all = buildLocations(three);
+    expect(locationEyebrow(all, 'a')).toBe('Location 01 · a genre');
+    expect(locationEyebrow(all, 'c')).toBe('Location 03 · c genre');
+    expect(locationEyebrow(all, 'mast')).toBe('Contact');
+    expect(() => locationEyebrow(all, 'nowhere')).toThrow(/nowhere/);
   });
 });
 

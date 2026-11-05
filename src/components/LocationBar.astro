@@ -1,0 +1,67 @@
+---
+/**
+ * The location bar under the nav on every text page (Base renders it): where on the map this page is
+ * and the way back there. A write-up names its place ("Location 03 · 2D dungeon crawler") in its
+ * accent and goes back to `/#<id>`; any other page passes its own `label` and goes back to the map.
+ * "All projects" shows everywhere but the projects index itself.
+ */
+import { getCollection } from 'astro:content';
+import { PROJECTS_INDEX, mapHrefFor } from '../data/site';
+import { buildLocations, locationEyebrow } from '../data/locations';
+
+interface Props {
+  /** The page's location id (a write-up's project). */
+  location?: string;
+  /** The line for a page that is not a location. */
+  label?: string;
+}
+const { location, label } = Astro.props;
+const all = buildLocations(await getCollection('projects'));
+const place = location ? all.find((l) => l.id === location) : undefined;
+const line = location ? locationEyebrow(all, location) : label;
+const path = Astro.url.pathname.replace(/index\.html$/, '');
+const showAll = path !== PROJECTS_INDEX;
+---
+
+<nav class="locbar wrap" aria-label="Location" style={place ? `--acc: ${place.accent}` : undefined}>
+  <span class="diamond" aria-hidden="true"></span>
+  {line && <span class="eyebrow">{line}</span>}
+  <span class="locbar-links">
+    <a href={mapHrefFor(location)}>← Back to the map</a>
+    {showAll && <a href={PROJECTS_INDEX}>All projects</a>}
+  </span>
+</nav>
+
+<style>
+  .locbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+    padding-top: 18px;
+    padding-bottom: 6px;
+    position: relative;
+    z-index: 1;
+  }
+  .locbar-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 16px;
+    margin-left: auto;
+    font: 500 12px/1.4 var(--font-mono);
+  }
+  .locbar-links a {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .locbar-links a:hover {
+    color: var(--peach);
+  }
+  @media (max-width: 760px) {
+    .locbar-links {
+      margin-left: 0;
+      flex-basis: 100%;
+    }
+  }
+</style>

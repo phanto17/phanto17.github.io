@@ -74,6 +74,9 @@ conversation finds it fuzzy.
   the write-up, or the overview section with the same content), a `mapHref` (`/#<id>`, which opens its
   panel after Explore) and an accent. The nav (`NAV`) is built from the landmarks; its Map link opens
   the current page's place (`mapHrefFor`, from `body[data-location]` or the overview section in view).
+- **Location bar** — the row under the nav on every text page (`LocationBar.astro`, rendered by Base):
+  the place's diamond and line ("Location 03 · 2D dungeon crawler / roguelite" for a write-up, the
+  page's `place` label elsewhere), "← Back to the map" and "All projects".
 - **Status line** — the footer's first row on every text page (`src/lib/status-line.ts`): the Poznań
   clock and phase the map is lit at and the field log's "n/N explored" (read from
   `portfolio-world-visited`); absent without JavaScript.
