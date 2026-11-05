@@ -765,6 +765,21 @@ async function checkNav(browser) {
   assert.equal(lost.here, 'You are here', 'The 404 minimap does not mark the uncharted slot');
   assert.ok(lost.links.length === 4 && lost.links.every((h) => /^\/#[a-z-]+$/.test(h)), `404 minimap links: ${lost.links.join(', ')}`);
 
+  // The style guide's field kit renders each specimen block in its own theme (data-theme-scope).
+  await page.goto('http://portfolio.test/style-guide/', { waitUntil: 'networkidle' });
+  const kit = await page.evaluate(() => [...document.querySelectorAll('#field-kit [data-theme-scope]')].map((b) => {
+    const probe = document.createElement('i');
+    probe.style.color = getComputedStyle(b).getPropertyValue('--bg');
+    b.append(probe);
+    const want = getComputedStyle(probe).color;
+    probe.remove();
+    return [b.dataset.themeScope, getComputedStyle(b).backgroundColor === want, b.querySelectorAll('.tag, .eyebrow, .diamond-list, .hud-panel, .seg, .meta-row, .accent').length];
+  }));
+  assert.deepEqual(kit.map(([id]) => id), ['prism', 'paper', 'crt', 'signal'], `Field kit themes: ${JSON.stringify(kit)}`);
+  const bgs = await page.evaluate(() => [...document.querySelectorAll('#field-kit [data-theme-scope]')].map((b) => getComputedStyle(b).backgroundColor));
+  assert.equal(new Set(bgs).size, 4, `The field kit blocks share a ground: ${bgs.join(', ')}`);
+  assert.ok(kit.every(([, own, n]) => own && n > 20), `A field kit block is off its theme or missing specimens: ${JSON.stringify(kit)}`);
+
   // On the overview the Map link follows the section in view.
   await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });
   await page.locator('#lab').scrollIntoViewIfNeeded();

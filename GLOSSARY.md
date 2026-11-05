@@ -78,6 +78,9 @@ conversation finds it fuzzy.
   project's accent on `<main>`, the meta row and label metrics, HUD panels, diamond lists and note marks.
 - **Location index** — the projects index since P3: the minimap (`LocationMap.astro`, built from
   `gen.ts` by `src/lib/minimap.ts`) over one label row per project; the map's legend in text.
+- **Theme scope** — `data-theme-scope="<theme id>"` on any element gives it that theme's tokens
+  (generated into `tokens.css` beside `html[data-theme]`); the style guide's field kit uses it to show
+  every specimen on every theme.
 - **Location head** — an overview section's head since P4 (`LocationHead.astro`): "03 · The Lab" with
   the place's diamond in its accent, the h2, and "On the map →" to the same place; the overview is the
   field log in text, one section per place.

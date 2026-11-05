@@ -360,6 +360,17 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   contrast rows from F2.
 - **Objective:** The style guide documents what the pages now use; a regression shows up there first.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-05. `/style-guide/` has "05 · Field kit" (`#field-kit`): one block per
+  theme, each wearing its theme through the new `[data-theme-scope='<id>']` selector that
+  `tools/build-tokens.mjs` now writes beside `html[data-theme='<id>']` on every theme block of
+  `tokens.css` (themes stayed html-only before, so a per-theme specimen could not use the real tokens).
+  Each block shows the first project as a `.tag` label (and `.is-near`), the `.uncharted` marker, an
+  `.eyebrow` + `.diamond` for every place and the free slot, the `.diamond-list`, the field log as a
+  `.hud-panel` ("2/8 explored"), the `.meta-row`, a `.seg` with the map's render-pass names, two
+  `.hud-key`s and a still of the drawer (`.accent`, accent rule and offset). The F2 location accent
+  table moved from 01 into this section, under the specimens it measures. The `nav` check reads the
+  kit: four blocks in theme order, each on its own theme's `bg` and holding its specimens; all
+  thirteen browser checks pass.
 
 ### P7. Shared pieces that also live on the map
 - **Description:** TelegraphMiniGame, PopupCRT, ShoveLab and SignalStamp move their hardcoded colours to

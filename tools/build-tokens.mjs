@@ -58,7 +58,9 @@ export function renderTokensCss(tokens, backdrop) {
     out += `*/\n\n`;
   }
   for (const th of themes) {
-    out += th.id === first ? `:root,\nhtml[data-theme='${th.id}'] {\n` : `html[data-theme='${th.id}'] {\n`;
+    // [data-theme-scope] wears a theme on one element (the style guide's field-kit specimens).
+    const scope = `[data-theme-scope='${th.id}']`;
+    out += th.id === first ? `:root,\nhtml[data-theme='${th.id}'],\n${scope} {\n` : `html[data-theme='${th.id}'],\n${scope} {\n`;
     out += themeBlock(th.id) + `}\n\n`;
   }
   // Paper follows the OS when nothing is stored (the site's Nav stores an explicit choice).

@@ -10,6 +10,8 @@ import { getCollection } from 'astro:content';
 import tokens from '../../design/tokens.json';
 import { accentContrast, accentInks, accentTheme, contrast, ACCENT_MINIMUM, type AccentTokens } from '../lib/accents';
 import { UNCHARTED_ACCENT } from '../world/gen';
+import { buildLocations, locationEyebrow } from '../data/locations';
+import { projectView } from '../lib/project-view';
 
 type ThemeId = 'prism' | 'paper' | 'crt' | 'signal';
 const themes = tokens.color.themes as { id: ThemeId; name: string }[];
@@ -25,9 +27,8 @@ const resolve = (name: string, theme: ThemeId): string => {
 };
 
 /** Every accent the map draws, toned per theme as the field kit does (contrast and mixes: src/lib/accents.ts). */
-const projectAccents = (await getCollection('projects'))
-  .sort((a, b) => a.data.order - b.data.order)
-  .map((p) => ({ name: p.data.title, accent: p.data.world.accent }));
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+const projectAccents = projects.map((p) => ({ name: p.data.title, accent: p.data.world.accent }));
 const accentRows = [
   ...colourTokens.filter((t) => t.name.startsWith('loc-')).map((t) => ({ name: t.name, accent: t.value as string })),
   ...projectAccents,
@@ -53,6 +54,17 @@ const typeGroups = tokens.type.groups as {
   styles: { name: string; fontSize: string; lineHeight?: number | string; fontWeight?: number; letterSpacing?: string; fontStyle?: string; sample?: string; usage: string }[];
 }[];
 const families = tokens.type.families as Record<string, string>;
+/** The field kit's specimens (P6) show a real place: the first project, as its label and its drawer. */
+const locations = buildLocations(projects);
+const sample = projects[0];
+const sampleView = projectView(sample.data);
+const sampleEyebrow = locationEyebrow(locations, sample.id);
+/** The field log as the map draws it, with the first two places explored for the specimen. */
+const logPlaces = locations.slice(0, 8);
+/** Every place's eyebrow, by name, and the free slot. */
+const eyebrowPlaces = [...locations.map((l) => ({ name: l.title, accent: l.accent })), { name: 'Uncharted', accent: UNCHARTED_ACCENT }];
+const views = ['Beauty', 'Wire', 'Normals', 'Clay', 'Depth'];
+
 const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam] as { tokens: { name: string; value: string; usage: string }[] }).tokens;
 ---
 
@@ -119,41 +131,6 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
           </div>
         ))
       }
-      <h3 style="margin-top:36px">Location accents</h3>
-      <p class="muted">
-        A location keeps one accent, and the 3D world uses it as it is. The interface tones it for each theme
-        first ({accentRules.map((t) => t.name).join(', ')}), then draws the eyebrow (needs {ACCENT_MINIMUM.eyebrow}:1 on
-        bg) and the tag border ({ACCENT_MINIMUM.edge}:1). tests/accents.test.ts holds every location to these numbers.
-      </p>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Accent</th>
-              {themes.map((th) => (
-                <th>{th.name}: eyebrow · border</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {accentRows.map((row) => (
-              <tr>
-                <td>
-                  <span class="chip" style={`background:${row.accent}`} /> <code>{row.name}</code> <span class="hex">{row.accent}</span>
-                </td>
-                {themes.map((th) => {
-                  const r = accentRow(row.accent, th.id);
-                  return (
-                    <td class={r.ok ? 'ok' : 'warn'}>
-                      <span class="chip" style={`background:${r.inks.eyebrow}`} /> {r.eyebrow}:1 · <span class="chip" style={`background:${r.inks.edge}`} /> {r.edge}:1
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
       <h3 style="margin-top:36px">Decoration, bands and board fills</h3>
       <p class="muted">Never text. The usage note on each says where it may appear.</p>
       <div class="swatches">
@@ -264,6 +241,144 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
       </div>
     </div>
   </section>
+  <section class="section" id="field-kit">
+    <div class="wrap">
+      <h2>05 · Field kit</h2>
+      <p class="sub-h">the map's vocabulary for every page · src/styles/field-kit.css · each theme from its tokens</p>
+      <p class="muted kit-intro">
+        Every specimen below is the real class on the real tokens: each block wears one theme through
+        <code>data-theme-scope</code>, so a regression in the kit or a theme shows here first.
+      </p>
+      {
+        themes.map((theme) => (
+          <div class="kit-theme" data-theme-scope={theme.id}>
+            <h3 class="kit-theme-name">{theme.name}</h3>
+            <div class="kit-grid">
+              <div class="kit-cell">
+                <p class="kit-name">.tag · .tag-title · .is-near</p>
+                <div class="kit-row">
+                  <div class="tag kit-label" style={`--acc:${sample.data.world.accent}`}>
+                    <p class="eyebrow">{sampleEyebrow}</p>
+                    <p class="tag-title">{sample.data.title}</p>
+                  </div>
+                  <div class="tag is-near kit-label" style={`--acc:${sample.data.world.accent}`}>
+                    <p class="eyebrow">{sampleEyebrow}</p>
+                    <p class="tag-title">{sample.data.title}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="kit-cell">
+                <p class="kit-name">.tag.uncharted</p>
+                <div class="tag uncharted kit-label" style={`--acc:${UNCHARTED_ACCENT}`}>
+                  <p class="eyebrow">Next project lands here</p>
+                  <p class="tag-title">Uncharted</p>
+                </div>
+              </div>
+              <div class="kit-cell">
+                <p class="kit-name">.eyebrow · .diamond, every location accent</p>
+                <ul class="kit-eyebrows">
+                  {eyebrowPlaces.map((row, i) => (
+                    <li class="eyebrow" style={`--acc:${row.accent}`}>
+                      <i class:list={['diamond', { 'is-done': i % 2 === 0 }]} aria-hidden="true" />
+                      {row.name}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div class="kit-cell">
+                <p class="kit-name">.diamond-list</p>
+                <ul class="diamond-list" style={`--acc:${sample.data.world.accent}`}>
+                  {sample.data.highlights.map((h) => (
+                    <li>{h}</li>
+                  ))}
+                </ul>
+              </div>
+              <div class="kit-cell">
+                <p class="kit-name">field log · .hud-panel</p>
+                <div class="hud-panel kit-log">
+                  <p class="kit-log-head"><span class="meta">Field log</span><span class="meta">2/{logPlaces.length} explored</span></p>
+                  <ul>
+                    {logPlaces.map((l, i) => (
+                      <li style={`--acc:${l.accent}`}>
+                        <i class:list={['diamond', { 'is-done': i < 2 }]} aria-hidden="true" />
+                        {l.title}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+              <div class="kit-cell">
+                <p class="kit-name">.meta-row · .seg · .hud-key</p>
+                <p class="meta-row">
+                  <span class:list={['pill', sampleView.live ? 'play' : 'wip']}>{sampleView.status}</span><span>{sampleView.period}</span><span>{sample.data.engine}</span>
+                </p>
+                <div class="seg kit-seg" role="group" aria-label={`Render pass specimen, ${theme.name}`}>
+                  {views.map((v, i) => (
+                    <button class="key" type="button" aria-pressed={i === 0 ? 'true' : 'false'}>{v}</button>
+                  ))}
+                </div>
+                <div class="kit-row">
+                  <a class="btn hud-key" href="#field-kit">On the map →</a>
+                  <a class="btn hud-key" href="#field-kit">All projects</a>
+                </div>
+              </div>
+              <div class="kit-cell kit-wide">
+                <p class="kit-name">drawer · .accent</p>
+                <div class="kit-drawer accent" style={`--acc:${sample.data.world.accent}`}>
+                  <p class="eyebrow">{sample.data.genre}</p>
+                  <p class="kit-drawer-title">{sample.data.title}</p>
+                  <p class="meta-row">
+                    <span class="pill">{sampleView.status}</span><span>{sampleView.period}</span><span>{sample.data.engine}</span>
+                  </p>
+                  <p class="kit-drawer-lead">{sample.data.summary}</p>
+                  <ul class="diamond-list">
+                    {sample.data.highlights.map((h) => (
+                      <li>{h}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        ))
+      }
+      <h3 class="kit-h">Location accents, measured</h3>
+      <p class="muted">
+        A location keeps one accent, and the 3D world uses it as it is. The interface tones it for each theme
+        first ({accentRules.map((t) => t.name).join(', ')}), then draws the eyebrow (needs {ACCENT_MINIMUM.eyebrow}:1 on
+        bg) and the tag border ({ACCENT_MINIMUM.edge}:1). tests/accents.test.ts holds every location to these numbers.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Accent</th>
+              {themes.map((th) => (
+                <th>{th.name}: eyebrow · border</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {accentRows.map((row) => (
+              <tr>
+                <td>
+                  <span class="chip" style={`background:${row.accent}`} /> <code>{row.name}</code> <span class="hex">{row.accent}</span>
+                </td>
+                {themes.map((th) => {
+                  const r = accentRow(row.accent, th.id);
+                  return (
+                    <td class={r.ok ? 'ok' : 'warn'}>
+                      <span class="chip" style={`background:${r.inks.eyebrow}`} /> {r.eyebrow}:1 · <span class="chip" style={`background:${r.inks.edge}`} /> {r.edge}:1
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
 </Base>
 
 <style>
@@ -366,6 +481,129 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
   }
   details.changelog {
     margin-top: 12px;
+  }
+  /* ---- 05 · Field kit ---- */
+  .kit-intro {
+    max-width: 70ch;
+  }
+  .kit-theme {
+    margin: 24px 0 32px;
+    padding: 20px;
+    border-radius: var(--r-md);
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--hairline);
+  }
+  .kit-theme-name {
+    margin: 0 0 16px;
+  }
+  .kit-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px 28px;
+  }
+  .kit-wide {
+    grid-column: 1 / -1;
+  }
+  .kit-name {
+    margin: 0 0 10px;
+    font: 500 11px/1.4 var(--font-mono);
+    color: var(--text-2);
+  }
+  .kit-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 12px;
+  }
+  .kit-row:first-of-type {
+    margin-top: 0;
+  }
+  .kit-label {
+    display: inline-block;
+    padding: 6px 10px;
+  }
+  .kit-label p {
+    margin: 0;
+  }
+  .kit-eyebrows {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .kit-eyebrows li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kit-cell .diamond-list {
+    margin: 0;
+    font-size: 14px;
+  }
+  .kit-log {
+    padding: 10px 12px;
+  }
+  .kit-log-head {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 0 8px;
+  }
+  .kit-log ul {
+    display: grid;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    font-size: 13px;
+  }
+  .kit-log li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .kit-seg {
+    margin: 12px 0 0;
+  }
+  /* The map's drawer (world.css .world-drawer) as a still: the accent rule and offset on the left. */
+  .kit-drawer {
+    max-width: 500px;
+    padding: 20px 24px 22px;
+    background: var(--bg);
+    border-left: 1px solid var(--acc-ui);
+    box-shadow: -4px 0 0 color-mix(in srgb, var(--acc-ui) 30%, var(--ink-black));
+  }
+  .kit-drawer .eyebrow {
+    margin: 0 0 6px;
+  }
+  .kit-drawer-title {
+    margin: 0 0 10px;
+    font: 600 28px/1.1 var(--font-display);
+  }
+  .kit-drawer-lead {
+    margin: 12px 0;
+    color: var(--text-2);
+  }
+  .kit-h {
+    margin-top: 36px;
+  }
+  /* The accent table's name column: the chip, the name and the hex on one line where it fits. */
+  #field-kit td:first-child {
+    min-width: 220px;
+  }
+  @media (max-width: 980px) {
+    .kit-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 760px) {
+    .kit-grid {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .kit-theme {
+      padding: 16px;
+    }
   }
   details.changelog li {
     font-size: 14px;

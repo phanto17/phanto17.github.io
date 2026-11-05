@@ -9,7 +9,8 @@
 */
 
 :root,
-html[data-theme='prism'] {
+html[data-theme='prism'],
+[data-theme-scope='prism'] {
   --bg-0: #0b070b;
   --bg: #1a1713;
   --surface: #2f291b;
@@ -99,7 +100,8 @@ html[data-theme='prism'] {
   color-scheme: dark;
 }
 
-html[data-theme='paper'] {
+html[data-theme='paper'],
+[data-theme-scope='paper'] {
   --bg-0: #dfd3be;
   --bg: #f4ede1;
   --surface: #e9decb;
@@ -189,7 +191,8 @@ html[data-theme='paper'] {
   color-scheme: light;
 }
 
-html[data-theme='crt'] {
+html[data-theme='crt'],
+[data-theme-scope='crt'] {
   --bg-0: #020403;
   --bg: #070b09;
   --surface: #0e1713;
@@ -279,7 +282,8 @@ html[data-theme='crt'] {
   color-scheme: dark;
 }
 
-html[data-theme='signal'] {
+html[data-theme='signal'],
+[data-theme-scope='signal'] {
   --bg-0: #06040c;
   --bg: #0d0a14;
   --surface: #1a1426;
