@@ -132,7 +132,7 @@ async function checkNoJavaScript(browser) {
         return route.fulfill({ status: 200, contentType: mimeTypes[path.extname(file)] || 'application/octet-stream', body });
       });
       await page.goto(`http://portfolio.test${url}`, { waitUntil: 'load' });
-      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta, main .locbar .eyebrow, main .locbar-links a')]
+      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta, main .meta-row, main .locbar .eyebrow, main .locbar-links a')]
         .map((el) => ({ el, r: el.getBoundingClientRect(), s: getComputedStyle(el) }))
         .filter(({ r }) => r.width > 0 && r.bottom <= innerHeight)
         .map(({ el, r, s }) => ({
@@ -697,6 +697,19 @@ async function checkNav(browser) {
   }));
   assert.match(bar.line ?? '', /^Location \d\d · /, 'The location bar does not name the place');
   assert.deepEqual(bar.links, ['/#push-comes-to-shove', '/projects/'], 'The location bar does not lead back to the place');
+  // The write-up is the drawer panel grown: the project's accent on <main>, the metrics as map labels,
+  // HUD panels instead of umber cards, a diamond per note with the first one read.
+  const dossier = await page.evaluate(() => ({
+    acc: getComputedStyle(document.querySelector('main')).getPropertyValue('--acc').trim(),
+    tags: document.querySelectorAll('.phero .stat-tag.tag').length,
+    side: document.querySelector('.side .box')?.classList.contains('hud-panel'),
+    dots: [...document.querySelectorAll('[data-note-dot]')].map((d) => d.classList.contains('is-done')),
+    count: document.querySelector('[data-notes-progress]')?.textContent,
+  }));
+  assert.match(dossier.acc, /^#[0-9a-f]{6}$/i, 'The write-up does not carry its location accent');
+  assert.ok(dossier.tags > 0 && dossier.side, 'The write-up hero or sidebar is not in the map chrome');
+  assert.ok(dossier.dots.length > 1 && dossier.dots[0] && dossier.count === String(dossier.dots.filter(Boolean).length),
+    `The notes' field-log marks are off: ${JSON.stringify(dossier)}`);
   const status = (await page.locator('[data-status-line]').textContent()).replace(/\s*·\s*/g, ' · ').replace(/\s+/g, ' ').trim();
   assert.match(status, /^Poznań \d\d:\d\d · \S.* · 1\/\d+ explored · Style guide$/, `Status line reads "${status}"`);
   const ground = await page.evaluate(() => {

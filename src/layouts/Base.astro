@@ -4,6 +4,8 @@ import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
 import LocationBar from '../components/LocationBar.astro';
+import { getCollection } from 'astro:content';
+import { buildLocations } from '../data/locations';
 import { site, PERSON_ID } from '../data/site';
 // The preference boot (theme, motion, sound, CRT) runs inline before first paint; generated from
 // src/scripts/prefs-table.ts and design/tokens.json by tools/build-tokens.mjs.
@@ -38,6 +40,8 @@ const {
   noindex = false,
   schema,
 } = Astro.props;
+// A location's page takes its accent on <main> (.accent gives every descendant the toned --acc-ui).
+const here = location ? buildLocations(await getCollection('projects')).find((l) => l.id === location) : undefined;
 const ogImage = new URL(image, site.url).toString();
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString();
@@ -107,7 +111,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <canvas id="signal-field" class="signal-field" aria-hidden="true" transition:persist="signal-field"></canvas>
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
     <Nav location={location} />
-    <main id="main">
+    <main id="main" class:list={[{ accent: here }]} style={here ? `--acc: ${here.accent}` : undefined}>
       {chrome !== 'world' && <LocationBar location={location} label={place} />}
       <slot />
     </main>

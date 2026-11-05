@@ -8,6 +8,8 @@
  * (InteractivePanel) with a reading pane, one note at a time, as before; the visuals move into their
  * notes. Progressive enhancement: the server renders every note as a plain section, so without
  * JavaScript the write-up reads top to bottom. Deep links to any heading inside a note open that note.
+ * Like the map's field log, every note has a diamond in the page's accent that fills once the note has
+ * been read in this visit, and the head counts them ("2/5 notes").
  */
 import InteractivePanel from './InteractivePanel.astro';
 import Figure from './Figure.astro';
@@ -22,10 +24,10 @@ const { plan, title } = Astro.props;
 const { notes } = plan;
 ---
 
-<div class="notes" data-notes>
+<div class="notes accent" data-notes>
   <div class="notes-head" data-notes-ui hidden>
     <p class="kicker">Explore the breakdown</p>
-    <span class="meta notes-progress">EXPLORED: <b data-notes-progress>1</b>/{notes.length} NOTES</span>
+    <span class="meta notes-progress"><b data-notes-progress>1</b>/{notes.length} notes</span>
     <button type="button" class="btn notes-mode" data-notes-mode aria-pressed="false">Read as one page</button>
   </div>
 
@@ -38,8 +40,9 @@ const { notes } = plan;
       notes.map((note, i) => (
         <section class="note" id={note.id} data-note aria-labelledby={note.headingId}>
           <p class="note-bar meta" data-notes-ui hidden>
-            <span>
-              <b>{note.code}</b> · {note.tag}
+            <span class="note-mark">
+              <i class="diamond" data-note-dot={note.id} aria-hidden="true"></i>
+              <span><b>{note.code}</b> · {note.tag}</span>
             </span>
             <span>
               Note {i + 1} of {notes.length}
@@ -123,6 +126,13 @@ const { notes } = plan;
       visualsBox.hidden = layout !== 'split';
     };
 
+    // The field-log marks: a filled diamond per note read in this visit, and the count.
+    const dots = Array.from(root.querySelectorAll<HTMLElement>('[data-note-dot]'));
+    const syncRead = () => {
+      dots.forEach((d) => d.classList.toggle('is-done', explored.has(d.dataset.noteDot ?? '')));
+      if (progress) progress.textContent = String(explored.size);
+    };
+
     const setVisual = (id: string) => {
       visuals.forEach((v) => v.classList.toggle('is-active', v.dataset.visual === id));
       notes.forEach((n) => n.classList.toggle('is-current', n.id === id));
@@ -142,7 +152,7 @@ const { notes } = plan;
         const status = tab.querySelector<HTMLElement>('.panel-status');
         if (status) status.textContent = on ? '● ACTIVE' : explored.has(id) ? '✓ READ' : '○ NOTE';
       });
-      if (progress) progress.textContent = String(explored.size);
+      syncRead();
       if (modeBtn) {
         modeBtn.setAttribute('aria-pressed', String(!exploring));
         modeBtn.textContent = exploring ? 'Read as one page' : 'Explore as notes';
@@ -164,6 +174,7 @@ const { notes } = plan;
           active = hit.target.id;
           explored.add(active);
           setVisual(active);
+          syncRead();
         },
         { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
       );
@@ -304,10 +315,18 @@ const { notes } = plan;
   }
   /* Explore mode: the pane takes the inspector's look and shows one note. */
   .notes.is-explorer .notes-pane {
-    background: var(--surface);
-    border: 1px solid var(--umber);
-    border-radius: var(--r-md);
+    background: var(--panel);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-xs);
     padding: 18px 22px 22px;
+  }
+  .note-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .notes-progress b {
+    color: var(--text);
   }
   .note-bar {
     display: flex;
@@ -377,10 +396,15 @@ const { notes } = plan;
     gap: 40px;
     align-items: start;
   }
-  .notes.is-split .notes-head,
   .notes.is-split .notes-grid,
+  .notes.is-split .notes-mode,
   .notes.is-split .note-nav {
     display: none;
+  }
+  /* The count stays in the split layout, across both columns. */
+  .notes.is-split .notes-head {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
   }
   .notes.is-split .notes-pane {
     min-width: 0;
@@ -398,7 +422,7 @@ const { notes } = plan;
     margin-top: 0;
   }
   .notes.is-split .note.is-current .note-bar b {
-    color: var(--coral);
+    color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
   .notes.is-split .note:not(.is-current) {
     opacity: 0.82;

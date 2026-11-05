@@ -74,6 +74,8 @@ conversation finds it fuzzy.
   the write-up, or the overview section with the same content), a `mapHref` (`/#<id>`, which opens its
   panel after Explore) and an accent. The nav (`NAV`) is built from the landmarks; its Map link opens
   the current page's place (`mapHrefFor`, from `body[data-location]` or the overview section in view).
+- **Dossier** — a write-up page dressed as the map's drawer panel grown to full size (P1): the
+  project's accent on `<main>`, the meta row and label metrics, HUD panels, diamond lists and note marks.
 - **Location bar** — the row under the nav on every text page (`LocationBar.astro`, rendered by Base):
   the place's diamond and line ("Location 03 · 2D dungeon crawler / roguelite" for a write-up, the
   page's `place` label elsewhere), "← Back to the map" and "All projects".

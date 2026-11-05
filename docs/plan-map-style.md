@@ -245,6 +245,20 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   the same panel, grown; all four write-ups pass `tests/write-ups.test.ts` and the layout checks at every
   width and theme.
 - **Estimate:** 10 h
+- **Status:** Done on 2026-11-05. `Base.astro` looks up the page's location and sets its accent on
+  `<main class="accent">`, so every descendant reads the toned `--acc-ui` (the location bar no longer sets
+  its own). Hero: the drawer's `.meta-row` (status pill, period, engine, role — role kept, it was in the
+  old meta line) and the metrics as `.tag` labels; no separate eyebrow, because the location bar right
+  above already reads "Location 0N · genre". "What I built" is a `.diamond-list`; the sidebar box, the
+  changelog, the gallery and the credits table are `.hud-panel`s; the CRT switch is a `.key.hud-key`
+  (the hand-rolled `.crt-toggle-btn` and the box's tilt are gone); release-note H4s take the accent ink.
+  `Figure.astro` frames take the label chrome (accent border + hard offset on `ink-black`) instead of
+  the Prism gradient and rainbow glow — on every page that uses Figure, so the projects index rows get
+  coral frames until P3. NotesExplorer: a `.diamond` per note in its bar, filled once read in this visit,
+  and "n/N notes" in the head, now shown in the split layout too (the count used to update only on
+  clicks; the scroll observer now updates it); the explore pane is a panel with a hairline. Checks: the
+  `nav` check asserts the accent on `<main>`, the label metrics, the HUD sidebar and the note marks;
+  `nojs` measures `.meta-row`; `tests/write-ups.test.ts` and all twelve browser checks pass.
 
 ### P2. Drawer → write-up transition
 - **Description:** Give the drawer's title, clip and eyebrow the same `transition:name`s as the write-up

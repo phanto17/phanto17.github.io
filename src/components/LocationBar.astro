@@ -17,13 +17,13 @@ interface Props {
 }
 const { location, label } = Astro.props;
 const all = buildLocations(await getCollection('projects'));
-const place = location ? all.find((l) => l.id === location) : undefined;
 const line = location ? locationEyebrow(all, location) : label;
 const path = Astro.url.pathname.replace(/index\.html$/, '');
 const showAll = path !== PROJECTS_INDEX;
 ---
 
-<nav class="locbar wrap" aria-label="Location" style={place ? `--acc: ${place.accent}` : undefined}>
+<!-- The accent comes from <main> (Base sets it on a location's page). -->
+<nav class="locbar wrap" aria-label="Location">
   <span class="diamond" aria-hidden="true"></span>
   {line && <span class="eyebrow">{line}</span>}
   <span class="locbar-links">
