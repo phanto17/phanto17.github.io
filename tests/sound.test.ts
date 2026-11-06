@@ -5,7 +5,6 @@ interface Started {
   freq: number;
   type: string;
   gain: number;
-  attackFrom?: number;
   sweepTo?: number;
   sweepAt?: number;
   start: number;
@@ -35,7 +34,7 @@ function fakeContext(state: AudioContextState = 'running') {
           },
         },
         connect: (n: { connect?: (d: unknown) => unknown; rec?: Started }) => {
-          if (n.rec) Object.assign(rec, { gain: n.rec.gain, attackFrom: n.rec.attackFrom });
+          if (n.rec) Object.assign(rec, { gain: n.rec.gain });
           return n;
         },
         start: (t: number) => {
@@ -54,12 +53,9 @@ function fakeContext(state: AudioContextState = 'running') {
         rec,
         gain: {
           setValueAtTime: (v: number) => void sets.push(v),
-          exponentialRampToValueAtTime: (v: number) => {
-            // The first ramp after a near-silent start is the attack; the final one is the fade-out.
-            if (sets[0] !== undefined && sets[0] < 0.001 && rec.gain === 0) {
-              rec.attackFrom = sets[0];
-              rec.gain = v;
-            } else if (rec.gain === 0) rec.gain = sets[0];
+          // The note starts at its gain; the only ramp is the fade-out.
+          exponentialRampToValueAtTime: () => {
+            if (rec.gain === 0) rec.gain = sets[0];
           },
         },
         connect: (d: unknown) => d,
@@ -71,7 +67,7 @@ function fakeContext(state: AudioContextState = 'running') {
 
 describe('the cue table', () => {
   it('names every cue the site plays', () => {
-    const cues: SoundCue[] = ['click', 'chime', 'cue', 'shove', 'step', 'wave', 'clear', 'miss', 'blocked', 'preview', 'stage-welcome', 'stage-sequence', 'stage-title', 'portal', 'close'];
+    const cues: SoundCue[] = ['click', 'cue', 'shove', 'step', 'wave', 'clear', 'miss', 'blocked', 'preview', 'stage-welcome', 'stage-sequence', 'stage-title', 'portal', 'close'];
     for (const cue of cues) expect(TONES[cue].freq).toBeGreaterThan(0);
   });
 
@@ -109,16 +105,16 @@ describe('createSound', () => {
     expect(started[0].sweepAt).toBeCloseTo(10.04);
   });
 
-  it('the chime is two triangle notes 120 ms apart, each fading in', () => {
+  it('the arrival cue is two sine notes 110 ms apart at full gain', () => {
     const { ctx, started } = fakeContext();
-    createSound({ isOn: () => true, context: () => ctx }).play('chime');
-    expect(started.map((s) => [s.freq, s.type, s.gain, s.attackFrom])).toEqual([
-      [660, 'triangle', 0.05, 0.0001],
-      [990, 'triangle', 0.05, 0.0001],
+    createSound({ isOn: () => true, context: () => ctx }).play('arrive');
+    expect(started.map((s) => [s.freq, s.type, s.gain])).toEqual([
+      [392, 'sine', 0.05],
+      [587, 'sine', 0.05],
     ]);
     expect(started[0].start).toBe(10);
-    expect(started[1].start).toBeCloseTo(10.12);
-    expect(started[1].stop).toBeCloseTo(10.12 + 0.16 + 0.02);
+    expect(started[1].start).toBeCloseTo(10.11);
+    expect(started[1].stop).toBeCloseTo(10.11 + 0.22 + 0.02);
   });
 
   it('resumes a suspended context on a cue and still schedules it', () => {

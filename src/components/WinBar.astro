@@ -1,18 +1,17 @@
 ---
 /**
- * The CRT window bar over a card: a mono label on the left ("[■] CH_01 // CINDERHOLD.WASM") and a
- * status readout on the right ("● PLAYABLE"). Decorative; the card's own text carries the meaning.
- * `size="tile"` is the tighter bar of the home-page bento.
+ * The CRT window bar over a CRT card: a mono label on the left ("[■] CONTACT // TTY_01") and a status
+ * readout on the right ("● ONLINE"). Decorative; the card's own text carries the meaning. Since the
+ * project cards became map labels (P3, P4) its one use is the overview's contact terminal (D5).
  */
 interface Props {
   label: string;
   status: string;
-  size?: 'row' | 'tile';
 }
-const { label, status, size = 'row' } = Astro.props;
+const { label, status } = Astro.props;
 ---
 
-<div class:list={['crt-win-bar', size]} aria-hidden="true">
+<div class="crt-win-bar" aria-hidden="true">
   <span>{label}</span>
   <span class="win-status">● {status}</span>
 </div>
@@ -29,13 +28,6 @@ const { label, status, size = 'row' } = Astro.props;
     font-size: 11px;
     letter-spacing: 0.1em;
     color: var(--steel);
-  }
-  .crt-win-bar.tile {
-    gap: 8px;
-    padding: 7px 14px;
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
   }
   .win-status {
     color: var(--mint);

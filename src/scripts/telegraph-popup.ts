@@ -192,8 +192,8 @@ export function bindPopup(deps: PopupDeps): Popup {
     sound.play('close');
     replaceHash(hashAfterClose(hashBeforeOpen));
     hashBeforeOpen = null;
-    // Back to the element that opened the popup; if it cannot take focus any more (the signal landing's
-    // key is hidden once it has been used, a deep link had none), the lab's own key stands in.
+    // Back to the element that opened the popup; if it cannot take focus any more (it was hidden
+    // meanwhile, or a deep link had none), the lab's own key stands in.
     const back = lastFocusedBeforeModal;
     lastFocusedBeforeModal = null;
     back?.focus();

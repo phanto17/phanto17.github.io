@@ -282,16 +282,6 @@ th {
   color: var(--gold);
   font-weight: 500;
 }
-.todo {
-  background: rgba(246, 211, 112, 0.18);
-  color: var(--gold);
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: var(--r-xs);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
 .two {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
@@ -551,7 +541,7 @@ details.changelog ul {
 }
 
 /* Projects: the head bar stays under the nav while the rows scroll beneath it (native sticky, no
-   pinning). index.astro adds .is-stuck while it is held, which only changes paint, never height. */
+   pinning). overview.astro adds .is-stuck while it is held, which only changes paint, never height. */
 @media (min-width: 981px) and (min-height: 700px) {
   #projects .section-head-bar {
     position: sticky;

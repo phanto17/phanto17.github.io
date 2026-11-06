@@ -6,8 +6,8 @@ const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const dist = path.resolve(__dirname, '..', 'dist');
-// The home page is the field map (World.astro); the text sections, the Telegraph cabinet and the
-// landing live on /overview/, so the interaction checks run there and the map has its own check.
+// The home page is the field map (World.astro); the text sections and the Telegraph cabinet live on
+// /overview/, so the interaction checks run there and the map has its own check.
 const HOME = 'http://portfolio.test/overview/';
 const routes = [
   '/', '/overview/', '/projects/', '/projects/horde-hours/', '/projects/push-comes-to-shove/',
@@ -854,13 +854,13 @@ async function checkMorph(browser) {
     const watch = () => { if (document.getElementById('world-pass')?.hidden === false) window.__passShown = true; requestAnimationFrame(watch); };
     requestAnimationFrame(watch);
   });
-  const drawerOpen = (id, title) => page.waitForFunction(([t]) => {
+  const drawerOpen = (title) => page.waitForFunction(([t]) => {
     const d = document.getElementById('world-drawer');
     return d && !d.hidden && d.classList.contains('is-open') && document.getElementById('world-drawer-title')?.textContent === t;
   }, [title], { timeout: 60000 });
 
   await page.goto('http://portfolio.test/#cinderhold', { waitUntil: 'domcontentloaded' });
-  await drawerOpen('cinderhold', 'Cinderhold');
+  await drawerOpen('Cinderhold');
   const names = await page.evaluate(() => ['.world-panel .eyebrow', '#world-drawer-title', '.world-clip']
     .map((sel) => getComputedStyle(document.querySelector(`#world-drawer ${sel}`)).viewTransitionName));
   assert.deepEqual(names, ['eyebrow-cinderhold', 'title-cinderhold', 'cover-cinderhold'], 'The drawer does not carry the write-up names');
@@ -899,7 +899,7 @@ async function checkMorph(browser) {
   await page.evaluate(() => { window.__passShown = false; });
   await page.locator('.locbar-links a', { hasText: 'Back to the map' }).click();
   await page.waitForURL((u) => u.pathname === '/' && u.hash === '#cinderhold');
-  await drawerOpen('cinderhold', 'Cinderhold');
+  await drawerOpen('Cinderhold');
   assert.equal(await page.evaluate(() => window.__passShown), false, 'The montage played on the way back');
 
   // Scrolled down to the link: the title and eyebrow are out of the drawer and sit the morph out.

@@ -407,6 +407,18 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   ProjectRow use if D5 removes it, and remove the base.css helpers no page uses after Phase 1.
 - **Objective:** Nothing in `src/` is unused; `astro check` 0 errors.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-05. `SignalLanding.astro` is deleted (D6; its CSS was scoped inside it)
+  together with what only it used: `LANDING_KEY`/`LANDING_DELAY_MS`/`LANDING_SCROLL_THRESHOLD`,
+  `LandingContext` and `shouldShowLanding` in `signal-reward.ts` and their tests, the `chime` cue and
+  the `attack` fade-in only the chime had (the multi-note test now plays the map's `arrive`). Comments
+  fixed: base.css's sticky head ("overview.astro adds .is-stuck"), the popup's focus return, the lab's
+  hash loader and check-browser's header no longer name the landing; ProjectTile's "home page's bento"
+  went in P4. WinBar lost its `size` prop and tile style: its one use is the contact terminal (D5).
+  The base.css `.todo` helper is gone (no TODO markers since 2026-10-17). A scan of base.css,
+  motion.css, keys.css and field-kit.css against the markup and scripts finds no other unused selector;
+  every component and module is imported; the remaining unshared exports are types in public
+  signatures. `astro check`: 0 errors, 0 warnings, 0 hints (an unused `education` import on the
+  overview and an unused parameter in the morph check went too). All thirteen browser checks pass.
 
 ### C2. Verification
 - **Description:** `npm test`, `astro check`, `npm run build`, `tools/check-links.mjs`, every

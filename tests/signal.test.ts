@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  LANDING_DELAY_MS,
   LEGACY_BEST_KEY,
   REWARD_KEY,
   availableThemes,
@@ -10,7 +9,6 @@ import {
   readReward,
   recordClear,
   saveReward,
-  shouldShowLanding,
   stampLabel,
   type StorageLike,
 } from '../src/scripts/signal-reward';
@@ -112,38 +110,5 @@ describe('theme cycle', () => {
     expect(isThemeId('signal', true)).toBe(true);
     expect(isThemeId('neon', true)).toBe(false);
     expect(isThemeId(null, true)).toBe(false);
-  });
-});
-
-describe('landing panel', () => {
-  const base = { seen: false, reducedMotion: false, hash: '', pathname: '/', firstLoad: true };
-
-  it('waits four seconds', () => {
-    expect(LANDING_DELAY_MS).toBe(4000);
-  });
-
-  it('shows on a first, idle, motion-allowed visit to the home page', () => {
-    expect(shouldShowLanding(base)).toBe(true);
-    expect(shouldShowLanding({ ...base, pathname: '/index.html' })).toBe(true);
-    expect(shouldShowLanding({ ...base, hash: '#' })).toBe(true);
-  });
-
-  it('never shows again once seen', () => {
-    expect(shouldShowLanding({ ...base, seen: true })).toBe(false);
-  });
-
-  it('never shows under reduced motion', () => {
-    expect(shouldShowLanding({ ...base, reducedMotion: true })).toBe(false);
-  });
-
-  it('never shows on a deep link or a project page', () => {
-    expect(shouldShowLanding({ ...base, hash: '#lab' })).toBe(false);
-    expect(shouldShowLanding({ ...base, hash: '#lab?stage=welcome' })).toBe(false);
-    expect(shouldShowLanding({ ...base, hash: '#projects' })).toBe(false);
-    expect(shouldShowLanding({ ...base, pathname: '/projects/cinderhold/' })).toBe(false);
-  });
-
-  it('only arms on the document the visitor arrived on', () => {
-    expect(shouldShowLanding({ ...base, firstLoad: false })).toBe(false);
   });
 });
