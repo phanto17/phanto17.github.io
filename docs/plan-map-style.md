@@ -428,6 +428,69 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** Same or better scores than the 2026-11-02 audit; the owner reviews the screenshots
   before anything is pushed to `main`.
 - **Estimate:** 5 h
+- **Status:** Done on 2026-11-06 except for one owner step: the owner has not yet reviewed the
+  screenshots. Automated: Vitest
+  244, `astro check` 0/0/0, build, 41 external links with 0 bad, all seventeen browser checks (a new
+  `notesfocus`). axe-core 4.10.2 (WCAG 2.0/2.1 A + AA + best practice) in 74 runs: eight text pages in
+  four themes, the same pages at 390 px, motion on with the reveals finished, and in every theme the
+  start screen, the map, four panels, the Lab and the Telegraph popup: **0 violations**, 22–50 rules
+  passing per run; the audit of 2026-11-02 covered two pages in three themes. Keyboard walk: every page
+  tabbed through with real key events (ring, on screen, not covered or faded, named, nothing skipped),
+  26 checks, all pass.
+
+  What they found, all small and fixed. All were already on `main` except the location bar's diamond:
+  - Waiting notes dimmed with `opacity: 0.82` took inline code under 4.5:1 (3.64:1 on Paper) and code
+    blocks to 4.2:1 on Prism. They now recede in tone (`text-3`) on prose only.
+  - Tab landed on code and copy keys in the pinned pane's faded-out visuals, so the ring was invisible.
+    Focus now brings that visual up, and the scroll-spy leaves it up (`notesfocus`).
+  - The map's labels were tab stops inside an `aria-hidden` layer; they are `tabindex="-1"` (the field
+    log is their keyboard twin).
+  - Closing a map panel or the Lab dropped focus to `body`; it returns to the key that opened it, and
+    the field log's rebuild keeps the key in focus.
+  - A project tile focused by keyboard could sit under the sticky Projects head (`scroll-margin-top`).
+  - The style guide's scrolling tables took no keyboard focus (now labelled regions), and squeezed
+    columns to one letter wide on a phone (`min-width`, they scroll).
+  - `aria-label` on a role-less `div` (`.stat-chips`) and on the stamp's `p`; roles added. Links in a
+    map caption had no underline.
+  - From the screenshots: the overview's nav kept "Contact" lit back at the top of the page (the hero
+    now clears it; pinned in `nav`); the location bar's diamond sat alone on its line on a phone (from
+    F7, this plan); the map panel's clip was black until it decoded (poster = the cover).
+
+  axe still marks `aria-controls` on `#tg-open-popup` for review (the id exists), and about 8,000
+  contrast nodes it cannot judge over gradients and the field; `contrast`, `field` and
+  `tests/field-lane.test.ts` cover those by token and by pixels, not node by node.
+
+  Local performance, 4 × CPU on the overview, three runs each (noisy): `world` LCP 976–1936 ms, median
+  1796; `main` 1384–2212 ms, median 2024; CLS 0.004; 71 KB gzipped script (77 on 2026-11-02). One run on
+  2026-11-02 gave 1.42 s on the old home page, so this is no regression against `main`, and not provably
+  better than that run. Network throttling did not apply to routed responses, so there is no 3G number.
+
+  Phone (S20 FE, Brave, local build over `adb reverse`: no gzip, no CDN, so not comparable with the
+  published 2026-11-02 numbers except where `main` was measured the same way):
+  - *`main` against `world`, overview, four alternating cold loads each:* LCP median 980 ms against 976 ms
+    (the last hero word), FCP 288 against 280, CLS 0 on both, worst tap in a game turn 96–104 ms against
+    96–120 ms. The gap to the 0.70 s published on 2026-11-02 is the same on `main`, so it does not come
+    from this branch; publishing `world` and rerunning the tool gives the like-for-like number.
+  - *One outlier:* the first trace of the session saw 368 ms on the Start tap. It did not repeat in the
+    four runs above or in the field-cost run (worst 104 ms). Target 200 ms.
+  - *Map-lit field (F5), idle, field on against stopped:* renderer main 8 % against 4 %, compositor 10 %
+    against 7 %, GPU main 2–3 % against 0 (2026-11-01: about +4 % main, +11 % compositor). 60 fps at idle
+    either way, nothing over 16.8 ms.
+  - *Scroll:* 84.5 fps, nothing over 33 ms; over a 2 s scroll renderer main 65 %, compositor 49 %, GPU main
+    42 % (72 %, 61 %, 63 % on 2026-11-02), longest main-thread task 6.2 ms. Cold load 27 requests, 425 KB
+    transferred uncompressed.
+  - *The field map:* start screen LCP 256 ms, three.js not loaded before Explore, ready 0.6 s after it
+    (local transport), canvas 540 × 826, 60 fps idle and walking, nothing over 16.8 ms, no long task.
+
+  Tools: `tools/phone-trace.mjs` takes `[url] [resultFile]` and defaults to the published overview; it
+  disables the cache for the cold load instead of wiping the phone's; both phone tools use the site's
+  motion switch (the event they sent was deleted on 2026-11-02). For a local build: preview
+  `astro-preview` (8850), `adb reverse tcp:8850 tcp:8850`, Brave in front, screen on, then open the tab
+  with `adb shell am start` (`/json/new` is refused on the phone).
+
+  Screenshots: `.review/c2/index.html` (git-ignored), 192 shots, `main` against `world`, four themes,
+  desktop and phone. Full-page shots paint the fixed field over the first screen only: that band is the
+  capture, not the page. The style guide's shots are cut at 16,000 px, the capture limit.
 
 ### C3. Docs
 - **Description:** Update `CLAUDE.md` (the field-kit seam, location tokens, breakpoints, the map-lit

@@ -1,11 +1,15 @@
 // Phone performance sitting: drives the portfolio tab in a Chromium browser on an Android phone over
 // adb-forwarded CDP (cold load, idle frame timing with the field on/off, a touch scroll, one game turn,
 // a scroll trace). Setup: USB debugging on, `adb forward tcp:9222 localabstract:chrome_devtools_remote`,
-// then take the page id from http://127.0.0.1:9222/json/list. Usage: node tools/phone-trace.mjs <pageId>
+// then take the page id from http://127.0.0.1:9222/json/list.
+// Usage: node tools/phone-trace.mjs <pageId> [url] [resultFile]. The default is the published overview: the game and
+// the scroll length live there since the field map became the home page. To trace a build that is not
+// published, run `npx astro preview --port 8850` and `adb reverse tcp:8850 tcp:8850`, then pass
+// http://localhost:8850/overview/ (no gzip there, so the transfer sizes are raw).
 import { writeFileSync } from 'node:fs';
 
 const pageId = process.argv[2];
-const SITE = 'https://phanto17.github.io/';
+const SITE = process.argv[3] ?? 'https://phanto17.github.io/overview/';
 const ws = new WebSocket(`ws://127.0.0.1:9222/devtools/page/${pageId}`);
 let seq = 0;
 const pending = new Map();
@@ -44,7 +48,7 @@ await send('Network.enable');
 const out = { device: 'Samsung SM-G781B (Galaxy S20 FE), Brave 156 (Chromium 156), USB CDP', when: new Date().toISOString() };
 
 // ---------- A. cold load ----------
-await send('Network.clearBrowserCache');
+await send('Network.setCacheDisabled', { cacheDisabled: true }); // a cold load that leaves the phone's own cache alone
 await send('Page.navigate', { url: 'about:blank' });
 await sleep(500);
 const nav = send('Page.navigate', { url: SITE });
@@ -52,6 +56,7 @@ const loaded = waitEvent('Page.loadEventFired', 30000);
 await nav;
 await loaded;
 await sleep(7000); // let the lazy modules (field, GSAP) arrive and settle
+await send('Network.setCacheDisabled', { cacheDisabled: false });
 out.coldLoad = await evaluate(`new Promise((done) => {
   const o = {};
   const nav = performance.getEntriesByType('navigation')[0];
@@ -88,10 +93,10 @@ const frameSample = `new Promise((done) => {
 await evaluate(`window.scrollTo(0, 0)`);
 await sleep(800);
 out.idleFieldOn = await evaluate(frameSample);
-await evaluate(`(() => { document.documentElement.dataset.motion = 'reduced'; window.dispatchEvent(new Event('portfolio:motionchange')); })()`);
+await evaluate(`document.querySelector('[data-motion-switcher]').click()`); // the site's own motion switch
 await sleep(1500);
 out.idleFieldOff = await evaluate(frameSample);
-await evaluate(`(() => { delete document.documentElement.dataset.motion; window.dispatchEvent(new Event('portfolio:motionchange')); })()`);
+await evaluate(`document.querySelector('[data-motion-switcher]').click()`); // the site's own motion switch
 await sleep(1500);
 
 // ---------- C. scroll through the page (real touch gesture) with the field on ----------
@@ -157,6 +162,6 @@ for (const e of events) {
 }
 out.scrollTrace = { windowMs: traceMs, busyMs: Object.fromEntries(Object.entries(busy).map(([k, v]) => [k, Math.round(v)])), busyPercent: Object.fromEntries(Object.entries(busy).map(([k, v]) => [k, Math.round((v / traceMs) * 100)])), longestRendererTask: longest, traceEvents: events.length };
 
-writeFileSync('phone-trace-result.json', JSON.stringify(out, null, 2));
+writeFileSync(process.argv[4] ?? 'phone-trace-result.json', JSON.stringify(out, null, 2));
 console.log(JSON.stringify(out, null, 2));
 ws.close();

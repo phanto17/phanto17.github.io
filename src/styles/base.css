@@ -87,7 +87,8 @@ a {
 p a,
 li a,
 td a,
-dd a {
+dd a,
+figcaption a {
   text-decoration: underline;
   text-decoration-color: var(--glow-ink);
   text-underline-offset: 3px;
@@ -543,6 +544,10 @@ details.changelog ul {
 /* Projects: the head bar stays under the nav while the rows scroll beneath it (native sticky, no
    pinning). overview.astro adds .is-stuck while it is held, which only changes paint, never height. */
 @media (min-width: 981px) and (min-height: 700px) {
+  /* A control scrolled to by keyboard focus lands below the bar as well as below the nav. */
+  #projects :is(a, button) {
+    scroll-margin-top: 120px;
+  }
   #projects .section-head-bar {
     position: sticky;
     top: 70px;

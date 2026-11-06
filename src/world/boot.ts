@@ -90,10 +90,26 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   void begin();
 
   // ── Panels ──────────────────────────────────────────────────────────────────────
+  /** The key that opened an overlay from the keyboard; closing the overlay gives it the focus back. */
+  let opener: HTMLElement | null = null;
+  function rememberOpener() {
+    const a = document.activeElement;
+    // A mouse click hands the keyboard to the world (see the HUD's click handler), so only a keyboard
+    // focus is worth returning to; moving from one overlay to the other keeps the first opener.
+    if (a instanceof HTMLElement && a.matches(':focus-visible') && !a.closest('#world-drawer, #world-lab')) opener = a;
+  }
+  function returnFocus() {
+    // The field log rebuilds its keys when a place is marked visited, so a log key is found again by place.
+    const loc = opener?.dataset.loc;
+    const back = loc ? root.querySelector<HTMLElement>(`#world-log-list [data-loc="${CSS.escape(loc)}"]`) : opener;
+    if (back?.isConnected && back.offsetParent) back.focus({ preventScroll: true });
+    opener = null;
+  }
   function openLoc(l: Location) {
     if (l.kind === 'uncharted') return;
     markVisited(l.id);
     if (l.kind === 'lab') { openLab(); eng.goTo(l); return; }
+    rememberOpener();
     closeLab({ quiet: true });
     const tpl = root.querySelector<HTMLTemplateElement>(`template[data-panel="${CSS.escape(l.id)}"]`); if (!tpl) return;
     openId = l.id;
@@ -111,7 +127,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   function closeDrawer({ quiet = false } = {}) {
     if (drawer.hidden) return;
     drawer.classList.remove('is-open'); openId = null; eng.setShift(0, 0);
-    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); }
+    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); returnFocus(); }
     setTimeout(() => { if (!drawer.classList.contains('is-open')) drawer.hidden = true; }, 260);
   }
   function bindCopy(scope: HTMLElement) {
@@ -126,6 +142,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
 
   // ── The Lab ─────────────────────────────────────────────────────────────────────
   function openLab(tab = 'recall') {
+    rememberOpener();
     closeDrawer({ quiet: true });
     lab.hidden = false; eng.setLocked(true); sound.play('open');
     letters ??= mountLetters($('[data-lab-panel="mess"]'), data.word, { thud: () => sound.play('thud'), shock: () => sound.play('shock'), ui: () => sound.play('click') }, { signal });
@@ -141,7 +158,7 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   function closeLab({ quiet = false } = {}) {
     if (lab.hidden) return;
     lab.hidden = true; letters?.stop(); eng.setLocked(false);
-    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); }
+    if (!quiet) { sound.play('close'); if (location.hash) replaceHash(''); returnFocus(); }
   }
   $('#world-lab-close').addEventListener('click', () => closeLab(), { signal });
   $$('[data-lab-tab]').forEach((b) => b.addEventListener('click', () => setLabTab(b.dataset.labTab ?? 'recall'), { signal }));
@@ -150,14 +167,18 @@ export function bootWorld(root: HTMLElement, { signal }: { signal: AbortSignal }
   function renderLog() {
     const locs = eng.S.locs.filter((l) => l.kind !== 'uncharted'), done = locs.filter((l) => visited.has(l.id)).length;
     $('#world-log-count').textContent = `${done}/${locs.length} explored`;
-    const list = $('#world-log-list'); list.replaceChildren();
+    const list = $('#world-log-list');
+    // The rebuild below happens when the explorer arrives somewhere: the key in focus must keep it.
+    const focused = (document.activeElement as HTMLElement | null)?.closest<HTMLElement>('#world-log-list [data-loc]')?.dataset.loc;
+    list.replaceChildren();
     for (const l of locs) {
-      const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button'; b.className = 'key'; b.style.setProperty('--acc', l.accent);
+      const li = document.createElement('li'), b = document.createElement('button'); b.type = 'button'; b.className = 'key'; b.dataset.loc = l.id; b.style.setProperty('--acc', l.accent);
       const dot = document.createElement('i'); dot.className = 'diamond' + (visited.has(l.id) ? ' is-done' : ''); dot.setAttribute('aria-hidden', 'true');
       const t = document.createElement('span'); t.textContent = l.title;
       b.append(dot, t); if (visited.has(l.id)) { const v = document.createElement('span'); v.className = 'sr-only'; v.textContent = ' (visited)'; b.append(v); }
       b.addEventListener('click', () => { openLoc(l); if (matchMedia(MEDIA.mid).matches) $('#world-log').classList.remove('is-open'); });
       li.append(b); list.append(li);
+      if (l.id === focused) b.focus({ preventScroll: true });
     }
   }
   $('#world-log-toggle').addEventListener('click', () => $('#world-log').classList.toggle('is-open'), { signal });

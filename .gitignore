@@ -1,5 +1,8 @@
 # build output
 dist/
+
+# local before/after screenshots for review
+.review/
 .astro/
 
 # dependencies

@@ -187,6 +187,7 @@ export function createEngine(canvas: HTMLCanvasElement, labelsEl: HTMLElement, o
     labels = S.locs.map((l) => {
       const b = document.createElement(l.kind === 'uncharted' ? 'div' : 'button');
       b.className = 'world-label tag' + (l.kind === 'uncharted' ? ' uncharted' : '');
+      b.tabIndex = -1; // a pointer shortcut in an aria-hidden layer; the field log is its keyboard twin
       b.style.setProperty('--acc', l.accent);
       const eye = document.createElement('span'); eye.className = 'wl-eye eyebrow'; eye.textContent = l.eyebrow;
       const title = document.createElement('span'); title.className = 'tag-title'; title.textContent = l.title;

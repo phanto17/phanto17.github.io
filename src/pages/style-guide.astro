@@ -93,7 +93,7 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
         themes.map((theme) => (
           <div class="theme-block" data-theme={theme.id}>
             <h3>{theme.name}</h3>
-            <div class="table-wrap">
+            <div class="table-wrap" role="region" aria-label={`${theme.name} tokens`} tabindex="0">
               <table>
                 <thead>
                   <tr>
@@ -348,7 +348,7 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
         first ({accentRules.map((t) => t.name).join(', ')}), then draws the eyebrow (needs {ACCENT_MINIMUM.eyebrow}:1 on
         bg) and the tag border ({ACCENT_MINIMUM.edge}:1). tests/accents.test.ts holds every location to these numbers.
       </p>
-      <div class="table-wrap">
+      <div class="table-wrap" role="region" aria-label="Location accents" tabindex="0">
         <table>
           <thead>
             <tr>
@@ -587,6 +587,10 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
   }
   .kit-h {
     margin-top: 36px;
+  }
+  /* The tables scroll inside .table-wrap on a phone rather than squeezing their columns to one letter wide. */
+  .table-wrap table {
+    min-width: 720px;
   }
   /* The accent table's name column: the chip, the name and the hex on one line where it fits. */
   #field-kit td:first-child {

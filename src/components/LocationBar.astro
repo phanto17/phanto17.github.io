@@ -24,16 +24,18 @@ const showAll = path !== PROJECTS_INDEX;
 
 <!-- The accent comes from <main> (Base sets it on a location's page). -->
 <nav class="locbar wrap" aria-label="Location">
-  <span class="diamond" aria-hidden="true"></span>
-  {
-    line &&
-      (location ? (
-        // Pairs with the map drawer's eyebrow: the panel's genre line grows into this one.
-        <span class="eyebrow" transition:name={`eyebrow-${location}`}>{line}</span>
-      ) : (
-        <span class="eyebrow">{line}</span>
-      ))
-  }
+  <span class="locbar-place">
+    <span class="diamond" aria-hidden="true"></span>
+    {
+      line &&
+        (location ? (
+          // Pairs with the map drawer's eyebrow: the panel's genre line grows into this one.
+          <span class="eyebrow" transition:name={`eyebrow-${location}`}>{line}</span>
+        ) : (
+          <span class="eyebrow">{line}</span>
+        ))
+    }
+  </span>
   <span class="locbar-links">
     <a href={mapHrefFor(location)}>← Back to the map</a>
     {showAll && <a href={PROJECTS_INDEX}>All projects</a>}
@@ -50,6 +52,13 @@ const showAll = path !== PROJECTS_INDEX;
     padding-bottom: 6px;
     position: relative;
     z-index: 1;
+  }
+  /* The diamond stays beside its line when the line wraps on a phone. */
+  .locbar-place {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
   }
   .locbar-links {
     display: flex;

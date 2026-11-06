@@ -597,6 +597,7 @@ async function checkWorld(browser) {
   const locs = await page.evaluate(() => window.__world.eng.S.locs.map((l) => l.id));
   assert.deepEqual(locs.filter((id) => !['station', 'lab', 'guild', 'mast', 'uncharted'].includes(id)), ['horde-hours', 'push-comes-to-shove', 'cinderhold', 'eternity-keeper']);
   assert.equal(await page.locator('.world-label').count(), locs.length, 'One label per location');
+  assert.equal(await page.evaluate(() => [...document.querySelectorAll('#world-labels button')].filter((b) => b.tabIndex >= 0).length), 0, 'A label in the aria-hidden layer takes keyboard focus');
   // Walk to Cinderhold by BFS and open its panel.
   await page.evaluate(() => { const w = window.__world; w.eng.goTo(w.eng.locOf('cinderhold')); w.eng.stepFrames(600, 1 / 30); });
   assert.equal(await page.evaluate(() => window.__world.eng.S.near?.id), 'cinderhold', 'The explorer did not arrive');
@@ -606,6 +607,14 @@ async function checkWorld(browser) {
   assert.equal(await page.locator('#world-drawer a[href="/projects/cinderhold/"]').isVisible(), true, 'The panel does not link to the write-up');
   await page.keyboard.press('Escape');
   await until(page, () => document.getElementById('world-drawer').hidden, 'Escape did not close the panel');
+  // A panel opened from a key gives the keyboard back to that key when it closes.
+  for (let i = 0; i < 40 && !(await page.evaluate(() => document.activeElement.closest('#world-log-list') !== null)); i += 1) await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await until(page, () => !document.getElementById('world-drawer').hidden, 'The log key did not open a panel');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(() => document.activeElement.closest('#world-log-list') !== null), true, 'Closing the panel lost the focus');
+  await until(page, () => document.getElementById('world-drawer').hidden, 'Escape did not close the panel');
+  await page.evaluate(() => document.activeElement.blur());
   // Dev Mode: render passes, overlays and a test project that moves nothing.
   await page.keyboard.press('Backquote');
   await page.keyboard.press('2');
@@ -807,6 +816,9 @@ async function checkNav(browser) {
   await page.waitForFunction(() => document.querySelector('[data-nav-map]').getAttribute('href') === '/#lab', null, { timeout: 5000 });
   n = await nav();
   assert.equal(n.lab, 'location', 'The Lab link is not current over the Lab section');
+  // Back in the hero nothing stays lit.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.waitForFunction(() => !document.querySelector('[data-nav-link][aria-current]'), null, { timeout: 5000 });
 
   // The overview is the field log in text: every section head names its place and links to it on the
   // map, the landmark sections carry their accent, and each project tile wears its map label.
@@ -916,6 +928,26 @@ async function checkMorph(browser) {
   console.log('Morph: drawer eyebrow, title and clip grow into the write-up; Back to the map reopens the drawer.');
 }
 
+/** Keyboard focus never lands on something invisible: a write-up's waiting visuals come up when focused. */
+async function checkNotesFocus(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  await serveBuild(page);
+  await page.goto('http://portfolio.test/projects/cinderhold/', { waitUntil: 'networkidle' });
+  const waiting = page.locator('.notes-visuals .visual:not(.is-active) button').first();
+  assert.equal(await waiting.count(), 1, 'The pane has no waiting visual with a key: the check would pass vacuously');
+  const id = await waiting.evaluate((b) => b.closest('.visual').dataset.visual);
+  await waiting.focus();
+  await page.waitForTimeout(100);
+  const state = await page.evaluate((v) => ({
+    active: document.querySelector(`.visual[data-visual="${v}"]`).classList.contains('is-active'),
+    opacity: getComputedStyle(document.querySelector(`.visual[data-visual="${v}"]`)).opacity,
+    current: document.getElementById(v).classList.contains('is-current'),
+  }), id);
+  assert.deepEqual(state, { active: true, opacity: '1', current: true }, `Focus in a waiting visual: ${JSON.stringify(state)}`);
+  await page.close();
+  console.log('Notes focus: a focused key brings its waiting visual up.');
+}
+
 /** three.js loads only on the map: no script a text page fetches contains the renderer. */
 async function checkBundle(browser) {
   const marker = 'WebGLRenderer';
@@ -950,7 +982,7 @@ async function checkBundle(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
-      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle, morph: checkMorph,
+      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle, morph: checkMorph, notesfocus: checkNotesFocus,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

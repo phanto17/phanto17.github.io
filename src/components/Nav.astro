@@ -229,10 +229,17 @@ const spySections = [
       .map((sec) => ({ sec, el: document.getElementById(sec.id) }))
       .filter((x): x is { sec: SpySection; el: HTMLElement } => Boolean(x.el));
     if (!('IntersectionObserver' in window) || sections.length === 0) return;
+    const hero = document.querySelector('main .hero');
     spy = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (!entry.isIntersecting) return;
+          // Back in the hero no section is current, so nothing stays lit.
+          if (entry.target === hero) {
+            mark(() => null);
+            if (mapLink) mapLink.href = mapHrefFor(document.body.dataset.location);
+            return;
+          }
           const hit = sections.find((x) => x.el === entry.target)?.sec;
           if (!hit) return;
           mark((l) => (navHref(l) === hit.nav ? 'location' : null));
@@ -242,6 +249,7 @@ const spySections = [
       { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
     );
     sections.forEach((x) => spy?.observe(x.el));
+    if (hero) spy.observe(hero);
   };
   onPage(armScrollSpy);
 </script>

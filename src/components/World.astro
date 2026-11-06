@@ -132,7 +132,7 @@ const acc = (id: 'station' | 'lab' | 'guild' | 'mast') => `--acc:${landmarkById(
         <h2 id="world-drawer-title" transition:name={`title-${p.id}`}>{p.data.title}</h2>
         <p class="meta-row"><span class="pill">{view.status}</span><span>{view.period}</span><span>{p.data.engine}</span></p>
         {p.data.clip ? (
-          <video class="world-clip" src={p.data.clip} muted loop playsinline autoplay preload="metadata" aria-hidden="true" transition:name={`cover-${p.id}`}></video>
+          <video class="world-clip" src={p.data.clip} poster={p.data.media[0]?.src} muted loop playsinline autoplay preload="metadata" aria-hidden="true" transition:name={`cover-${p.id}`}></video>
         ) : p.data.media[0]?.src ? (
           <img class="world-clip" transition:name={`cover-${p.id}`} src={p.data.media[0].src} alt={p.data.media[0].alt} width="960" height="540" loading="lazy" decoding="async" />
         ) : null}

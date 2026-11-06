@@ -171,6 +171,9 @@ const { notes } = plan;
             .filter((e) => e.isIntersecting)
             .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
           if (!hit) return;
+          // The scroll a keyboard focus causes must not fade out the visual that focus just landed in.
+          const focused = document.activeElement;
+          if (visualsBox?.contains(focused) && focused?.matches(':focus-visible')) return;
           active = hit.target.id;
           explored.add(active);
           setVisual(active);
@@ -231,6 +234,21 @@ const { notes } = plan;
     applyLayout();
     fromHash();
     wide.addEventListener('change', applyLayout, { signal });
+
+    // The pane stacks its visuals with the waiting ones faded out, and Tab still reaches their code and
+    // copy keys: focus shows the visual it landed in, so the ring is never on something invisible.
+    visualsBox?.addEventListener(
+      'focusin',
+      (e) => {
+        const id = (e.target as HTMLElement).closest<HTMLElement>('[data-visual]')?.dataset.visual;
+        if (layout !== 'split' || !id || id === active) return;
+        active = id;
+        explored.add(id);
+        setVisual(id);
+        syncRead();
+      },
+      { signal },
+    );
 
     tabs.forEach((tab) =>
       tab.addEventListener(
@@ -424,9 +442,15 @@ const { notes } = plan;
   .notes.is-split .note.is-current .note-bar b {
     color: color-mix(in srgb, var(--acc-ui) var(--acc-ink), var(--text));
   }
-  .notes.is-split .note:not(.is-current) {
-    opacity: 0.82;
-    transition: opacity 0.4s ease;
+  /* The notes that are not the current one recede in tone, not in opacity: opacity took inline code
+     and code blocks under 4.5:1 (axe, C2), and text-3 holds that ratio on its own. */
+  .notes.is-split .note > :global(p:not(.note-bar)),
+  .notes.is-split .note > :global(:is(ul, ol)) > :global(li) {
+    transition: color 0.4s ease;
+  }
+  .notes.is-split .note:not(.is-current) > :global(p:not(.note-bar)),
+  .notes.is-split .note:not(.is-current) > :global(:is(ul, ol)) > :global(li) {
+    color: var(--text-3);
   }
   /* The note's own copy of a code block that the pane shows. */
   .notes.is-split .note :global([data-in-pane]),
