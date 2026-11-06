@@ -428,8 +428,8 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
 - **Objective:** Same or better scores than the 2026-11-02 audit; the owner reviews the screenshots
   before anything is pushed to `main`.
 - **Estimate:** 5 h
-- **Status:** Done on 2026-11-06 except for one owner step: the owner has not yet reviewed the
-  screenshots. Automated: Vitest
+- **Status:** Done on 2026-11-06. The owner reviewed the screenshots the same day and judged the
+  branch better than before. Automated: Vitest
   244, `astro check` 0/0/0, build, 41 external links with 0 bad, all seventeen browser checks (a new
   `notesfocus`). axe-core 4.10.2 (WCAG 2.0/2.1 A + AA + best practice) in 74 runs: eight text pages in
   four themes, the same pages at 390 px, motion on with the reveals finished, and in every theme the
@@ -498,6 +498,14 @@ therefore keeps F5 and the full P1/P3/P4 estimates.
   design-system artifact's `tokens.json`.
 - **Objective:** The next session finds the new rules without reading the CSS.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-06. `CLAUDE.md` has one "Map style, the rules" block under Visual style (the
+  field-kit seam, location accents, no loose colours, breakpoints, the map-lit field, the C2 accessibility
+  rules) and lost its stale lines (`index.astro` as the home sections, `WinBar` sizes, prism drift).
+  `docs/design-system.md` gained breakpoints, §6c (kit classes, accent table, the toning mixes) and §6d (the
+  field and the map-lit palette), and dropped the numerals, the 861px split, the 860px gutter and the prism
+  smear. `GLOSSARY.md`: Field kit, Location bar, Panel, Visual, Window bar and Sound cue. The artifact's
+  `project/tokens.json` already matched `design/tokens.json` (sha256 `a484f925…`), so nothing was published;
+  the artifact's component list still has no field-kit pieces, which C3 did not ask for.
 
 ## Order and total
 

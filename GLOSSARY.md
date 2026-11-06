@@ -46,11 +46,11 @@ conversation finds it fuzzy.
 - **Copy** — `telegraph-copy.ts`: every string the game shows, as pure functions of the model.
 - **Composition** — `telegraph-ui.ts`: queries the lab's elements once (all required), builds the DOM
   board view, binds the popup, wires the cabinet's keys; `init()` registers one page binder.
-- **Sound cue** — a named entry in `sound.ts`'s `TONES` table (`click` for every control, `chime`
-  for the landing, and the game's `cue`, `shove`, `step`, `wave`, `clear`, `miss`, `blocked`,
+- **Sound cue** — a named entry in `sound.ts`'s `TONES` table (`click` for every control, the
+  map's `open`, `arrive`, `walk`, `thud` and `shock`, and the game's `cue`, `shove`, `step`, `wave`, `clear`, `miss`, `blocked`,
   `preview`, `stage-*`, `portal`, `close`); `sound.play(cue, step)` is the only way the site makes a
-  sound, muted unless the `sound` preference is on. A tone may sweep its pitch, fade in, or carry
-  further notes (`then`).
+  sound, muted unless the `sound` preference is on. A tone may sweep its pitch or carry further
+  notes (`then`).
 
 ## The signal field (`src/scripts/field.ts`)
 
@@ -87,8 +87,9 @@ conversation finds it fuzzy.
   the place's diamond in its accent, the h2, and "On the map →" to the same place; the overview is the
   field log in text, one section per place.
 - **Location bar** — the row under the nav on every text page (`LocationBar.astro`, rendered by Base):
-  the place's diamond and line ("Location 03 · 2D dungeon crawler / roguelite" for a write-up, the
-  page's `place` label elsewhere), "← Back to the map" and "All projects".
+  the place's diamond and line, kept together on a phone ("Location 03 · 2D dungeon crawler /
+  roguelite" for a write-up, the page's `place` label elsewhere), "← Back to the map" and "All
+  projects". It replaced the write-up's "← Projects" kicker.
 - **Status line** — the footer's first row on every text page (`src/lib/status-line.ts`): the Poznań
   clock and phase the map is lit at and the field log's "n/N explored" (read from
   `portfolio-world-visited`); absent without JavaScript.
@@ -108,7 +109,8 @@ conversation finds it fuzzy.
   time-of-day override and a test project that regenerates the map.
 - **Panel** — the drawer that opens at a location; its markup is a `<template data-panel="<id>">`
   rendered by `World.astro`, cloned by `boot.ts`. The Lab opens the real Telegraph cabinet in an
-  overlay, with the **letters** (`letters.ts`, a hand-written 2D solver) on a second tab.
+  overlay, with the **letters** (`letters.ts`, a hand-written 2D solver) on a second tab. Closing
+  either returns focus to the key that opened it (`rememberOpener`/`returnFocus`).
 - **Ambient** (`ambient.ts`) — the drone and wind on the site's shared `audioContext`, on while the
   `sound` preference is on; the map's cues (`open`, `arrive`, `walk`, `thud`, `shock`) are in `TONES`.
 - **Rank** — Telegraph Recall's ladder on the best campaign score (`signal-reward.ts` `RANKS`,
@@ -125,7 +127,8 @@ conversation finds it fuzzy.
   function: nothing passed in changes.
 - **Visual** — what the pinned pane shows for a note: the page's **widget** (frontmatter `widget`,
   on the first note), the note's first code block (its in-note copy tagged `data-in-pane`), or a
-  gallery image in turn. Rendered inside the note; moved to the **pane** on wide screens.
+  gallery image in turn. Rendered inside the note; moved to the **pane** on wide screens, where
+  keyboard focus on a code block or copy key brings its visual up and the scroll-spy leaves it there.
 - **Write-up rules** — `WRITE_UP_RULES` and `checkWriteUpSource`: the conventions above, checked over
   every write-up by `tests/write-ups.test.ts`.
 
@@ -136,15 +139,17 @@ conversation finds it fuzzy.
   seam**: `class="key"` on any control, `.btn` for the pill-shaped CTA; nothing else selects the look.
 - **Key chrome** — the border and shadows of a key, five theme tokens in `design/tokens.json`:
   `key-border`, `key-border-hover`, `key-rest`, `key-hover`, `key-active`. Paper draws them in ink.
-- **Window bar** — `WinBar.astro`: the CRT title strip over a card (label left, status right), in a
-  `row` and a tighter `tile` size.
+- **Window bar** — `WinBar.astro`: the CRT title strip over a card (label left, status right); its one
+  use left is the overview's contact terminal.
 - **Stylesheet parts** — `global.css` imports `tokens.css` (generated), `fonts.css`, `base.css`,
   `keys.css`, `field-kit.css` and `motion.css`, in that order.
 - **Field kit** — `field-kit.css`: the field map's look as classes any page can use. `.tag` (a map
   label: translucent `--panel` ground, accent border, hard accent offset) with `.tag-title`, `.eyebrow`
   (mono uppercase in the accent pulled toward the text), `.diamond` / `.diamond-list`, `.hud-panel`,
-  `.seg` (a row of keys with one on), `.uncharted` (on a tag: dashed, italic) and `.meta-row`. Each
-  reads `--acc`, coral when unset; `world.css` only places them on the map.
+  `.hud-key` (the HUD's key size), `.seg` (a row of keys with one on), `.uncharted` (on a tag: dashed,
+  italic), `.meta-row`, and `.accent` for any other element whose own CSS draws with the accent. Each
+  reads `--acc`, coral when unset, through `--acc-ui` (borders, rules, glows) and `--acc-text` (type);
+  `world.css` only places them on the map. `/style-guide/#field-kit` renders every class on each theme.
 - **Location accent** — one colour per location: a project's `world.accent`, a landmark's `loc-*` token,
   the free slot's `UNCHARTED_ACCENT`. The 3D world and the minimap use it as it is; the interface draws
   with `--acc-ui`, the accent **toned** for the theme by the `accent` token family (`acc-tone`: share
