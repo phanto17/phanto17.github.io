@@ -1,16 +1,29 @@
 /**
- * Shove visualiser model (R6): a small board on which one unit is shoved one tile, resolved with the
- * rules Push Comes to Shove describes in its write-up: a unit shoved into a wall or the map edge
- * takes collision damage and stays put, a unit shoved into another unit damages both and neither
- * moves, a unit shoved onto a pit is destroyed, otherwise it moves. The geometry (board size, the
- * one-tile step and its edge check) is the Telegraph engine's, so the lab and the mini-game agree.
+ * Shove visualiser model (R6): a 4 x 4 tactical board on which one unit is shoved one tile, resolved
+ * with the rules Push Comes to Shove describes in its write-up: a unit shoved into a wall or the map
+ * edge takes collision damage and stays put, a unit shoved into another unit damages both and neither
+ * moves, a unit shoved onto a pit is destroyed, otherwise it moves.
  *
  * Pure: no DOM, no randomness. The UI lives in src/components/ShoveLab.astro.
  */
-import { TelegraphEngine, type Direction } from './telegraph-engine';
-
+export type Direction = 'up' | 'down' | 'left' | 'right';
 export type Terrain = 'floor' | 'pit' | 'rock';
 export type Side = 'ally' | 'enemy';
+
+export const SIDE = 4;
+const STEP: Record<Direction, { row: number; col: number }> = {
+  up: { row: -1, col: 0 },
+  down: { row: 1, col: 0 },
+  left: { row: 0, col: -1 },
+  right: { row: 0, col: 1 },
+};
+
+/** The tile one step from `cellIndex` in `dir`, or null off the 4 x 4 board. */
+export function shoveTarget(cellIndex: number, dir: Direction): number | null {
+  const row = Math.floor(cellIndex / SIDE) + STEP[dir].row;
+  const col = (cellIndex % SIDE) + STEP[dir].col;
+  return row < 0 || row >= SIDE || col < 0 || col >= SIDE ? null : row * SIDE + col;
+}
 
 export interface Piece {
   side: Side;
@@ -40,7 +53,6 @@ export interface ShoveResult {
   summary: string;
 }
 
-export const SIDE = Math.round(Math.sqrt(TelegraphEngine.GRID_SIZE));
 export const ARROW: Record<Direction, string> = { up: '↑', down: '↓', left: '←', right: '→' };
 
 export const cell = (row: number, col: number): number => row * SIDE + col;
@@ -66,7 +78,7 @@ export function resolveShove(board: ShoveBoard, from: number, dir: Direction): S
   const piece = board.pieces[from];
   if (!piece) return { board, events: [], summary: 'No unit on that tile.' };
   const pieces = [...board.pieces];
-  const to = TelegraphEngine.shoveTarget(from, dir);
+  const to = shoveTarget(from, dir);
   const who = `${piece.name} (${piece.side === 'ally' ? 'ally' : 'foe'})`;
 
   if (to === null) {

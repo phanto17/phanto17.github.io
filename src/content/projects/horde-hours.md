@@ -1,33 +1,42 @@
 ---
 title: Horde Hours
-summary: A 3D survivors-like. Auto-firing abilities, pooled enemies and VFX, a ten-minute spawn director on a NavMesh, level-up cards, passives and a JSON save system.
+summary: A 3D survivors-like featuring data-driven auto-firing abilities, pooled enemies and VFX, a ten-minute NavMesh spawn director, level-up drafts and persistent JSON saves.
 genre: Survivors-like / action roguelite
+kind: game
+category: "SURVIVORS-LIKE // UNITY 6 3D"
+platforms:
+  - WebGL (itch.io)
+  - Unity 6 URP 3D
 status: playable
 dates:
   start: "2026-01"
-  end: "2026-02"
+  end: "2026-10"
 role: Solo — design & programming
-engine: Unity 6 · URP
-order: 1
+engine: Unity 6 (6000.6) · URP 3D
+order: 3
 world:
   kind: arena
   accent: "#f27c52"
 highlights:
-  - ScriptableObject ability framework
-  - Name-keyed object pooling
-  - Level-up offers + JSON saves
+  - ScriptableObject Ability framework cloned per run with Projectile, Aura, Whip & Instant subclasses
+  - Name-keyed UnityEngine.Pool object pooling across enemies, projectiles, VFX, damage popups & XP gems
+  - Pure-C# ten-minute SpawnDirector pacing intervals, wave bursts, elites (5:00) and boss charge (9:00)
+  - Staggered role steering on NavMesh alongside an 8:00 175-enemy WebGL performance benchmark
+  - Level-up card offer builder, Continue save persistence in PlayerPrefs and pooled cooldown audio mixing
+  - 58 EditMode tests covering XP curves, streak/magnet maths and fixing an exclusive-max damage bug
 metrics:
-  - 58 EditMode tests
+  - 58 EditMode NUnit tests
   - 175-enemy 8:00 load benchmark
-  - 10-min pure-C# spawn director
+  - 10-minute pure-C# spawn director
 myContribution:
-  - "Ability framework: an abstract ScriptableObject `Ability` with Projectile, Aura, Whip and Instant variants, instantiated per run so levels and cooldowns are per-player; damage rolls with crit chance from a cloned `UnitStatistics` sheet."
-  - "Projectile behaviour (`MoveTo`): homing, piercing, bouncing with smart re-targeting to the nearest living enemy, and explosive variants with radial knockback."
-  - "Passive items that additively modify the runtime stat sheet (damage, cooldown, range, speed, knockback, magnet range, extra bounces) and level up like weapons."
-  - "Object pooling on top of `UnityEngine.Pool.ObjectPool`, keyed by prefab name, shared by enemies, projectiles, VFX, damage popups and XP gems; every pooled object resets itself in `OnEnable`."
-  - "Spawn director (0.2.0): a pure-C# model that turns the run clock into spawns — an interval that shrinks over ten minutes, a live cap that grows, per-minute health and damage multipliers applied on spawn, a type mix per phase and a burst of one type every minute — driven by a ScriptableObject schedule and covered by 7 EditMode tests. Written with Claude Code under my direction, from my plan."
-  - "Rules under test (0.4.0): the XP curve, the upgrade-offer builder (an owned item offered at its next level only below its cap, a new one only while a slot is free, picks without repeats) and the damage and crit roll moved out of their components into plain C# classes with EditMode tests, the way the other two games are tested. The damage tests found a bug: the roll used Unity's integer `Random.Range`, whose upper bound is exclusive, so no hit ever dealt a weapon's maximum damage. 58 EditMode tests in all."
-  - "Save system & HUD: `ISaveSystemElement` discovery, JSON save and load of level, XP, kills, position, abilities and passives (with Continue on the main menu), XP bar, timer, kill counter, inventory slots, world-space health bars, pause menu, game-over screen and Cinemachine helpers."
+  - "Ability framework: abstract ScriptableObject `Ability` with Projectile, Aura, Whip and Instant variants, cloned per run so levels and cooldowns stay isolated; damage rolls multiply against cloned `UnitStatistics`."
+  - "Projectile behaviour (`MoveTo`): homing, piercing, nearest-target ricochet bouncing and radial explosive knockback."
+  - "Additive passive items modifying damage, cooldown, range, speed, knockback, magnet radius and extra bounces with capped level progression."
+  - "Name-keyed pooling layered over `UnityEngine.Pool.ObjectPool` for enemies, projectiles, VFX, floating popups and XP gems."
+  - "Spawn director (0.2.0): pure-C# clock-to-spawn model driving shrinking spawn intervals, live entity caps, per-minute HP/damage curves and timed bursts across a 10-minute `SpawnSchedule`."
+  - "Rules under test (0.4.0): extracted XP curves, offer-builder constraints and `DamageRoll` into pure C# (fixing a `Random.Range` exclusive-upper-bound bug so weapons can now hit true max damage), reaching 58 EditMode tests — matching the EditMode test setup across my Unity prototypes."
+  - "Continue save persistence & HUD: `ISaveSystemElement` registry storing level, XP, kills, transform and loadouts, plus Pause, Continue, Settings and WebGL performance/lighting tuning."
+  - "Systems added from v0.2.0 through v0.4.0 (spawn director, enemy roles, boss state machine, Continue persistence, WebGL profiler pass and game feel) were built with Claude Code under my architectural direction and verified via NUnit suites and WebGL playtesting."
 changelog:
   - "Game feel (0.4.0): below a third of health a red vignette pulses with a heartbeat that quickens as it gets worse; the XP bar swells and flashes on a level-up; kills less than two seconds apart build a streak that is called out at 25, 50, 100 and every hundred after; damage numbers stack, so hits on one enemy within 0.3 s add to the number already showing, and past 45 numbers on screen plain hits are dropped while crits still get their own; gems pulled by the magnet start at a speed set by their distance and accelerate, so near and far ones land in about the same short time; explosive projectiles shake the camera. A Screen effects switch in both settings screens turns off the shake, the vignette, the bar pulse and the streak callouts. The rules (streak, stacking, magnet) are plain classes with tests; the scene wiring is done by an editor script and pinned by tests too."
   - "Web performance pass (0.3.1): a load test that jumps a run to 8:00, keeps the player alive and measures frame time, managed allocations per frame and where the frame goes (scripts, physics, NavMesh, animation) once about 175 enemies are on the field; it runs headlessly in the editor for before-and-after comparisons and as a separate browser build with an on-screen readout. It showed the scripts were not the bottleneck, so the pass is mostly the engine's side: no physics tests between enemies, half the shadow-map passes, no full-screen colour copy, pools filled during the opening seconds instead of mid-fight, and sound effects on a fixed set of voices instead of a new object per hit. Written with Claude Code under my direction."
@@ -37,7 +46,7 @@ changelog:
   - "Enemy behaviour (before 0.3.0): NavMeshAgent chase, contact damage with interval, physics knockback that hands control back to the agent, hit-flash and dissolve-death via a Shader Graph material."
   - "Level-up flow: XP gems with a recoil-then-fly pickup animation, XP curve, a three-card upgrade screen that only offers valid options (free slots, level caps), controller/keyboard selection."
 tools:
-  - Unity 6000.0 (URP 17)
+  - Unity 6000.6 (URP 17)
   - C#
   - Cinemachine 3
   - Input System
@@ -46,7 +55,6 @@ tools:
   - Unity Test Framework (NUnit)
   - Claude Code
   - TextMesh Pro
-clip: /media/horde-hours/clip.webm
 media:
   - { type: image, src: /media/horde-hours/cover.avif, alt: "Horde Hours key art: the hero surrounded by slimes, skeletons, bats and gold elites at night with fireball, lightning and spinning axe abilities", caption: "Fig. 1 — Horde Hours key art" }
   - { type: image, src: /media/horde-hours/fireball.avif, alt: "The player in a grass arena with a fireball bursting on a slime, HUD with timer, kills and ability slots", caption: "Fig. 2 — a run in the web build: fireball bursting on a slime" }
@@ -110,22 +118,31 @@ private void HandleAbility(Ability ability) {
 ```
 <p class="excerpt-caption">AbilitiesController.cs — <code>HandleAbility</code>, unedited.</p>
 
-Damage is rolled in one place that every weapon shares, so a passive that raises the damage multiplier or crit chance improves every weapon at once:
+Damage is rolled in one place that every weapon shares (`HordeHours.Director.DamageRoll`), so a passive that raises the damage multiplier or crit chance improves every weapon at once—and extracting it from Unity's exclusive integer `Random.Range` ensured rolls of `1.0` can reach `maxDamage`:
 
 ```csharp
+// Ability.cs
 public int GetDamage(UnitStatistics stats, out bool isCritical) {
-    float baseDamage = Random.Range(minDamage, maxDamage);
-    float multiplier = stats.damageMultiplier;
+    // The maths lives in HordeHours.Director.DamageRoll (tested); max damage is included since 0.4.0.
+    return HordeHours.Director.DamageRoll.Damage(minDamage, maxDamage, stats.damageMultiplier,
+        stats.critChance, stats.critMultiplier, Random.value, Random.value, out isCritical);
+}
 
-    isCritical = Random.value <= stats.critChance;
+// HordeHours.Director/DamageRoll.cs
+public static int Damage(int min, int max, float damageMultiplier, float critChance, float critMultiplier,
+    float roll01, float critRoll01, out bool critical)
+{
+    if (max < min) max = min;
+    int span = max - min + 1;
+    int baseDamage = min + (int)(Clamp01(roll01) * span);
+    if (baseDamage > max) baseDamage = max; // a roll of exactly 1 lands on max, not past it
 
-    if (isCritical) {
-        multiplier *= stats.critMultiplier;
-    }
-    return Mathf.RoundToInt(baseDamage * multiplier);
+    critical = critChance > 0f && critRoll01 < critChance;
+    float multiplier = damageMultiplier * (critical ? critMultiplier : 1f);
+    return RoundHalfEven(baseDamage * multiplier);
 }
 ```
-<p class="excerpt-caption">Ability.cs — <code>GetDamage</code>, unedited.</p>
+<p class="excerpt-caption">Ability.cs &amp; DamageRoll.cs — extracted in 0.4.0 so EditMode tests catch upper-bound truncation.</p>
 
 <figure class="diagram">
 <svg viewBox="0 0 760 320" role="img" aria-labelledby="ab-t ab-d">
@@ -182,7 +199,7 @@ The web build had a hole I only saw when auditing the three games: four fixed wa
 
 ### What changed in 0.2.1 (October 2026)
 
-A review round from my own recording. The lightning strike rendered as a magenta sheet in the browser: the VFX pack's shaders declare shader model 4.5, which WebGL 2 cannot run, so they fell back to the error shader; they target 3.5 now and render. The game is called Horde Hours and the menu says "survive the night", but the arena was lit like noon, with a yellow sun and the default skybox. It is night now: a cool, low moonlight with soft shadows, a dark three-colour ambient, exponential fog that closes the distance, a solid dark sky, and a warm lamp that follows the player so the hero and the nearest enemies stay readable. The level-up cards sit on a full-screen dim instead of on the arena, and the rats that dance beside them (a 3D model filmed by a side camera) got a lamp of their own, since the night had turned them into silhouettes. The pointer locks on the first click, so the orbital camera can be turned with the mouse without the cursor leaving the game; every panel releases it. The menu lost its explanatory lines and flat squares for two generated radial glows, a vignette, a coral-shadowed title, outlined buttons that swell and tick on hover, and a CC0 menu theme (cynicmusic's "Crystal Cave"). New sounds for enemy death, victory and defeat (Kenney, CC0), chosen so none are the clips Push Comes to Shove uses; the level-up keeps the sound I had made for it. The scene and menu changes are pinned by 12 EditMode tests, lighting included, so a rebuild cannot quietly bring the sun back.
+A review round from my own recording. The lightning strike rendered as a magenta sheet in the browser: the VFX pack's shaders declare shader model 4.5, which WebGL 2 cannot run, so they fell back to the error shader; they target 3.5 now and render. The game is called Horde Hours and the menu says "survive the night", but the arena was lit like noon, with a yellow sun and the default skybox. It is night now: a cool, low moonlight with soft shadows, a dark three-colour ambient, exponential fog that closes the distance, a solid dark sky, and a warm lamp that follows the player so the hero and the nearest enemies stay readable. The level-up cards sit on a full-screen dim instead of on the arena, and the rats that danced beside them in `0.2.1` (later removed with their Mixamo assets in `0.2.4`) got a lamp of their own, since the night had turned them into silhouettes. The pointer locks on the first click, so the orbital camera can be turned with the mouse without the cursor leaving the game; every panel releases it. The menu lost its explanatory lines and flat squares for two generated radial glows, a vignette, a coral-shadowed title, outlined buttons that swell and tick on hover, and a CC0 menu theme (cynicmusic's "Crystal Cave"). New sounds for enemy death, victory and defeat (Kenney, CC0), chosen so none are the clips Push Comes to Shove uses; the level-up keeps the sound I had made for it. The scene and menu changes are pinned by 12 EditMode tests, lighting included, so a rebuild cannot quietly bring the sun back.
 
 ### What changed in 0.2.5 (October 2026)
 

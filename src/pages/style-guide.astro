@@ -9,8 +9,8 @@ import Figure from '../components/Figure.astro';
 import { getCollection } from 'astro:content';
 import tokens from '../../design/tokens.json';
 import { accentContrast, accentInks, accentTheme, contrast, ACCENT_MINIMUM, type AccentTokens } from '../lib/accents';
-import { UNCHARTED_ACCENT } from '../world/gen';
-import { buildLocations, locationEyebrow } from '../data/locations';
+import { UNCHARTED_ACCENT } from '../lib/accents';
+import { buildLocations } from '../data/locations';
 import { projectView } from '../lib/project-view';
 
 type ThemeId = 'prism' | 'paper' | 'crt' | 'signal';
@@ -58,8 +58,8 @@ const families = tokens.type.families as Record<string, string>;
 const locations = buildLocations(projects);
 const sample = projects[0];
 const sampleView = projectView(sample.data);
-const sampleEyebrow = locationEyebrow(locations, sample.id);
-/** The field log as the map draws it, with the first two places explored for the specimen. */
+const sampleEyebrow = `01 · ${sample.data.genre}`;
+/** The field log as the index lists it, with the first two places marked explored for the specimen. */
 const logPlaces = locations.slice(0, 8);
 /** Every place's eyebrow, by name, and the free slot. */
 const eyebrowPlaces = [...locations.map((l) => ({ name: l.title, accent: l.accent })), { name: 'Uncharted', accent: UNCHARTED_ACCENT }];
@@ -70,7 +70,6 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
 
 <Base
   noindex
-  place="Style guide · generated from design/tokens.json"
   title="Style Guide — Prism CRT"
   description="Living design system and component reference for Tymoteusz Jaskólski's game-dev portfolio, generated from the token file."
 >
@@ -244,7 +243,7 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
   <section class="section" id="field-kit">
     <div class="wrap">
       <h2>05 · Field kit</h2>
-      <p class="sub-h">the map's vocabulary for every page · src/styles/field-kit.css · each theme from its tokens</p>
+      <p class="sub-h">shared accent kit · src/styles/field-kit.css · each theme from its tokens</p>
       <p class="muted kit-intro">
         Every specimen below is the real class on the real tokens: each block wears one theme through
         <code>data-theme-scope</code>, so a regression in the kit or a theme shows here first.
@@ -318,7 +317,7 @@ const simple = (fam: 'spacing' | 'radius' | 'timing' | 'easing') => (tokens[fam]
                   ))}
                 </div>
                 <div class="kit-row">
-                  <a class="btn hud-key" href="#field-kit">On the map →</a>
+                  <a class="btn hud-key" href="#field-kit">Focus token ↑</a>
                   <a class="btn hud-key" href="#field-kit">All projects</a>
                 </div>
               </div>

@@ -1,83 +1,65 @@
-import { readFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { buildLocations, LANDMARKS, NAV, landmarkForSection, locationEyebrow, toLandmarkSeed, toProjectSeed, type ProjectEntryLike, type ProjectLocation } from '../src/data/locations';
-import { OVERVIEW, PROJECTS_INDEX, mapHrefFor } from '../src/data/site';
+import { buildLocations, HOME_SECTIONS, NAV, projectLocation, type ProjectEntryLike } from '../src/data/locations';
+import { PROJECTS_INDEX } from '../src/data/site';
 import { projectView } from '../src/lib/project-view';
-import { buildLayout } from '../src/world/gen';
 
 const entry = (id: string, order: number): ProjectEntryLike => ({
   id,
-  data: { title: id.toUpperCase(), genre: `${id} genre`, order, world: { kind: 'generic', accent: '#123456' } },
+  data: {
+    title: id.toUpperCase(),
+    genre: `${id} genre`,
+    order,
+    world: { kind: 'generic', accent: '#123456' },
+  },
 });
+
 const three = [entry('c', 3), entry('a', 1), entry('b', 2)];
 
-describe('the location list', () => {
-  it('puts the projects first, in their order, then the four landmarks', () => {
-    expect(buildLocations(three).map((l) => l.id)).toEqual(['a', 'b', 'c', 'station', 'lab', 'guild', 'mast']);
+describe('portfolio navigation and project ordering', () => {
+  it('sorts projects by order ascending, then id', () => {
+    expect(buildLocations(three).map((p) => p.id)).toEqual(['a', 'b', 'c']);
+    const tied = [entry('beta', 2), entry('alpha', 2)];
+    expect(buildLocations(tied).map((p) => p.id)).toEqual(['alpha', 'beta']);
   });
 
-  it('gives every location a text page and a place on the map', () => {
-    for (const l of buildLocations(three)) {
-      expect(l.href, l.id).toMatch(/^\/[a-z0-9/#-]*$/);
-      expect(l.mapHref, l.id).toBe(`/#${l.id}`);
-      expect(l.accent, l.id).toMatch(/^#[0-9a-f]{6}$/i);
+  it('gives every project a canonical subpage href and accent', () => {
+    for (const p of buildLocations(three)) {
+      expect(p.href, p.id).toBe(`${PROJECTS_INDEX}${p.id}/`);
+      expect(p.accent, p.id).toMatch(/^#[0-9a-f]{6}$/i);
     }
-    expect(buildLocations(three)[0]).toMatchObject({ type: 'project', href: '/projects/a/', eyebrow: 'a genre', title: 'A' });
+    expect(projectLocation(entry('demo', 1))).toMatchObject({
+      type: 'project',
+      id: 'demo',
+      href: '/projects/demo/',
+      eyebrow: 'demo genre',
+      title: 'DEMO',
+    });
   });
 
-  it('adds exactly one location per project file, everywhere', () => {
-    const before = buildLocations(three);
-    const after = buildLocations([...three, entry('d', 4)]);
-    expect(after.length).toBe(before.length + 1);
-    const seeds = (list: typeof after) => list.filter((l): l is ProjectLocation => l.type === 'project').map(toProjectSeed);
-    const layout = (list: typeof after) => buildLayout(seeds(list), LANDMARKS.map(toLandmarkSeed));
-    expect(layout(after).length).toBe(layout(before).length + 1);
-  });
-
-  it('refuses a project whose id is a landmark', () => {
-    expect(() => buildLocations([entry('lab', 1)])).toThrow(/lab/);
-  });
-
-  it('links every landmark to an overview section that exists', () => {
-    const sources = ['src/pages/overview.astro', 'src/components/TelegraphMiniGame.astro']
-      .map((p) => readFileSync(join(__dirname, '..', p), 'utf8'))
-      .join('\n');
-    for (const l of LANDMARKS) {
-      expect(l.href.startsWith(`${OVERVIEW}#`), l.id).toBe(true);
-      expect(sources, l.href).toContain(`id="${l.href.split('#')[1]}"`);
-    }
-  });
-
-  it('builds the nav from the map and the landmarks', () => {
-    expect(NAV.map((n) => n.label)).toEqual(['Map', 'About', 'Projects', 'Lab', 'Activities', 'Contact']);
-    for (const l of LANDMARKS) expect(NAV).toContainEqual({ href: l.href, label: l.nav });
-  });
-
-  it('links Projects to the index, not the overview section', () => {
+  it('exposes the map-free linear navigation without Map or Lab items', () => {
+    const labels = NAV.map((n) => n.label);
+    expect(labels).toEqual(['Home', 'Projects', 'About', 'Experience', 'Activities', 'Contact']);
+    expect(labels).not.toContain('Map');
+    expect(labels).not.toContain('Lab');
+    expect(NAV[0]).toEqual({ href: '/', label: 'Home' });
     expect(NAV.find((n) => n.label === 'Projects')?.href).toBe(PROJECTS_INDEX);
-    expect(NAV[0]).toEqual({ href: '/', label: 'Map' });
   });
 
-  it("points the Map link at the page's place, and an overview section at its landmark", () => {
-    expect(mapHrefFor('cinderhold')).toBe('/#cinderhold');
-    expect(mapHrefFor(undefined)).toBe('/');
-    expect(mapHrefFor(null)).toBe('/');
-    for (const l of LANDMARKS) expect(landmarkForSection(l.href.split('#')[1])).toBe(l);
-    expect(landmarkForSection('projects')).toBeUndefined();
-  });
-
-  it('names a place for the location bar: projects by their number, landmarks by their eyebrow', () => {
-    const all = buildLocations(three);
-    expect(locationEyebrow(all, 'a')).toBe('Location 01 · a genre');
-    expect(locationEyebrow(all, 'c')).toBe('Location 03 · c genre');
-    expect(locationEyebrow(all, 'mast')).toBe('Contact');
-    expect(() => locationEyebrow(all, 'nowhere')).toThrow(/nowhere/);
+  it('numbers home sections sequentially from 01 to 05', () => {
+    expect(HOME_SECTIONS.map((s) => s.num)).toEqual(['01', '02', '03', '04', '05']);
+    expect(HOME_SECTIONS.map((s) => s.id)).toEqual([
+      'overview',
+      'projects',
+      'about',
+      'experience',
+      'activities',
+    ]);
   });
 });
 
 describe('the project view', () => {
   const game = { status: 'playable' as const, dates: { start: '2026-03' }, itchUrl: 'https://x.itch.io/g' };
+
   it('reads a playable game', () => {
     expect(projectView(game)).toEqual({
       status: 'Playable',
@@ -87,12 +69,77 @@ describe('the project view', () => {
       pending: 'Not on itch.io yet',
     });
   });
-  it('reads a released tool by its download page', () => {
-    const v = projectView({ kind: 'tool', status: 'released', dates: { start: '2026-07', end: '2026-10' }, downloadUrl: 'https://github.com/r' });
-    expect(v).toMatchObject({ status: 'Released', period: '2026-07 – 2026-10', liveTerm: 'Download', live: { label: '↓ Download on GitHub' } });
+
+  it('reads a playable desktop game hosted on GitHub', () => {
+    expect(
+      projectView({
+        kind: 'game',
+        status: 'playable',
+        dates: { start: '2026-10', end: '2026-11' },
+        githubUrl: 'https://github.com/phanto17/text-rpg-engine',
+      }),
+    ).toEqual({
+      status: 'Playable',
+      period: '2026-10 – 2026-11',
+      liveTerm: 'Play',
+      live: {
+        href: 'https://github.com/phanto17/text-rpg-engine',
+        label: '▶ Get & Play on GitHub',
+        short: 'GitHub ↗',
+      },
+      pending: 'Not on itch.io yet',
+    });
   });
+
+  it('reads a released tool by its download page', () => {
+    const v = projectView({
+      kind: 'tool',
+      status: 'released',
+      dates: { start: '2026-07', end: '2026-10' },
+      downloadUrl: 'https://github.com/r',
+    });
+    expect(v).toMatchObject({
+      status: 'Released',
+      period: '2026-07 – 2026-10',
+      liveTerm: 'Download',
+      live: { label: '↓ Download on GitHub' },
+    });
+  });
+
+  it('reads an open-source engine by its GitHub repository', () => {
+    const v = projectView({
+      kind: 'engine',
+      status: 'released',
+      dates: { start: '2026-10', end: '2026-11' },
+      githubUrl: 'https://github.com/phanto17/text-rpg-engine',
+    });
+    expect(v).toMatchObject({
+      status: 'Released',
+      period: '2026-10 – 2026-11',
+      liveTerm: 'Source',
+      live: {
+        href: 'https://github.com/phanto17/text-rpg-engine',
+        label: 'View on GitHub ↗',
+        short: 'GitHub ↗',
+      },
+    });
+  });
+
   it('has no live link while nothing is published', () => {
-    expect(projectView({ status: 'in-progress', dates: { start: '2026-11' } })).toMatchObject({ status: 'Build in progress', live: null });
-    expect(projectView({ kind: 'tool', status: 'planned', dates: { start: '2026-11' } })).toMatchObject({ status: 'Rework planned', live: null, pending: 'Not released yet' });
+    expect(projectView({ status: 'in-progress', dates: { start: '2026-11' } })).toMatchObject({
+      status: 'Build in progress',
+      live: null,
+    });
+    expect(projectView({ kind: 'tool', status: 'planned', dates: { start: '2026-11' } })).toMatchObject({
+      status: 'Rework planned',
+      live: null,
+      pending: 'Not released yet',
+    });
+    expect(projectView({ kind: 'engine', status: 'in-progress', dates: { start: '2026-10' } })).toMatchObject({
+      status: 'Build in progress',
+      live: null,
+      liveTerm: 'Source',
+      pending: 'Repository pending',
+    });
   });
 });

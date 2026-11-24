@@ -1,9 +1,9 @@
 ---
 /**
- * Shove visualiser (R6): a five-by-five board from the Telegraph engine's geometry with pits, rocks and
- * units. Pick a unit, then a direction, and watch the one-tile shove resolve the way Push Comes to
- * Shove's write-up describes it (src/scripts/shove-sim.ts holds the rules). Keyboard: Tab to a unit,
- * Enter to pick it, arrow keys to shove. Rendered into the project page's pinned pane (NotesExplorer).
+ * Shove visualiser (R6): a four-by-four tactical board with pits, rocks and units. Pick a unit, then
+ * a direction, and watch the one-tile shove resolve the way Push Comes to Shove's write-up describes
+ * it (src/scripts/shove-sim.ts holds the rules). Keyboard: Tab to a unit, Enter to pick it, arrow
+ * keys to shove. Rendered into the project page's pinned pane (NotesExplorer).
  */
 import { SIDE, demoBoard } from '../scripts/shove-sim';
 
@@ -59,8 +59,7 @@ const label = (i: number): string => {
 </div>
 
 <script>
-  import { demoBoard, previewShoves, resolveShove, type ShoveBoard } from '../scripts/shove-sim';
-  import type { Direction } from '../scripts/telegraph-engine';
+  import { demoBoard, previewShoves, resolveShove, type Direction, type ShoveBoard } from '../scripts/shove-sim';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 

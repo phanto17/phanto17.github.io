@@ -15,7 +15,7 @@
  * they are the theme's `--field-1..5`.
  */
 import { prefs } from './prefs';
-import { fieldPalette, poznanHour } from '../world/daylight';
+import { fieldPalette, poznanHour } from '../lib/daylight';
 
 /** How often the map-lit palette follows the clock. */
 const RESAMPLE_MS = 5 * 60 * 1000;

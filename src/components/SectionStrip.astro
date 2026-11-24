@@ -1,0 +1,18 @@
+---
+interface Props {
+  id?: string;
+  num: string;
+  title: string;
+  meta?: string;
+}
+
+const { id, num, title, meta } = Astro.props;
+---
+
+<div class="section-strip section-head-bar" id={id}>
+  <div class="strip-left">
+    <span class="strip-num">{num} /</span>
+    <h2>{title}</h2>
+  </div>
+  {meta && <span class="strip-meta">{meta}</span>}
+</div>

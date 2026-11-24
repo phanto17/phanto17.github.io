@@ -208,7 +208,7 @@ async function main() {
   const table = await import(pathToFileURL(join(root, 'src/scripts/prefs-table.ts')).href);
   const facts = themeFacts(tokens, table.SIGNAL_UNLOCK.theme);
   const rows = table.prefRows(facts.ids);
-  const daylight = await import(pathToFileURL(join(root, 'src/world/daylight.ts')).href);
+  const daylight = await import(pathToFileURL(join(root, 'src/lib/daylight.ts')).href);
   const backdrop = daylight.fieldPalette(BACKDROP_HOUR).map(daylight.rgbToHex);
 
   writeFileSync(join(root, OUTPUTS.css), renderTokensCss(tokens, backdrop));

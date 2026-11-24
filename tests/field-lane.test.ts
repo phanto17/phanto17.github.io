@@ -5,7 +5,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { laneContrast, laneGrounds } from '../src/lib/field-lane';
-import { fieldPalette, rgbToHex } from '../src/world/daylight';
+import { fieldPalette, rgbToHex } from '../src/lib/daylight';
 
 const tokens = JSON.parse(readFileSync(new URL('../design/tokens.json', import.meta.url), 'utf8'));
 const themes: string[] = tokens.color.themes.map((t: { id: string }) => t.id);

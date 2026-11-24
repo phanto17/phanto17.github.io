@@ -79,7 +79,10 @@ body::after {
 a {
   color: var(--action-text);
   text-decoration: none;
-  transition: color 0.2s, text-shadow 0.2s;
+  transition:
+    color 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    text-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    text-decoration-color 0.34s cubic-bezier(0.16, 1, 0.3, 1);
 }
 [hidden] {
   display: none !important;
@@ -121,25 +124,13 @@ h4 {
      evenly; the spring is only on the way in. */
   transform-origin: left center;
   transition:
-    font-variation-settings 0.3s ease,
-    letter-spacing 0.3s ease,
-    text-shadow 0.35s ease,
-    color 0.25s ease,
-    transform 0.3s ease;
+    text-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
-/* Hover grows the heading (owner rule 2026-10-29): heavier optical size, wider tracking, a slight
-   scale-up from the left. Never sharper or tighter. */
 h2:hover,
 h3:hover {
-  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
-  letter-spacing: 0.02em;
-  transform: scale(1.02);
-  transition:
-    font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    text-shadow 0.35s ease,
-    color 0.25s ease,
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  text-shadow: var(--glow-soft);
 }
 /* Entry titles sit in cards with no spare width: wider glyphs would re-wrap the line mid-hover
    ("Intern - Taskscape Ltd (remote)" lost its last word, 2026-11-01). They grow by transform only. */

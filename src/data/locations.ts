@@ -1,127 +1,73 @@
 /**
- * The site's locations, built once: every project (from the content collection) and the four
- * landmarks. The field map places them, the nav and the overview link to them, and a page finds its
- * own location here: its accent, its place on the map (`mapHref`) and its text page (`href`).
- *
- * A project file adds exactly one location (tests/locations.test.ts, tests/world-gen.test.ts). Landmark
- * accents are the `loc-*` tokens in design/tokens.json; the interface tones every accent per theme
- * (field-kit.css `--acc-ui`). Pure apart from reading the token file, so tests import it directly.
+ * Ordered site navigation and project directory helpers.
+ * Replaces the former field-map coordinate manifest with linear portfolio navigation.
  */
-import tokens from '../../design/tokens.json';
-import type { LandmarkKind, LandmarkSeed, ProjectKind, ProjectSeed } from '../world/gen';
-import { OVERVIEW, PROJECTS_INDEX } from './site';
 
-interface LocationBase {
-  id: string;
-  title: string;
-  /** The line over the title on the map label and the panel. */
-  eyebrow: string;
-  /** One colour: the 3D world and the minimap use it as it is, the interface tones it. */
-  accent: string;
-  /** The text page for this place. */
-  href: string;
-  /** This place on the map: the map opens its panel after Explore. */
-  mapHref: string;
-}
-export interface ProjectLocation extends LocationBase {
-  type: 'project';
-  kind: ProjectKind;
-}
-export interface LandmarkLocation extends LocationBase {
-  type: 'landmark';
-  kind: LandmarkKind;
-  /** Reserved spiral slot; the hub (none) is the centre. */
-  slot?: number;
-  /** The nav's word for this place. */
-  nav: string;
-}
-export type SiteLocation = ProjectLocation | LandmarkLocation;
+import { PROJECTS_INDEX } from './site';
 
-const tokenColour = (name: string): string => {
-  const t = tokens.color.tokens.find((x) => x.name === name);
-  if (!t || typeof t.value !== 'string') throw new Error(`design/tokens.json has no single-value colour ${name}`);
-  return t.value;
-};
-const landmark = (l: Omit<LandmarkLocation, 'type' | 'accent' | 'mapHref'>): LandmarkLocation => ({
-  ...l,
-  type: 'landmark',
-  accent: tokenColour(`loc-${l.id}`),
-  mapHref: `/#${l.id}`,
-});
+export type ProjectKind = 'game' | 'tool' | 'engine';
+export type WorldKind = 'arena' | 'board' | 'dungeon' | 'archive' | 'generic';
 
-/** The landmarks, hub first. Their `href` is the overview section with the same content. */
-export const LANDMARKS: readonly LandmarkLocation[] = [
-  landmark({ id: 'station', title: 'Field Station', kind: 'station', eyebrow: 'About me', href: `${OVERVIEW}#about`, nav: 'About' }),
-  landmark({ id: 'lab', title: 'The Lab', kind: 'lab', eyebrow: 'Mini-games', slot: 4, href: `${OVERVIEW}#lab`, nav: 'Lab' }),
-  landmark({ id: 'guild', title: 'Guild Hall', kind: 'guild', eyebrow: 'Team projects & channel', slot: 5, href: `${OVERVIEW}#activities`, nav: 'Activities' }),
-  landmark({ id: 'mast', title: 'Radio Mast', kind: 'mast', eyebrow: 'Contact', slot: 6, href: `${OVERVIEW}#contact`, nav: 'Contact' }),
-];
-
-export const landmarkById = (id: LandmarkKind): LandmarkLocation => LANDMARKS.find((l) => l.id === id)!;
-
-/** The landmark whose overview section has this id (`about` → Field Station), if any. */
-export const landmarkForSection = (sectionId: string): LandmarkLocation | undefined =>
-  LANDMARKS.find((l) => l.href === `${OVERVIEW}#${sectionId}`);
-
-/** The fields of a project entry this reads (a `getCollection('projects')` entry fits). */
 export interface ProjectEntryLike {
   id: string;
-  data: { title: string; genre: string; order: number; world: { kind: ProjectKind; accent: string } };
-}
-
-export function projectLocation(p: ProjectEntryLike): ProjectLocation {
-  return {
-    id: p.id,
-    title: p.data.title,
-    eyebrow: p.data.genre,
-    accent: p.data.world.accent,
-    kind: p.data.world.kind,
-    type: 'project',
-    href: `/projects/${p.id}/`,
-    mapHref: `/#${p.id}`,
+  data: {
+    title: string;
+    genre: string;
+    kind?: ProjectKind;
+    order?: number;
+    world?: { kind: WorldKind; accent: string };
   };
 }
 
-/** Every location: projects in their `order`, then the landmarks. Ids are unique across both. */
-export function buildLocations(projects: readonly ProjectEntryLike[]): SiteLocation[] {
-  const list = [...projects].sort((a, b) => a.data.order - b.data.order).map(projectLocation);
-  const all: SiteLocation[] = [...list, ...LANDMARKS];
-  const ids = all.map((l) => l.id);
-  const dup = ids.find((id, i) => ids.indexOf(id) !== i);
-  if (dup) throw new Error(`Two locations share the id "${dup}"`);
-  return all;
+export interface ProjectLocation {
+  type: 'project';
+  id: string;
+  title: string;
+  eyebrow: string;
+  href: string;
+  worldKind: WorldKind;
+  accent: string;
+  order: number;
 }
 
-/**
- * The location bar's line for a place: "Location 03 · 2D dungeon crawler" for a project (its number in
- * the projects' order, as on the overview's tiles and the projects index), the eyebrow for a landmark.
- */
-export function locationEyebrow(all: readonly SiteLocation[], id: string): string {
-  const loc = all.find((l) => l.id === id);
-  if (!loc) throw new Error(`No location "${id}"`);
-  if (loc.type === 'landmark') return loc.eyebrow;
-  const n = all.filter((l) => l.type === 'project').indexOf(loc) + 1;
-  return `Location ${String(n).padStart(2, '0')} · ${loc.eyebrow}`;
+export interface HomeSection {
+  id: string;
+  num: string;
+  title: string;
+  meta: string;
 }
 
-/** What the map engine needs from a location (src/world/gen.ts seeds), and nothing else. */
-export const toProjectSeed = (l: ProjectLocation): ProjectSeed => ({ id: l.id, title: l.title, kind: l.kind, accent: l.accent, eyebrow: l.eyebrow });
-export const toLandmarkSeed = (l: LandmarkLocation): LandmarkSeed => ({
-  id: l.id,
-  title: l.title,
-  kind: l.kind,
-  accent: l.accent,
-  eyebrow: l.eyebrow,
-  ...(l.slot === undefined ? {} : { slot: l.slot }),
+export const HOME_SECTIONS: readonly HomeSection[] = [
+  { id: 'overview', num: '01', title: 'OVERVIEW', meta: 'PORTFOLIO // SPEC & ROSTER' },
+  { id: 'projects', num: '02', title: 'PRIVATE & PASSION PROJECTS', meta: '5 PLAYABLE GAMES · SAVE TOOLING' },
+  { id: 'about', num: '03', title: 'ABOUT & PRINCIPLES', meta: 'SYSTEMS · DESIGN · PSYCHOLOGY' },
+  { id: 'experience', num: '04', title: 'EXPERIENCE & EDUCATION', meta: 'WORK · UNIVERSITY · STACK' },
+  { id: 'activities', num: '05', title: 'TEAM PROJECTS & ACTIVITIES', meta: 'COLLABORATION · MEDIA · EVENTS' },
+];
+
+/** Top navigation items matching the framed portfolio structure. */
+export const NAV = [
+  { href: '/', label: 'Home' },
+  { href: PROJECTS_INDEX, label: 'Projects' },
+  { href: '/#about', label: 'About' },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/#activities', label: 'Activities' },
+  { href: '/#contact', label: 'Contact' },
+] as const;
+
+export const projectLocation = (p: ProjectEntryLike): ProjectLocation => ({
+  type: 'project',
+  id: p.id,
+  title: p.data.title,
+  eyebrow: p.data.genre,
+  href: `${PROJECTS_INDEX}${p.id}/`,
+  worldKind: p.data.world?.kind ?? 'generic',
+  accent: p.data.world?.accent ?? '#f27c52',
+  order: p.data.order ?? 99,
 });
 
-/**
- * The main nav: the map, then the landmarks in their overview order with the projects index after
- * About. The Map link's href here is the plain map; each page points it at its own place (Nav.astro).
- */
-export const NAV: readonly { href: string; label: string }[] = [
-  { href: '/', label: 'Map' },
-  { href: landmarkById('station').href, label: landmarkById('station').nav },
-  { href: PROJECTS_INDEX, label: 'Projects' },
-  ...LANDMARKS.slice(1).map((l) => ({ href: l.href, label: l.nav })),
-];
+/** Projects sorted by `order` ascending, then `id`. */
+export const buildLocations = (projects: readonly ProjectEntryLike[]): ProjectLocation[] =>
+  [...projects]
+    .sort((a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id))
+    .map(projectLocation);

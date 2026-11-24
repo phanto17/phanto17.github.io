@@ -79,6 +79,9 @@ export function accentInks(accent: string, t: AccentTheme): { toned: string; eye
   };
 }
 
+/** Fallback neutral sage accent for uncharted / empty slots. */
+export const UNCHARTED_ACCENT = '#8fb5a6';
+
 /** Eyebrow text needs 4.5:1 on bg (body-size text), a tag's border 3:1 (WCAG 1.4.11). */
 export const ACCENT_MINIMUM = { eyebrow: 4.5, edge: 3 } as const;
 

@@ -1,13 +1,243 @@
 ---
-/**
- * Home: the field map. The start screen is static HTML with the CV title, the CV and the overview;
- * the explorable world (src/components/World.astro, src/world/) loads after Explore. The same
- * content as text lives on /overview/ and the project subpages.
- */
+import { getCollection } from 'astro:content';
 import Base from '../layouts/Base.astro';
-import World from '../components/World.astro';
+import SectionStrip from '../components/SectionStrip.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { HOME_SECTIONS } from '../data/locations';
+import { DOSSIER, EXPERIENCE_ENTRIES, PRINCIPLES } from '../data/about';
+import { ACTIVITIES } from '../data/activities';
+import { PROJECTS_INDEX, site } from '../data/site';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id),
+);
+
+const railSections = [
+  { id: 'overview', label: '01 Overview' },
+  { id: 'projects', label: '02 Projects' },
+  { id: 'about', label: '03 About' },
+  { id: 'experience', label: '04 Experience' },
+  { id: 'activities', label: '05 Activities' },
+  { id: 'contact', label: 'Contact' },
+] as const;
 ---
 
-<Base chrome="world">
-  <World />
+<Base description={site.description} sections={railSections}>
+  <div class="rail-frame">
+    <section class="ac-hero">
+      <p class="ac-hero-kicker">JUNIOR GAMEPLAY PROGRAMMER · UNITY / C# · POZNAŃ</p>
+      <h1>{site.name}</h1>
+      <p class="ac-hero-lead">{site.tagline}</p>
+      <div class="ac-cta-row">
+        <a class="btn primary" href={site.cv} download>↓ Download CV (PDF)</a>
+        <a class="btn" href="#projects">Explore Projects ↓</a>
+        <a class="btn" href={site.itch} target="_blank" rel="noopener">Play on itch.io ↗</a>
+      </div>
+    </section>
+
+    <div class="hairline-grid-4" aria-label="Portfolio highlights summary">
+      <div class="ac-spec-cell" data-reveal style="--reveal-delay:0">
+        <p class="ac-spec-label">PLAYABLE GAMES</p>
+        <p class="ac-spec-val">5 Playable Games</p>
+        <p class="ac-spec-sub">4 WebGL builds on itch.io + .NET 10 RPG</p>
+      </div>
+      <div class="ac-spec-cell" data-reveal style="--reveal-delay:1">
+        <p class="ac-spec-label">ENGINE &amp; TOOLING</p>
+        <p class="ac-spec-val">.NET 10 + Java 8</p>
+        <p class="ac-spec-sub">Custom C# RPG engine &amp; Eternity Keeper</p>
+      </div>
+      <div class="ac-spec-cell" data-reveal style="--reveal-delay:2">
+        <p class="ac-spec-label">AUTOMATED QA</p>
+        <p class="ac-spec-val">2,500+ Tests</p>
+        <p class="ac-spec-sub">NUnit, xUnit, Python &amp; JUnit verification</p>
+      </div>
+      <div class="ac-spec-cell" data-reveal style="--reveal-delay:3">
+        <p class="ac-spec-label">EDUCATION &amp; WORK</p>
+        <p class="ac-spec-val">CDV Poznań</p>
+        <p class="ac-spec-sub">BA Game Development + Taskscape internship</p>
+      </div>
+    </div>
+
+    <SectionStrip
+      id={HOME_SECTIONS[0].id}
+      num={HOME_SECTIONS[0].num}
+      title={HOME_SECTIONS[0].title}
+      meta={HOME_SECTIONS[0].meta}
+    />
+    <div class="hairline-split">
+      <div class="ac-panel-pad">
+        <h3>Systems-first gameplay programming</h3>
+        <p>
+          I focus on building gameplay mechanics that remain testable and legible under pressure: deterministic turn resolution, data-driven ScriptableObject abilities, enemy state machines, seeded dungeon generation and versioned binary/JSON persistence.
+        </p>
+        <p>
+          Rather than embedding logic inside scene hierarchies, I extract core simulation rules into pure C# or Java modules verified headlessly in CI before wiring animations, audio and URP visuals on top.
+        </p>
+        <div class="ac-honesty-note">
+          <strong>Commercial Games:</strong> I have not shipped commercial studio titles yet. All five playable personal games (four Unity 6 WebGL builds plus <em>Barrowlight</em>) and my open-source Java save editor are featured below under <em>Private &amp; Passion Projects</em>, while my full-time internship at Taskscape Ltd appears under <em>Experience</em>.
+        </div>
+      </div>
+
+      <div class="hairline-grid-2" aria-label="Quick project launcher">
+        {
+          projects.map((p, i) => (
+            <a
+              class="ac-launcher-tile accent"
+              style={`--acc: ${p.data.world.accent}`}
+              href={`${PROJECTS_INDEX}${p.id}/`}
+            >
+              <div class="ac-launcher-top">
+                <span class="ac-idx-badge">{String(i + 1).padStart(2, '0')}</span>
+                <span>↗</span>
+              </div>
+              <h4 class="ac-launcher-title">{p.data.title}</h4>
+              <span class="ac-launcher-cat">{p.data.category ?? p.data.genre}</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <SectionStrip
+      id={HOME_SECTIONS[1].id}
+      num={HOME_SECTIONS[1].num}
+      title={HOME_SECTIONS[1].title}
+      meta={HOME_SECTIONS[1].meta}
+    />
+    <div class="hairline-grid-3">
+      {projects.map((p, i) => <ProjectCard project={p} index={i} />)}
+    </div>
+
+    <SectionStrip
+      id={HOME_SECTIONS[2].id}
+      num={HOME_SECTIONS[2].num}
+      title={HOME_SECTIONS[2].title}
+      meta={HOME_SECTIONS[2].meta}
+    />
+    <div class="hairline-grid-2">
+      {
+        DOSSIER.map((card) => (
+          <article class="ac-cell" data-reveal>
+            <p class="ac-cell-label">{card.label}</p>
+            <p set:html={card.html} />
+          </article>
+        ))
+      }
+    </div>
+
+    <div class="sub-strip">ENGINEERING PRINCIPLES // HOW SYSTEMS ARE DESIGNED &amp; VERIFIED</div>
+    <div class="hairline-grid-3">
+      {
+        PRINCIPLES.map((item) => (
+          <article class="ac-cell" data-reveal>
+            <p class="ac-cell-label">{item.num} // PRINCIPLE</p>
+            <h3>{item.title}</h3>
+            <p>{item.body}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <SectionStrip
+      id={HOME_SECTIONS[3].id}
+      num={HOME_SECTIONS[3].num}
+      title={HOME_SECTIONS[3].title}
+      meta={HOME_SECTIONS[3].meta}
+    />
+    <div class="hairline-grid-2">
+      {
+        EXPERIENCE_ENTRIES.map((exp) => (
+          <article class="ac-cell" data-reveal>
+            <p class="ac-cell-label">{exp.period}</p>
+            <h3>{exp.org}</h3>
+            <p class="ac-exp-role">{exp.role}</p>
+            <p class="ac-exp-ctx">{exp.context}</p>
+            <ul class="ac-bullets">
+              {exp.bullets.map((b) => (
+                <li>{b}</li>
+              ))}
+            </ul>
+          </article>
+        ))
+      }
+    </div>
+
+    <SectionStrip
+      id={HOME_SECTIONS[4].id}
+      num={HOME_SECTIONS[4].num}
+      title={HOME_SECTIONS[4].title}
+      meta={HOME_SECTIONS[4].meta}
+    />
+    {
+      [
+        { gridClass: 'hairline-grid-3', items: ACTIVITIES.slice(0, 3) },
+        { gridClass: 'hairline-grid-2', items: ACTIVITIES.slice(3) },
+      ].map((band) => (
+        <div class={band.gridClass}>
+          {band.items.map((act) => (
+            <article class="ac-cell" data-reveal>
+              <p class="ac-cell-label">{act.dates}</p>
+              <h3>{act.name}</h3>
+              <p class="ac-act-meta">
+                {act.kind} · {act.where}
+              </p>
+              <p>{act.what}</p>
+              <p class="ac-act-mine">
+                <strong>Contribution:</strong> {act.mine}
+              </p>
+              {act.credits && <p class="ac-act-credits">{act.credits}</p>}
+              {act.url && (
+                <p style="margin-top:10px">
+                  <a class="ac-explore-link" href={act.url} target="_blank" rel="noopener">
+                    {act.urlLabel ?? 'View link ↗'}
+                  </a>
+                </p>
+              )}
+            </article>
+          ))}
+        </div>
+      ))
+    }
+
+    <section class="ac-contact" id="contact">
+      <p class="ac-hero-kicker">CONTACT // POZNAŃ &amp; REMOTE</p>
+      <h2>Looking for a Junior Gameplay Programmer?</h2>
+      <p>
+        I am available for junior Unity / C# gameplay roles or internships in Poland or remotely, alongside finishing my BA in Game Development at Collegium Da Vinci. Every project subpage links directly to playable itch.io builds, source repositories and third-party credits.
+      </p>
+      <div class="ac-cta-row">
+        <button type="button" class="btn primary" id="copy-email" data-email={site.email}>
+          Copy {site.email}
+        </button>
+        <a class="btn" href={`mailto:${site.email}`}>Send Email ↗</a>
+        <a class="btn" href={site.cv} download>↓ Download CV (PDF)</a>
+        <a class="btn" href={site.github} target="_blank" rel="noopener">GitHub ↗</a>
+        <a class="btn" href={site.itch} target="_blank" rel="noopener">itch.io ↗</a>
+      </div>
+      <p class="ac-copy-note" id="copy-email-status" aria-live="polite"></p>
+    </section>
+  </div>
 </Base>
+
+<script>
+  import { onPage } from '../scripts/page';
+
+  onPage(({ signal }) => {
+    const copyBtn = document.getElementById('copy-email') as HTMLButtonElement | null;
+    const status = document.getElementById('copy-email-status');
+    copyBtn?.addEventListener(
+      'click',
+      async () => {
+        const email = copyBtn.dataset.email ?? '';
+        if (!email) return;
+        try {
+          await navigator.clipboard.writeText(email);
+          if (status) status.textContent = `Copied ${email} to clipboard.`;
+        } catch {
+          if (status) status.textContent = `Email: ${email}`;
+        }
+      },
+      { signal },
+    );
+  });
+</script>

@@ -69,7 +69,9 @@ const imgHeight = isFourThree ? 600 : 540;
     place-items: center;
     position: relative;
     overflow: hidden;
-    transition: transform 0.25s, box-shadow 0.25s;
+    transition:
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   }
   .frame img,
   .frame video {

@@ -1,88 +1,20 @@
 ---
-/**
- * The 404 as the map's uncharted tile (P5): the dashed marker with no offset and an italic title, the
- * minimap with the uncharted slot marked as where the visitor landed, and the three ways back — the
- * map, the overview, the projects.
- */
 import Base from '../layouts/Base.astro';
-import LocationMap from '../components/LocationMap.astro';
-import { UNCHARTED_ACCENT } from '../world/gen';
+import { PROJECTS_INDEX, site } from '../data/site';
 ---
 
-<Base noindex place="404 · off the map" title="Page not found" description="This page does not exist. The projects and the CV are one click away.">
-  <section class="lost">
-    <div class="wrap lost-grid">
-      <div class="lost-card tag uncharted" style={`--acc: ${UNCHARTED_ACCENT}`}>
-        <p class="eyebrow"><i class="diamond lost-diamond" aria-hidden="true"></i>Uncharted · no location here</p>
-        <h1 class="tag-title">This tile isn't on the grid.</h1>
-        <p class="lead">The page you were looking for doesn't exist, or it moved when the site was rebuilt.</p>
-        <div class="actions">
-          <a class="btn primary" href="/">Back to the map</a>
-          <a class="btn" href="/overview/">Overview</a>
-          <a class="btn" href="/projects/">All projects</a>
-        </div>
+<Base title="404 — Page not found" description="Page not found on Tymoteusz Jaskólski's portfolio." noindex>
+  <div class="rail-frame">
+    <section class="ac-hero">
+      <p class="ac-hero-kicker">HTTP 404 // UNKNOWN ROUTE</p>
+      <h1>Page not found</h1>
+      <p class="ac-hero-lead">
+        Nothing lives at this URL on {site.name}&rsquo;s portfolio. Jump back to the main showcase or inspect all six projects directly.
+      </p>
+      <div class="ac-cta-row">
+        <a class="btn primary" href="/">← Back to Home</a>
+        <a class="btn" href={PROJECTS_INDEX}>Browse All Projects →</a>
       </div>
-      <LocationMap links="map" here="uncharted" caption="You landed on the uncharted slot, where the next project goes. Every diamond opens its place on the map." />
-    </div>
-  </section>
+    </section>
+  </div>
 </Base>
-
-<style>
-  .lost {
-    min-height: 70vh;
-    display: grid;
-    align-items: center;
-    padding: 72px 0 96px;
-  }
-  .lost-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 560px);
-    gap: 32px;
-    align-items: center;
-  }
-  .lost-card {
-    padding: 28px 30px 30px;
-  }
-  /* The map's uncharted label fades the whole marker; a page-sized card keeps its text at full contrast. */
-  .lost-card.uncharted {
-    opacity: 1;
-  }
-  .lost-card .eyebrow {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0 0 12px;
-    font-size: 11.5px;
-  }
-  .lost-diamond {
-    border-style: dashed;
-  }
-  .lost-card h1 {
-    max-width: 16ch;
-    margin: 0 0 16px;
-    font-size: clamp(34px, 4.4vw, 46px);
-    line-height: 1.05;
-  }
-  .lost-card .lead {
-    margin: 0;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 24px;
-  }
-  @media (max-width: 980px) {
-    .lost-grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-  @media (max-width: 760px) {
-    .lost {
-      padding: 32px 0 56px;
-    }
-    .lost-card {
-      padding: 22px 20px 24px;
-    }
-  }
-</style>

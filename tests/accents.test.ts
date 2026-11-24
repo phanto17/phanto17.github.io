@@ -2,8 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import tokens from '../design/tokens.json';
-import { ACCENT_MINIMUM, accentContrast, accentInks, accentTheme, contrast, type AccentTokens } from '../src/lib/accents';
-import { UNCHARTED_ACCENT } from '../src/world/gen';
+import { ACCENT_MINIMUM, UNCHARTED_ACCENT, accentContrast, accentInks, accentTheme, contrast, type AccentTokens } from '../src/lib/accents';
 
 const file = tokens as unknown as AccentTokens;
 const themes = file.color.themes.map((t) => t.id);
@@ -51,11 +50,9 @@ describe('location accents', () => {
   });
 });
 
-describe('the map has no colours of its own', () => {
-  for (const path of ['src/components/World.astro', 'src/styles/world.css', 'src/styles/field-kit.css']) {
-    it(`${path} takes every colour from the tokens`, () => {
-      const src = readFileSync(join(__dirname, '..', path), 'utf8');
-      expect(src.match(/#[0-9a-f]{3,8}\b/gi) ?? []).toEqual([]);
-    });
-  }
+describe('accent tokens', () => {
+  it('keeps field-kit.css free of hex literals', () => {
+    const src = readFileSync(join(__dirname, '..', 'src/styles/field-kit.css'), 'utf8');
+    expect(src.match(/#[0-9a-f]{3,8}\b/gi) ?? []).toEqual([]);
+  });
 });

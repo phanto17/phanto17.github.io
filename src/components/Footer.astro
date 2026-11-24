@@ -1,106 +1,78 @@
 ---
 import { getCollection } from 'astro:content';
-import { site } from '../data/site';
-import { buildLocations } from '../data/locations';
-const year = new Date().getFullYear();
-// The places the map's field log counts, so the status line reads the same "n/N explored".
-const locationIds = buildLocations(await getCollection('projects')).map((l) => l.id);
+import { PROJECTS_INDEX, site } from '../data/site';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id),
+);
+const games = projects.filter((p) => p.data.kind === 'game');
+const toolsAndEngines = projects.filter((p) => p.data.kind !== 'game');
 ---
 
-<footer class="footer">
-  <div class="wrap">
-    <!-- The map's status line: the Poznań clock the map is lit by and the field log's count. Filled by
-         the script below; without JavaScript it stays hidden and the links row is the footer. -->
-    <p class="status" data-status-line data-locations={locationIds.join(' ')} hidden>
-      <span>Poznań <span data-status-time></span></span>
-      <span class="sep" aria-hidden="true">·</span>
-      <span data-status-phase></span>
-      <span class="sep" aria-hidden="true">·</span>
-      <a href="/" data-status-explored></a>
-      <span class="sep" aria-hidden="true">·</span>
-      <a href="/style-guide/">Style guide</a>
-    </p>
-    <p class="links">
-      <span>© {year} {site.name}</span>
-      <span class="sep" aria-hidden="true">·</span>
-      <a href={site.github}>GitHub</a>
-      <span class="sep" aria-hidden="true">·</span>
-      <a href={site.youtube}>YouTube</a>
-      <span class="sep" aria-hidden="true">·</span>
-      <a href={`mailto:${site.email}`}>{site.email}</a>
-      <span class="sep no-js-only" aria-hidden="true">·</span>
-      <a class="no-js-only" href="/style-guide/">Style guide</a>
-      <span class="sep" aria-hidden="true">·</span>
-      <span>built with Astro, hosted on GitHub Pages</span>
-    </p>
+<footer class="ac-footer">
+  <div class="rail-frame">
+    <div class="ac-footer-cols">
+      <div class="ac-footer-col">
+        <h3>Identity</h3>
+        <p class="ac-card-title">{site.name}</p>
+        <p class="muted">{site.title}</p>
+        <p class="muted">{site.location}</p>
+        <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Playable Games</h3>
+        <ul>
+          {
+            games.map((p) => (
+              <li>
+                <a href={`${PROJECTS_INDEX}${p.id}/`}>{p.data.title}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Open-Source Tooling</h3>
+        <ul>
+          {
+            toolsAndEngines.map((p) => (
+              <li>
+                <a href={`${PROJECTS_INDEX}${p.id}/`}>{p.data.title}</a>
+              </li>
+            ))
+          }
+          <li><a href={PROJECTS_INDEX}>All 6 projects ↗</a></li>
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>On This Site</h3>
+        <ul>
+          <li><a href="/#overview">01 Overview</a></li>
+          <li><a href="/#projects">02 Projects</a></li>
+          <li><a href="/#about">03 About &amp; Principles</a></li>
+          <li><a href="/#experience">04 Experience</a></li>
+          <li><a href="/#activities">05 Activities</a></li>
+          <li><a href="/#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Profiles &amp; CV</h3>
+        <ul>
+          <li><a href={site.cv} download>↓ Download CV (PDF)</a></li>
+          <li><a href={site.itch} target="_blank" rel="noopener">itch.io ({site.itchHandle}) ↗</a></li>
+          <li><a href={site.github} target="_blank" rel="noopener">GitHub ({site.githubHandle}) ↗</a></li>
+          <li><a href={site.youtube} target="_blank" rel="noopener">YouTube ({site.youtubeHandle}) ↗</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ac-footer-bottom">
+      <span>© 2026 {site.name} · Game Development Portfolio</span>
+      <span>Built with Astro · Self-hosted fonts · Prism visual theme</span>
+    </div>
   </div>
 </footer>
-
-<script>
-  import { onPage } from '../scripts/page';
-  import { poznanHour } from '../world/daylight';
-  import { VISITED_KEY, parseVisited, statusLine } from '../lib/status-line';
-
-  const TICK_MS = 30_000;
-
-  onPage(({ signal }) => {
-    const line = document.querySelector<HTMLElement>('[data-status-line]');
-    if (!line) return;
-    const ids = (line.dataset.locations ?? '').split(' ').filter(Boolean);
-    const time = line.querySelector<HTMLElement>('[data-status-time]');
-    const phase = line.querySelector<HTMLElement>('[data-status-phase]');
-    const explored = line.querySelector<HTMLElement>('[data-status-explored]');
-    const render = () => {
-      let raw: string | null = null;
-      try {
-        raw = localStorage.getItem(VISITED_KEY);
-      } catch {
-        /* storage blocked: nothing explored */
-      }
-      const s = statusLine(poznanHour(), parseVisited(raw), ids);
-      if (time) time.textContent = s.time;
-      if (phase) phase.textContent = s.phase;
-      if (explored) explored.textContent = s.explored;
-    };
-    render();
-    line.hidden = false;
-    document.documentElement.classList.add('has-status-line');
-    const timer = window.setInterval(render, TICK_MS);
-    signal.addEventListener('abort', () => window.clearInterval(timer));
-  });
-</script>
-
-<style>
-  .footer {
-    padding: 40px 0 48px;
-    font-size: 13px;
-    color: var(--text-3);
-    font-family: var(--mono);
-    border-top: var(--line);
-    position: relative;
-    z-index: 1;
-  }
-  .footer .wrap {
-    display: grid;
-    gap: 10px;
-  }
-  .status,
-  .links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0;
-  }
-  .status {
-    color: var(--text-2);
-  }
-  .status[hidden] {
-    display: none;
-  }
-  :global(html.has-status-line) .no-js-only {
-    display: none;
-  }
-  .sep {
-    color: var(--umber);
-  }
-</style>

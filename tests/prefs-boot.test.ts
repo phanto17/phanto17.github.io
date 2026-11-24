@@ -5,7 +5,7 @@
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { fieldPalette, rgbToHex } from '../src/world/daylight';
+import { fieldPalette, rgbToHex } from '../src/lib/daylight';
 import { BACKDROP_HOUR, OUTPUTS, renderBoot, renderBreakpointsTs, renderThemesTs, renderTokensCss, themeFacts } from '../tools/build-tokens.mjs';
 import { SIGNAL_UNLOCK, prefRows } from '../src/scripts/prefs-table';
 import { LEGACY_BEST_KEY, REWARD_KEY, parseReward } from '../src/scripts/signal-reward';
