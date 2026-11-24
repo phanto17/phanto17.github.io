@@ -1,9 +1,9 @@
 ---
 /**
- * Shove visualiser (R6): a five-by-five board from the Telegraph engine's geometry with pits, rocks and
- * units. Pick a unit, then a direction, and watch the one-tile shove resolve the way Push Comes to
- * Shove's write-up describes it (src/scripts/shove-sim.ts holds the rules). Keyboard: Tab to a unit,
- * Enter to pick it, arrow keys to shove. Rendered into the project page's pinned pane (NotesExplorer).
+ * Shove visualiser (R6): a four-by-four tactical board with pits, rocks and units. Pick a unit, then
+ * a direction, and watch the one-tile shove resolve the way Push Comes to Shove's write-up describes
+ * it (src/scripts/shove-sim.ts holds the rules). Keyboard: Tab to a unit, Enter to pick it, arrow
+ * keys to shove. Rendered into the project page's pinned pane (NotesExplorer).
  */
 import { SIDE, demoBoard } from '../scripts/shove-sim';
 
@@ -24,7 +24,7 @@ const label = (i: number): string => {
 };
 ---
 
-<div class="shove-lab" data-shove-lab>
+<div class="shove-lab accent" data-shove-lab>
   <p class="meta shove-lab-head">
     <b>SHOVE LAB</b> · pick a unit, then a direction · <span aria-hidden="true">▲</span> ally · <span aria-hidden="true">●</span> foe ·
     <span aria-hidden="true">≈</span> pit · <span aria-hidden="true">▰</span> rock
@@ -59,8 +59,7 @@ const label = (i: number): string => {
 </div>
 
 <script>
-  import { demoBoard, previewShoves, resolveShove, type ShoveBoard } from '../scripts/shove-sim';
-  import type { Direction } from '../scripts/telegraph-engine';
+  import { demoBoard, previewShoves, resolveShove, type Direction, type ShoveBoard } from '../scripts/shove-sim';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
 
@@ -191,14 +190,17 @@ const label = (i: number): string => {
 </script>
 
 <style>
+  .shove-lab :global(.meta b) {
+    color: var(--acc-text);
+  }
   .shove-lab {
     display: grid;
     gap: 10px;
     padding: 14px;
     background: var(--surface);
-    border: 1px solid var(--umber);
+    border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
-    box-shadow: var(--card-depth);
+    box-shadow: var(--acc-offset) var(--acc-offset) 0 color-mix(in srgb, var(--acc-ui) 40%, var(--ink-black));
   }
   .shove-lab-head {
     margin: 0;
@@ -258,8 +260,8 @@ const label = (i: number): string => {
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.16),
       inset 0 -3px 0 rgba(0, 0, 0, 0.38),
-      0 0 0 2px var(--coral),
-      0 0 18px var(--glow-ink);
+      0 0 0 2px var(--acc-ui),
+      0 0 18px color-mix(in srgb, var(--acc-ui) 45%, transparent);
   }
   .shove-cell.is-landing {
     background: var(--cell-telegraph);
@@ -309,7 +311,7 @@ const label = (i: number): string => {
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 9px 12px;
-    color: var(--gold);
+    color: var(--acc-text);
     justify-self: end;
   }
   .shove-dir:disabled {

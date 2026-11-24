@@ -5,7 +5,8 @@
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { OUTPUTS, renderBoot, renderThemesTs, renderTokensCss, themeFacts } from '../tools/build-tokens.mjs';
+import { fieldPalette, rgbToHex } from '../src/lib/daylight';
+import { BACKDROP_HOUR, OUTPUTS, renderBoot, renderBreakpointsTs, renderThemesTs, renderTokensCss, themeFacts } from '../tools/build-tokens.mjs';
 import { SIGNAL_UNLOCK, prefRows } from '../src/scripts/prefs-table';
 import { LEGACY_BEST_KEY, REWARD_KEY, parseReward } from '../src/scripts/signal-reward';
 
@@ -16,9 +17,10 @@ const rows = prefRows(facts.ids);
 const committedBoot = read(OUTPUTS.boot);
 
 describe('generated files are current (run node tools/build-tokens.mjs)', () => {
-  it('tokens.css', () => expect(read(OUTPUTS.css)).toBe(renderTokensCss(tokens)));
+  it('tokens.css', () => expect(read(OUTPUTS.css)).toBe(renderTokensCss(tokens, fieldPalette(BACKDROP_HOUR).map(rgbToHex))));
   it('themes.ts', () => expect(read(OUTPUTS.themes)).toBe(renderThemesTs(facts)));
   it('prefs-boot.js', () => expect(committedBoot).toBe(renderBoot(rows, facts, SIGNAL_UNLOCK)));
+  it('breakpoints.ts', () => expect(read(OUTPUTS.breakpoints)).toBe(renderBreakpointsTs(tokens)));
 });
 
 /** Run the boot source against fakes; returns the painted <html> and the theme-color meta. */

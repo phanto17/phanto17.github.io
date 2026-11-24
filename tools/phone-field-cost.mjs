@@ -1,5 +1,6 @@
 // Phone performance sitting, second pass: the signal field's own cost (idle tracing with the field
-// running vs stopped) and a real game turn with taps. Same setup as phone-trace.mjs.
+// running vs stopped) and a real game turn with taps. Same setup as phone-trace.mjs; the tab must already
+// be on the overview, where the game lives.
 // Usage: node tools/phone-field-cost.mjs <pageId>
 import { writeFileSync } from 'node:fs';
 
@@ -65,11 +66,11 @@ await evaluate(`window.scrollTo(0, 0)`);
 await sleep(1000);
 out.flags = await evaluate(`({ theme: document.documentElement.dataset.theme, hasField: document.documentElement.classList.contains('has-field'), hidden: document.hidden })`);
 out.idleTraceFieldOn = await traceWindow(4000);
-await evaluate(`(() => { document.documentElement.dataset.motion = 'reduced'; window.dispatchEvent(new Event('portfolio:motionchange')); })()`);
+await evaluate(`document.querySelector('[data-motion-switcher]').click()`); // the site's own motion switch
 await sleep(1500);
 out.idleTraceFieldOff = await traceWindow(4000);
 // Field off but motion otherwise on: hide the canvas and stop its loop by removing it (nothing else draws at idle).
-await evaluate(`(() => { delete document.documentElement.dataset.motion; window.dispatchEvent(new Event('portfolio:motionchange')); })()`);
+await evaluate(`document.querySelector('[data-motion-switcher]').click()`); // the site's own motion switch
 await sleep(1500);
 out.idleTraceFieldOnAgain = await traceWindow(4000);
 

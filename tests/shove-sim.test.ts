@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { SIDE, cell, demoBoard, previewShoves, resolveShove } from '../src/scripts/shove-sim';
-import { TelegraphEngine } from '../src/scripts/telegraph-engine';
+import { SIDE, cell, demoBoard, previewShoves, resolveShove, shoveTarget } from '../src/scripts/shove-sim';
 
 describe('shove visualiser model', () => {
-  it('uses the Telegraph engine board', () => {
-    expect(SIDE * SIDE).toBe(TelegraphEngine.GRID_SIZE);
+  it('uses a 4 by 4 tactical board and steps cleanly', () => {
     expect(SIDE).toBe(4);
+    expect(shoveTarget(0, 'up')).toBeNull();
+    expect(shoveTarget(0, 'left')).toBeNull();
+    expect(shoveTarget(0, 'right')).toBe(1);
+    expect(shoveTarget(0, 'down')).toBe(4);
   });
 
   it('starts from a fixed position with pits, a rock and five units on floor', () => {

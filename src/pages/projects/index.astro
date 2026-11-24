@@ -1,40 +1,67 @@
 ---
 import { getCollection } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import ProjectRow from '../../components/ProjectRow.astro';
+import SectionStrip from '../../components/SectionStrip.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
 import { site } from '../../data/site';
 
-const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
-const listSchema = [
-  {
-    '@type': 'CollectionPage',
-    '@id': `${site.url}/projects/`,
-    url: `${site.url}/projects/`,
-    name: `Projects — ${site.name}`,
-    isPartOf: { '@id': `${site.url}/#website` },
-    mainEntity: {
-      '@type': 'ItemList',
-      itemListElement: projects.map((p, i) => ({
-        '@type': 'ListItem',
-        position: i + 1,
-        url: `${site.url}/projects/${p.id}/`,
-        name: p.data.title,
-      })),
-    },
-  },
-];
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id),
+);
+
+const playableGames = projects.filter((p) => p.data.kind === 'game');
+const systemsProjects = projects.filter((p) => p.data.kind !== 'game');
+
+const sections = [
+  { id: 'playable-games', label: '01 Playable Games' },
+  { id: 'systems-tools', label: '02 Tooling' },
+] as const;
 ---
 
-<Base title="Projects" schema={listSchema} description="Playable games and an open-source tool by Tymoteusz Jaskólski, each with a technical write-up.">
-  <section class="section">
-    <div class="wrap">
-      <h1>Projects</h1>
-      <p class="sub-h">Play the games on itch.io, or explore the open-source tool. Each has its own write-up.</p>
-      {projects.map((p, i) => <ProjectRow project={p} index={i} />)}
-    </div>
-  </section>
-</Base>
+<Base
+  title="Projects"
+  description={`Five playable games (four Unity WebGL titles on itch.io plus the C#/.NET 10 RPG Barrowlight) and an open-source Java save editor by ${site.name}.`}
+  sections={sections}
+>
+  <div class="rail-frame">
+    <section class="ac-sub-hero">
+      <nav class="ac-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <span>Projects</span>
+      </nav>
 
-<style>
-  h1 { font-size: clamp(36px, 5vw, 56px); }
-</style>
+      <h1>Private &amp; Passion Projects</h1>
+      <p class="ac-sub-lead">
+        Five playable personal games—four free Unity 6 WebGL titles on itch.io and <em>Barrowlight</em>, a complete 18-room C# / .NET 10 pixel-art RPG—alongside my open-source Java save editor <em>Eternity Keeper</em>. Every subpage documents architecture, test coverage, screenshots and third-party credits.
+      </p>
+      <div class="ac-cta-row" style="justify-content:flex-start">
+        <a class="btn primary" href={site.itch} target="_blank" rel="noopener">▶ Play WebGL Games on itch.io ↗</a>
+        <a class="btn" href={site.github} target="_blank" rel="noopener">Source &amp; Builds on GitHub ↗</a>
+      </div>
+    </section>
+
+    <SectionStrip
+      id="playable-games"
+      num="01"
+      title="Playable Games"
+      meta={`${playableGames.length} PLAYABLE TITLES`}
+    />
+    <div class="hairline-grid-3">
+      {playableGames.slice(0, 3).map((p, i) => <ProjectCard project={p} index={i} />)}
+    </div>
+    <div class="hairline-grid-2">
+      {playableGames.slice(3).map((p, i) => <ProjectCard project={p} index={i + 3} />)}
+    </div>
+
+    <SectionStrip
+      id="systems-tools"
+      num="02"
+      title="Open-Source Save & Modding Tooling"
+      meta="JAVA 8 // JCEF // PYTHON"
+    />
+    <div class="hairline-grid-1">
+      {systemsProjects.map((p, i) => <ProjectCard project={p} index={playableGames.length + i} />)}
+    </div>
+  </div>
+</Base>

@@ -1,8 +1,7 @@
 /**
  * Every project write-up in src/content/projects follows the conventions the plan relies on
  * (src/lib/notes.ts WRITE_UP_RULES), so a broken write-up fails here instead of rendering wrong on the
- * live page. A write-up without a "Technical breakdown" renders as plain prose and is allowed; one that
- * has the heading must have it last, with at least two sections.
+ * live page.
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
@@ -11,22 +10,33 @@ import { WRITE_UP_RULES, checkWriteUpSource } from '../src/lib/notes';
 const dir = new URL('../src/content/projects/', import.meta.url);
 const files = readdirSync(dir).filter((f) => f.endsWith('.md'));
 const source = (f: string) => readFileSync(new URL(f, dir), 'utf8');
-const hasBreakdown = (md: string) => md.split(/\r?\n/).some((line) => /^##\s+(.+?)\s*$/.test(line) && WRITE_UP_RULES.breakdownHeading.test(/^##\s+(.+?)\s*$/.exec(line)![1]));
+const hasBreakdown = (md: string) =>
+  md.split(/\r?\n/).some((line) => {
+    const m = /^##\s+(.+?)\s*$/.exec(line);
+    return m !== null && WRITE_UP_RULES.breakdownHeading.test(m[1]);
+  });
+
+const EXPECTED_SLUGS = [
+  'push-comes-to-shove',
+  'cinderhold',
+  'horde-hours',
+  'please-take-a-number',
+  'barrowlight',
+  'eternity-keeper',
+];
 
 describe('project write-ups', () => {
-  it('exist', () => expect(files.length).toBeGreaterThanOrEqual(4));
+  it('include all six course-portfolio projects', () => {
+    expect(files.map((f) => f.replace(/\.md$/, '')).sort()).toEqual([...EXPECTED_SLUGS].sort());
+  });
 
   for (const f of files) {
     const md = source(f);
-    if (!hasBreakdown(md)) continue;
-    it(`${f}: the technical breakdown follows the notes conventions`, () => {
+    it(`${f}: technical breakdown follows the notes conventions`, () => {
+      expect(hasBreakdown(md)).toBe(true);
       expect(checkWriteUpSource(md)).toEqual([]);
     });
   }
-
-  it('the three games have a technical breakdown', () => {
-    for (const id of ['horde-hours', 'push-comes-to-shove', 'cinderhold']) expect(hasBreakdown(source(`${id}.md`))).toBe(true);
-  });
 
   it('a frontmatter widget names a known kind', () => {
     for (const f of files) {

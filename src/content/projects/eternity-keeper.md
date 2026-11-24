@@ -1,35 +1,42 @@
 ---
 title: Eternity Keeper
 kind: tool
-summary: An open-source save editor for Pillars of Eternity, rebuilt for the current game. Inventory, abilities, party, stronghold and vendors, with every edit verified in-game.
-genre: Modding tool · RPG save editor
+category: "SAVE EDITOR // JAVA 8 + JCEF + PYTHON"
+platforms:
+  - Windows Installer (Inno Setup)
+  - Portable ZIP (Bundled JRE 8)
+summary: An open-source save editor for Pillars of Eternity rebuilt for Steam v3.9.5, featuring inventory, abilities, party, stronghold and vendor editing backed by 772 JUnit tests and 26 save invariants.
+genre: Modding tool / RPG save editor
 status: released
 dates:
   start: "2026-07"
-role: Maintainer of the fork — product direction, reverse engineering, testing, release engineering
+  end: "2026-11"
+role: Fork Maintainer — reverse engineering, architecture, QA & release engineering
 engine: Java 8 · JCEF (embedded Chromium) · jQuery UI · Python (UnityPy)
-order: 4
+order: 6
 world:
   kind: archive
   accent: "#f6d370"
 highlights:
-  - Save-format reverse engineering
-  - 708 JUnit tests + scripted UI suites
-  - Installer + CI/CD release pipeline
+  - Save-format reverse engineering across nested XML, Unity object graphs and .NET BinaryFormatter blobs
+  - 26 hard save-safety invariants validated before writes, including SaveModel tree-backed writers
+  - Strict in-game legality editing for equipment slots, grimoires, class/race abilities and Stronghold arithmetic
+  - 772 JUnit tests across 102 test files plus 29 automated DevTools browser UI test suites
+  - Python UnityPy asset reader (frozen via PyInstaller) extracting localised items, icons and tables from disk
+  - Automated CI and GitHub Releases pipeline delivering signed-layout Inno Setup installers through v1.1.1-beta
 metrics:
-  - 708 JUnit + 29 UI suites
-  - 25 save-safety invariants
-  - ~44k LoC across 90 commits
+  - 772 JUnit tests + 29 UI suites
+  - 26 documented save-safety invariants
+  - 132 commits past upstream 0-21.a (through v1.1.1-beta)
 myContribution:
-  - "Took over a dormant community fork (Kim Mantas 2015–16, ktully 2020, aybrkaknc Feb 2026) and shipped 1.0.0-beta and 1.0.1-beta: 90 commits since July 2026, about 44,000 lines added across Java, JavaScript and Python, including tests."
-  - "Reverse-engineered how the game treats its saves: which objects it re-creates on load, how companion death patches a .NET BinaryFormatter quest-tracker blob, how item and store state lives in the area files. Documented it in `docs/save-format.md`, `invariants.md` and `features.md` for the next maintainer."
-  - "Designed the editing features to the game's own rules: inventory with equipment/quick-slot/weapon-set constraints, abilities filtered by class and race progression tables, grimoires, stronghold economy (Prestige/Security arithmetic), vendors read from area files, companion resurrection with quest restore, loadouts, save comparison, Undo/Redo."
-  - "Made it safe: the editor never writes to the opened save, validates every write against 25 documented invariants (unique IDs, paired item lists, declared types), refuses partially read saves, and keeps backups."
-  - "Verified every feature by loading edited saves in the game (Steam v3.9.5) and reading the game's own log; built a 12-save companion-death test matrix and a scripted test environment."
-  - "Built the release pipeline: ready-to-run zip and a per-user Inno Setup installer carrying their own Java 8 runtime, a GitHub Actions CI workflow for the 708 JUnit tests, and a Package workflow that installs, upgrades and uninstalls the build on a clean Windows runner."
-  - "Wrote the game-data reader (Python, UnityPy, frozen with PyInstaller) that pulls item names, icons, abilities and stronghold data from the player's own install in the game's language."
-  - "Opened a pull request offering everything back to the parent project, and announced the releases to the Pillars of Eternity community."
-  - "Most of the code was written with Codex, Antigravity and Claude Code under my direction: I specified each feature from the game's behaviour, reviewed the changes, and did all in-game testing. The commits say so."
+  - "Revived and expanded a dormant community fork through v1.0.0-beta, v1.1.0-beta and v1.1.1-beta: 132 commits past upstream 0-21.a across Java, JavaScript and Python."
+  - "Reverse-engineered Steam v3.9.5 save behaviour across nested XML, Unity-serialised objects and .NET BinaryFormatter quest blobs, documenting findings in `docs/save-format.md`, `invariants.md` and `features.md`."
+  - "Implemented game-accurate editing tools covering equipment/quick-slot constraints, class- and race-filtered abilities, grimoires, Stronghold Prestige/Security arithmetic, area vendors, companion resurrection, loadouts, save diffs and Undo/Redo."
+  - "Enforced 26 save-safety invariants (unique object IDs, paired item lists, type consistency, `SaveModel` tree-backed writers and read-only source handling with automatic backups) so broken saves are rejected before touching disk."
+  - "Built an automated QA pipeline combining 772 JUnit `@Test` methods across 102 Java test files with 29 DevTools-driven UI suites against real 13-character saves and in-game verification logs."
+  - "Created a Python + UnityPy + PyInstaller data extractor pulling item names, icons and stronghold tables directly from the user's local Pillars install in their chosen language."
+  - "Delivered CI and Inno Setup packaging workflows bundling a private Java 8 runtime, verifying fresh install, upgrade and uninstall paths on clean Windows runners."
+  - "Most of the code was written with Codex, Antigravity and Claude Code under my direction: I specified features from observed game rules, reviewed diffs, validated every change against real saves and ran in-game log verification."
 tools:
   - Java 8 (bundled JDK)
   - Maven
@@ -39,14 +46,13 @@ tools:
   - Python 3 + UnityPy + PyInstaller
   - Inno Setup 6
   - GitHub Actions
-  - Claude Code
-  - Codex
-  - Antigravity
+  - Codex / Claude Code / Antigravity
 media:
-  - { type: image, src: /media/eternity-keeper/inventory.avif, alt: "Inventory tab: equipment around the portrait, quick items and weapon sets, every party member's pack", caption: "Fig. 1 — the Inventory tab, laid out like the game's own screen" }
-  - { type: image, src: /media/eternity-keeper/character.avif, alt: "Character tab with attributes, skills, identity and portrait", caption: "Fig. 2 — character sheet: identity choices show what they are worth" }
-  - { type: image, src: /media/eternity-keeper/abilities.avif, alt: "Abilities and talents tab", caption: "Fig. 3 — abilities and talents, filtered by what the class and race can learn" }
-  - { type: image, src: /media/eternity-keeper/stronghold.avif, alt: "Stronghold tab with upgrades, hirelings and prisoners", caption: "Fig. 4 — stronghold upgrades with the game's Prestige and Security arithmetic" }
+  - { type: image, src: "/media/eternity-keeper/cover.avif", alt: "Eternity Keeper banner featuring a glowing purple soul flame above white serif typography", caption: "Eternity Keeper — open-source save editor for Pillars of Eternity" }
+  - { type: image, src: /media/eternity-keeper/inventory.avif, alt: "Inventory tab: equipment around the portrait, quick items and weapon sets, every party member's pack", caption: "Fig. 2 — Inventory tab mirroring Pillars of Eternity's equipment & pack layout" }
+  - { type: image, src: /media/eternity-keeper/character.avif, alt: "Character tab with attributes, skills, identity and portrait", caption: "Fig. 3 — Character sheet showing attributes, skills and background choices" }
+  - { type: image, src: /media/eternity-keeper/abilities.avif, alt: "Abilities and talents tab", caption: "Fig. 4 — Abilities & talents filtered by class and race progression rules" }
+  - { type: image, src: /media/eternity-keeper/stronghold.avif, alt: "Stronghold tab with upgrades, hirelings and prisoners", caption: "Fig. 5 — Stronghold view calculating Prestige and Security totals in-tool" }
 downloadUrl: https://github.com/phanto17/eternity-keeper/releases
 githubUrl: https://github.com/phanto17/eternity-keeper
 basedOn: https://github.com/aybrkaknc/eternity-keeper
@@ -59,24 +65,24 @@ credits:
 
 ## What it is
 
-Eternity Keeper is a desktop save editor for *Pillars of Eternity*. The original (2015–16) stopped working when the game was rebuilt in 2025; a community member brought it back to life in February 2026, and I have been building on his work since July. Version 1.0.0-beta (6 October 2026) was the first release with an installer; version 1.1.0-beta followed on 23 October. Open a save, change your characters, their gear and abilities, your party and your stronghold, press Save, and load the result in the game. The editor never writes to the save you opened.
+Eternity Keeper is a desktop save editor for *Pillars of Eternity* (GPL-3.0). After the original 2015–2016 editor stopped working on modern patches and a contributor restarted it with `0.21a` in February 2026, I took the fork through `v1.0.0-beta` (6 October 2026), `v1.1.0-beta` (23 October) and `v1.1.1-beta` (November 2026). Open a save, inspect or edit characters, gear, abilities, stronghold upgrades and area vendors, and load the output directly in Steam v3.9.5—while leaving your original save file untouched.
 
-This is not a game, but it is the project where I've done my deepest gameplay-systems work: every feature is a model of how the game actually treats its data, checked by loading the result in the game. It also feeds my YouTube channel, which is adapting a Pillars of Eternity questline.
+Although this is a standalone desktop utility rather than a game, it represents some of my deepest systems-engineering work: every UI operation models real *Pillars of Eternity* save invariants and verifies edited archives inside the game itself.
 
 ## Technical breakdown
 
-### 1. The save is three formats in one
+### 1. Three nested serialisation formats in one save
 
-A Pillars save is a zip of XML, Unity-serialised object graphs and, nested inside them, .NET BinaryFormatter blobs. Companion death, for example, fails the companion's quest by patching exactly one entry of a serialised quest tracker. Resurrecting a companion means rebuilding their object from a donor, de-colliding every ID, clearing the death flags, and un-failing that quest byte-exactly. Each of these facts was measured against real saves (a twelve-save death matrix) rather than guessed, and written down in `docs/features.md`.
+A *Pillars* save archive bundles XML manifests, Unity-serialised object graphs and nested `.NET BinaryFormatter` blobs. Resurrecting a fallen companion, for example, requires cloning companion structures without object-ID collisions, clearing death flags and patching an exact entry inside the binary quest tracker blob. Rather than guessing at binary offsets, every rule was measured against a 12-save death matrix and documented in `docs/features.md`.
 
-### 2. Invariants before writes
+### 2. Twenty-six invariants before any byte hits disk
 
-Twenty-five documented rules describe what the game relies on when it loads a save: every object ID unique and its own, item lists that pair up, nothing referenced that isn't in the save, values of the type the file declares. Every write the editor makes is checked against them first, and an edit that would break one is refused with a message saying what and where. A save that could only be read in part opens with a warning but can't be written back, because writing only what was read would silently lose the rest.
+Twenty-six documented invariants define what the game assumes on load: globally unique object IDs, paired item lists, valid object references, strict declared primitive types and **`SaveModel` tree-backed writers** (Invariant 26). Every save operation runs the full validation pass before writing, blocking broken edits with a pinpointed diagnostic instead of silently corrupting a 40-hour campaign save.
 
-### 3. A release that tests itself
+### 3. Self-verifying CI & DevTools UI releases
 
-The CI workflow runs 708 JUnit tests and the node-run suites for the page's merge, search, comparison and undo logic. The Package workflow builds the zip and the installer, then installs, starts, upgrades and uninstalls the build on a clean Windows runner before attaching it to a draft release. Twenty-nine scripted UI suites (about a thousand checks) drive the running editor over its DevTools port against a real thirteen-character save.
+GitHub Actions executes **772 JUnit `@Test` methods across 102 test files** alongside Node suites covering merge, comparison, search and Undo/Redo logic. A dedicated Packaging workflow builds both the portable ZIP and the Inno Setup installer with its bundled JRE 8, installs, upgrades and uninstalls cleanly on a Windows runner, and **29 scripted DevTools UI suites** exercise the live embedded browser against a full 13-character save.
 
 ### How I worked
 
-Most of the code was written with Codex, Antigravity and Claude Code under my direction. I decided what the editor should do by watching the game, specified each feature in the game's own terms, reviewed the changes, ran them against real saves, loaded the result in the game and read the game's log. The process notes, invariants and lessons files in the repository are the record of that.
+Most of the code was written with Codex, Antigravity and Claude Code under my direction. I specified every feature from observed in-game rules, reviewed diffs and invariant coverage, and performed all real-save loading and log inspection inside *Pillars of Eternity*.

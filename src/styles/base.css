@@ -27,12 +27,24 @@ html {
 
 body {
   margin: 0;
-  /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into bg. */
+  /* Static fallback of the signal field (no JS, no WebGL, data saver): the same five colours, mixed into
+     bg — the theme's own, or the map's at noon in a map-lit theme (--field-fallback-n, generated). */
+  /* The top layer is the field's content lane: over the content column (container + 32px, feathered
+     over 260px, as in field.ts) only --field-fallback-lane of the colour shows, so text keeps 4.5:1. */
+  --lane-ground: color-mix(in srgb, var(--bg) calc((1 - var(--field-fallback-lane)) * 100%), transparent);
+  --lane-half: calc(var(--container) / 2 + 32px);
   background:
-    radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-1) 38%, var(--bg)), transparent 70%),
-    radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-2) 30%, var(--bg)), transparent 70%),
-    radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-4) 45%, var(--bg)), transparent 72%),
-    radial-gradient(45% 40% at 85% 95%, color-mix(in srgb, var(--field-5) 40%, var(--bg)), transparent 70%),
+    linear-gradient(
+      90deg,
+      transparent calc(50% - var(--lane-half) - 260px),
+      var(--lane-ground) calc(50% - var(--lane-half)),
+      var(--lane-ground) calc(50% + var(--lane-half)),
+      transparent calc(50% + var(--lane-half) + 260px)
+    ),
+    radial-gradient(60% 45% at 12% 18%, color-mix(in srgb, var(--field-fallback-1) 38%, var(--bg)), transparent 70%),
+    radial-gradient(50% 40% at 88% 30%, color-mix(in srgb, var(--field-fallback-2) 30%, var(--bg)), transparent 70%),
+    radial-gradient(70% 50% at 50% 70%, color-mix(in srgb, var(--field-fallback-4) 45%, var(--bg)), transparent 72%),
+    radial-gradient(45% 40% at 85% 95%, color-mix(in srgb, var(--field-fallback-5) 40%, var(--bg)), transparent 70%),
     var(--bg);
   background-attachment: fixed;
   color: var(--text);
@@ -51,7 +63,7 @@ body::before {
   inset: 0;
   pointer-events: none;
   z-index: 0;
-  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(11, 7, 11, 0.75) 100%);
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, var(--vignette) 100%);
 }
 body::after {
   content: '';
@@ -67,7 +79,10 @@ body::after {
 a {
   color: var(--action-text);
   text-decoration: none;
-  transition: color 0.2s, text-shadow 0.2s;
+  transition:
+    color 0.34s cubic-bezier(0.16, 1, 0.3, 1),
+    text-shadow 0.38s cubic-bezier(0.16, 1, 0.3, 1),
+    text-decoration-color 0.34s cubic-bezier(0.16, 1, 0.3, 1);
 }
 [hidden] {
   display: none !important;
@@ -75,7 +90,8 @@ a {
 p a,
 li a,
 td a,
-dd a {
+dd a,
+figcaption a {
   text-decoration: underline;
   text-decoration-color: var(--glow-ink);
   text-underline-offset: 3px;
@@ -108,25 +124,13 @@ h4 {
      evenly; the spring is only on the way in. */
   transform-origin: left center;
   transition:
-    font-variation-settings 0.3s ease,
-    letter-spacing 0.3s ease,
-    text-shadow 0.35s ease,
-    color 0.25s ease,
-    transform 0.3s ease;
+    text-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.42s cubic-bezier(0.16, 1, 0.3, 1);
 }
-/* Hover grows the heading (owner rule 2026-10-29): heavier optical size, wider tracking, a slight
-   scale-up from the left. Never sharper or tighter. */
 h2:hover,
 h3:hover {
-  font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 9;
-  letter-spacing: 0.02em;
-  transform: scale(1.02);
-  transition:
-    font-variation-settings 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    letter-spacing 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    text-shadow 0.35s ease,
-    color 0.25s ease,
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  text-shadow: var(--glow-soft);
 }
 /* Entry titles sit in cards with no spare width: wider glyphs would re-wrap the line mid-hover
    ("Intern - Taskscape Ltd (remote)" lost its last word, 2026-11-01). They grow by transform only. */
@@ -236,7 +240,7 @@ th {
   padding: var(--section) 0;
   /* No rule between sections (owner, 2026-11-01): the field and the spacing do the separating. */
   position: relative;
-  overflow-x: clip; /* decorative prism bands must not widen the page */
+  overflow-x: clip; /* nothing decorative may widen the page */
 }
 .kicker {
   font-family: var(--mono);
@@ -270,20 +274,20 @@ th {
   color: var(--gold);
   font-weight: 500;
 }
-.todo {
-  background: rgba(246, 211, 112, 0.18);
-  color: var(--gold);
-  font-family: var(--mono);
-  font-size: 12px;
-  padding: 2px 6px;
-  border-radius: var(--r-xs);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
 .two {
   display: grid;
   grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr);
   gap: 48px;
+}
+
+/* Text for assistive tech only (the map's field log, the projects minimap). */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* pills */
@@ -349,7 +353,7 @@ th {
   top: 16px;
 }
 
-@media (max-width: 860px) {
+@media (max-width: 980px) {
   :root {
     --gutter: var(--gutter-mobile);
     --section: var(--space-7);
@@ -529,8 +533,12 @@ details.changelog ul {
 }
 
 /* Projects: the head bar stays under the nav while the rows scroll beneath it (native sticky, no
-   pinning). index.astro adds .is-stuck while it is held, which only changes paint, never height. */
-@media (min-width: 861px) and (min-height: 700px) {
+   pinning). overview.astro adds .is-stuck while it is held, which only changes paint, never height. */
+@media (min-width: 981px) and (min-height: 700px) {
+  /* A control scrolled to by keyboard focus lands below the bar as well as below the nav. */
+  #projects :is(a, button) {
+    scroll-margin-top: 120px;
+  }
   #projects .section-head-bar {
     position: sticky;
     top: 70px;
@@ -573,7 +581,7 @@ details.changelog ul {
   color: var(--gold);
 }
 
-@media (max-width: 560px) {
+@media (max-width: 760px) {
   table {
     font-size: 13px;
   }
@@ -588,8 +596,8 @@ details.changelog ul {
   width: 9px;
   height: 9px;
   border-radius: 50%;
-  background: var(--coral);
-  box-shadow: 0 0 10px var(--coral);
+  background: var(--acc-ui, var(--coral));
+  box-shadow: 0 0 10px var(--acc-ui, var(--coral));
   display: inline-block;
 }
 
@@ -606,7 +614,4 @@ details.changelog ul {
 }
 html.has-field .signal-field {
   opacity: 1;
-}
-html.has-field .prism-wrap {
-  display: none; /* the field replaces the blurred prism band */
 }

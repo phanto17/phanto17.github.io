@@ -1,10 +1,9 @@
-// Comprehensive verification suite for the built portfolio in dist/ + TelegraphEngine & TelegraphStageController unit tests.
-import { TELEGRAPH_STAGES, TelegraphEngine, TelegraphStageController } from '../src/scripts/telegraph-engine.ts';
+// Verification suite for the ArtCraft-structured portfolio in dist/
 import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 
-const dist = resolve(process.argv[2] ?? 'd:/Portfolio/dist');
+const dist = resolve(process.argv[2] ?? join(import.meta.dirname, '..', 'dist'));
 let passed = 0;
 
 function check(name, fn) {
@@ -12,6 +11,17 @@ function check(name, fn) {
   passed++;
   console.log(`  ✓ ${name}`);
 }
+
+const ALL_SLUGS = [
+  'push-comes-to-shove',
+  'cinderhold',
+  'horde-hours',
+  'please-take-a-number',
+  'barrowlight',
+  'eternity-keeper',
+];
+const GAME_SLUGS = ['push-comes-to-shove', 'cinderhold', 'horde-hours', 'please-take-a-number', 'barrowlight'];
+const SOFTWARE_SLUGS = ['eternity-keeper'];
 
 console.log('=== 1. Self-Hosted WOFF2 Fonts & Zero Third-Party Font Requests ===');
 const expectedFonts = [
@@ -38,16 +48,18 @@ check('All 12 self-hosted WOFF2 files exist in dist/fonts/', () => {
 });
 
 const htmlFiles = [];
+const jsFiles = [];
 (function walk(dir) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walk(full);
     else if (entry.endsWith('.html')) htmlFiles.push(full);
+    else if (entry.endsWith('.js')) jsFiles.push(full);
   }
 })(dist);
 
 check('Zero external Google Fonts links in any built HTML file, and local WOFF2 preloads exist', () => {
-  assert.ok(htmlFiles.length >= 8, `Expected at least 8 HTML pages, found ${htmlFiles.length}`);
+  assert.ok(htmlFiles.length >= 10, `Expected at least 10 HTML pages, found ${htmlFiles.length}`);
   for (const file of htmlFiles) {
     const html = readFileSync(file, 'utf8');
     assert.ok(!html.includes('fonts.googleapis.com'), `Found fonts.googleapis.com in ${file}`);
@@ -60,7 +72,7 @@ check('Zero external Google Fonts links in any built HTML file, and local WOFF2 
 });
 
 console.log('\n=== 2. Accessibility, Mobile Nav, Skip Links & Intrinsic Image Dimensions ===');
-check('Every page includes skip-link, main landmark, and accessible mobile menu toggle', () => {
+check('Every page includes skip-link, <main id="main">, and accessible mobile menu toggle', () => {
   for (const file of htmlFiles) {
     const html = readFileSync(file, 'utf8');
     assert.ok(html.includes('class="skip-link" href="#main"'), `Missing skip-link in ${file}`);
@@ -72,7 +84,7 @@ check('Every page includes skip-link, main landmark, and accessible mobile menu 
   }
 });
 
-check('Every page has one top-level heading', () => {
+check('Every page has exactly one top-level heading', () => {
   for (const file of htmlFiles) {
     const html = readFileSync(file, 'utf8');
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1, `Expected one h1 in ${file}`);
@@ -85,7 +97,6 @@ check('Every <img> has alt, width, height, and uses .avif format', () => {
     const html = readFileSync(file, 'utf8');
     const imgs = html.match(imgRegex) ?? [];
     for (const tag of imgs) {
-      // alt="" is a decorative image (the project covers sit inside links with their own label).
       assert.match(tag, /\balt="[^"]*"/, `Image missing alt in ${file}: ${tag}`);
       assert.match(tag, /\bwidth="\d+"/, `Image missing width in ${file}: ${tag}`);
       assert.match(tag, /\bheight="\d+"/, `Image missing height in ${file}: ${tag}`);
@@ -94,24 +105,46 @@ check('Every <img> has alt, width, height, and uses .avif format', () => {
   }
 });
 
-check('Overview has the static CRT spec readout bar and no moving slider below the title', () => {
-  const homeHtml = readFileSync(join(dist, 'overview', 'index.html'), 'utf8');
-  assert.ok(!homeHtml.includes('class="marquee-band"'), 'Moving slider below title must not exist');
-  assert.ok(homeHtml.includes('class="crt-spec-grid'), 'Missing static CRT spec readout bar below hero');
+console.log('\n=== 3. ArtCraft Framed Layout & Zero Map / Mini-Game Checks ===');
+check('Home page uses the ArtCraft framed structure with sections 01-05 and Contact', () => {
+  const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
+  assert.ok(homeHtml.includes('class="rail-frame"'), 'Home missing .rail-frame');
+  for (const id of ['overview', 'projects', 'about', 'experience', 'activities', 'contact']) {
+    assert.ok(homeHtml.includes(`id="${id}"`), `Home missing section #${id}`);
+  }
+  assert.ok(!homeHtml.includes('class="marquee-band"'), 'Marquee band must not exist');
 });
 
-console.log('\n=== 3. Subpage Hierarchy, Telemetry Chips, Honesty Disclosures & Style Guide ===');
-check('All 4 project subpages render verified telemetry chips and honesty disclosures', () => {
-  for (const slug of ['horde-hours', 'push-comes-to-shove', 'cinderhold', 'eternity-keeper']) {
-    const p = join(dist, 'projects', slug, 'index.html');
-    const html = readFileSync(p, 'utf8');
-    assert.ok(html.includes('class="stat-chip"'), `Missing .stat-chip in ${slug}`);
-    assert.ok(html.includes('Claude Code'), `Missing AI honesty disclosure in ${slug}`);
-    assert.ok(html.includes('id="crt-toggle"'), `Missing CRT scanline toggle in ${slug}`);
+check('Built bundle contains zero interactive map or Telegraph mini-game artifacts', () => {
+  for (const file of htmlFiles) {
+    const html = readFileSync(file, 'utf8');
+    assert.ok(!html.includes('id="world"'), `Unexpected map #world in ${file}`);
+    assert.ok(!html.includes('id="tg-grid"'), `Unexpected Telegraph #tg-grid in ${file}`);
+    assert.ok(!html.includes('id="tg-crt-popup"'), `Unexpected Telegraph popup in ${file}`);
+    assert.ok(!html.includes('id="lab"'), `Unexpected #lab section in ${file}`);
+  }
+  for (const js of jsFiles) {
+    const src = readFileSync(js, 'utf8');
+    assert.ok(!src.includes('THREE.WebGLRenderer') && !src.includes('OrbitControls'), `Unexpected Three.js code in ${js}`);
   }
 });
 
-check('Game subpages render collapsible <details class="changelog"> iteration drawers', () => {
+console.log('\n=== 4. Subpage Telemetry, Honesty Disclosures, CV & Style Guide ===');
+check('All 6 project subpages render stat chips, CRT toggle and AI honesty disclosures', () => {
+  for (const slug of ALL_SLUGS) {
+    const p = join(dist, 'projects', slug, 'index.html');
+    assert.ok(existsSync(p), `Missing project page: ${p}`);
+    const html = readFileSync(p, 'utf8');
+    assert.ok(html.includes('class="stat-chip"'), `Missing .stat-chip in ${slug}`);
+    assert.ok(html.includes('id="crt-toggle"'), `Missing #crt-toggle in ${slug}`);
+    assert.ok(
+      html.includes('Claude Code') || html.includes('Codex'),
+      `Missing AI disclosure in ${slug}`,
+    );
+  }
+});
+
+check('Updated game subpages render collapsible <details class="changelog"> iteration drawers', () => {
   for (const slug of ['horde-hours', 'push-comes-to-shove', 'cinderhold']) {
     const p = join(dist, 'projects', slug, 'index.html');
     const html = readFileSync(p, 'utf8');
@@ -122,22 +155,28 @@ check('Game subpages render collapsible <details class="changelog"> iteration dr
 check('/style-guide/index.html is built and marked noindex', () => {
   const sg = readFileSync(join(dist, 'style-guide', 'index.html'), 'utf8');
   assert.ok(sg.includes('<meta name="robots" content="noindex">'), 'Style guide must be noindex');
-  assert.ok(sg.includes('--coral') && sg.includes('Fraunces'), 'Style guide missing tokens');
+  assert.ok(sg.includes('coral') && sg.includes('Fraunces'), 'Style guide missing tokens');
 });
 
-check('Cinderhold and Eternity Keeper disclose the confirmed AI tools', () => {
+check('Key honesty disclosures remain intact across all confirmed repos', () => {
   const cinderhold = readFileSync(join(dist, 'projects', 'cinderhold', 'index.html'), 'utf8');
   const eternity = readFileSync(join(dist, 'projects', 'eternity-keeper', 'index.html'), 'utf8');
+  const jam = readFileSync(join(dist, 'projects', 'please-take-a-number', 'index.html'), 'utf8');
+  const barrow = readFileSync(join(dist, 'projects', 'barrowlight', 'index.html'), 'utf8');
   assert.ok(cinderhold.includes('Most of the code was written with Claude Code under my direction'));
   assert.ok(eternity.includes('Most of the code was written with Codex, Antigravity and Claude Code under my direction'));
+  assert.ok(jam.includes('ElevenLabs Sound Effects') && jam.includes('431'));
+  assert.ok(barrow.includes('1,077') && barrow.includes('OpenAI Codex'));
+  assert.ok(existsSync(join(dist, 'CV_Tymoteusz_Jaskolski_EN.pdf')), 'Missing CV PDF in dist/');
 });
 
-console.log('\n=== 4. Technical SEO: robots.txt, sitemap.xml & JSON-LD Structured Data ===');
-check('robots.txt and sitemap.xml exist and list all canonical routes', () => {
+console.log('\n=== 5. Technical SEO: robots.txt, sitemap.xml & JSON-LD Structured Data ===');
+check('robots.txt and sitemap.xml exist and list all 6 projects', () => {
   const robots = readFileSync(join(dist, 'robots.txt'), 'utf8');
   assert.ok(robots.includes('Sitemap: https://phanto17.github.io/sitemap.xml'));
   const sitemap = readFileSync(join(dist, 'sitemap.xml'), 'utf8');
-  for (const slug of ['horde-hours', 'push-comes-to-shove', 'cinderhold', 'eternity-keeper']) {
+  assert.ok(sitemap.includes('https://phanto17.github.io/projects/'));
+  for (const slug of ALL_SLUGS) {
     assert.ok(
       sitemap.includes(`https://phanto17.github.io/projects/${slug}/`),
       `Sitemap missing ${slug}`,
@@ -154,82 +193,19 @@ check('Indexed pages contain valid JSON-LD structured data (Person / VideoGame /
   assert.ok(homeLd, 'Missing Person node on home page');
   assert.equal(homeLd.jobTitle, 'Junior Gameplay Programmer (Unity / C#)');
 
-  const gameHtml = readFileSync(join(dist, 'projects', 'push-comes-to-shove', 'index.html'), 'utf8');
-  const nodeTypes = (html) => (JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'] ?? []).map((n) => n['@type']);
-  assert.ok(nodeTypes(gameHtml).includes('VideoGame'), 'Missing VideoGame node on a game page');
+  const nodeTypes = (html) =>
+    (JSON.parse(html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1])['@graph'] ?? []).map(
+      (n) => n['@type'],
+    );
 
-  const toolHtml = readFileSync(join(dist, 'projects', 'eternity-keeper', 'index.html'), 'utf8');
-  assert.ok(nodeTypes(toolHtml).includes('SoftwareApplication'), 'Missing SoftwareApplication node on the tool page');
-});
-
-console.log('\n=== 5. Psychological Mini-Game ("Telegraph Recall") DOM & State Machine Tests ===');
-check('Home page embeds #lab mini-game with 16 labelled buttons and polite live region', () => {
-  const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
-  assert.ok(homeHtml.includes('id="lab"'), 'Missing #lab section');
-  assert.ok(homeHtml.includes('id="tg-grid"') && homeHtml.includes('role="group"'), 'Missing #tg-grid');
-  const cellMatches = homeHtml.match(/class="[^"]*\btg-cell\b[^"]*"/g) ?? [];
-  assert.equal(cellMatches.length, 16, `Expected 16 gridcells, found ${cellMatches.length}`);
-  assert.ok(homeHtml.includes('id="tg-status"') && homeHtml.includes('aria-live="polite"'), 'Missing aria-live status');
-});
-
-check('TelegraphEngine pure state machine passes deterministic wave, hint, and disruption unit tests', () => {
-  let seed = 0;
-  const deterministicRng = () => {
-    seed = (seed + 1) % 7;
-    return seed / 10;
-  };
-  const eng = new TelegraphEngine(deterministicRng);
-  const wave1 = eng.startCampaign();
-  assert.equal(wave1.length, 3, 'Wave 1 must telegraph 3 tiles');
-  assert.equal(new Set(wave1.map((cue) => cue.shown)).size, 3, 'Wave 1 tiles must be unique');
-  assert.equal(eng.submitCell(wave1[0].target).kind, 'ignored', 'Input while not accepting must be ignored');
-
-  eng.setAcceptingInput(true);
-  assert.equal(eng.submitCell(wave1[0].target).kind, 'step-ok');
-  assert.equal(eng.submitCell(wave1[1].target).kind, 'step-ok');
-  const clear1 = eng.submitCell(wave1[2].target);
-  assert.equal(clear1.kind, 'wave-cleared');
-  assert.equal(clear1.nextWave, 2);
-  assert.equal(clear1.nextLength, 4);
-
-  // Test Forecast Hint consumption
-  const wave2 = eng.rollWaveSequence();
-  assert.equal(wave2.length, 4);
-  eng.setAcceptingInput(true);
-  assert.equal(eng.useForecastHint(), true, 'First forecast hint should succeed');
-  assert.equal(eng.getHintsRemaining(), 0);
-  eng.setAcceptingInput(true);
-  assert.equal(eng.useForecastHint(), false, 'Second forecast hint must be rejected');
-
-  // Test disruption on wrong cell
-  const wrongCell = Array.from({ length: 16 }, (_, i) => i).find((i) => i !== wave2[0].target);
-  const bad = eng.submitCell(wrongCell);
-  assert.equal(bad.kind, 'disrupted');
-  assert.equal(bad.expectedCell, wave2[0].target);
-});
-
-check('TelegraphStageController & 3-Stage CRT Popup / Non-Linear Portal DOM pass verification', () => {
-  const homeHtml = readFileSync(join(dist, 'index.html'), 'utf8');
-  assert.match(homeHtml, /<dialog\b[^>]*id="tg-crt-popup"/, 'Missing native PopupCRT dialog');
-  assert.ok(homeHtml.includes('id="tg-stage-router"'), 'Missing StageRouter viewport');
-  assert.ok(homeHtml.includes('id="tg-portal-grid"'), 'Missing NonLinearLayout portal grid');
-
-  const ctrl = new TelegraphStageController();
-  assert.equal(new Set(TELEGRAPH_STAGES.map((stage) => stage.id)).size, TELEGRAPH_STAGES.length);
-  assert.deepEqual(TELEGRAPH_STAGES.map((stage) => stage.action), ['next', 'next', 'play']);
-  assert.ok(TELEGRAPH_STAGES.every((stage) => stage.label && stage.title && stage.ctaLabel));
-  assert.equal(ctrl.getStage(), 'welcome');
-  const step2 = ctrl.nextStage();
-  assert.equal(step2.id, 'animation-sequence');
-  assert.equal(step2.transition, 'scanline-wipe');
-  const step3 = ctrl.nextStage();
-  assert.equal(step3.id, 'title-intro');
-  assert.equal(ctrl.nextStage(), null);
-
-  ctrl.selectPortal('tactics-shove');
-  ctrl.selectPortal('dungeon-cinderhold');
-  assert.equal(ctrl.getExploredPortals().length, 3);
-  assert.ok(ctrl.getInteractionCount() >= 4);
+  for (const slug of GAME_SLUGS) {
+    const html = readFileSync(join(dist, 'projects', slug, 'index.html'), 'utf8');
+    assert.ok(nodeTypes(html).includes('VideoGame'), `Missing VideoGame JSON-LD on ${slug}`);
+  }
+  for (const slug of SOFTWARE_SLUGS) {
+    const html = readFileSync(join(dist, 'projects', slug, 'index.html'), 'utf8');
+    assert.ok(nodeTypes(html).includes('SoftwareApplication'), `Missing SoftwareApplication JSON-LD on ${slug}`);
+  }
 });
 
 console.log(`\nALL ${passed} VERIFICATION CHECKS PASSED!`);

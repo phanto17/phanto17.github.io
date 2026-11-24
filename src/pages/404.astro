@@ -1,43 +1,20 @@
 ---
 import Base from '../layouts/Base.astro';
-import Prism from '../components/Prism.astro';
+import { PROJECTS_INDEX, site } from '../data/site';
 ---
 
-<Base noindex title="Page not found" description="This page does not exist. The projects and the CV are one click away.">
-  <section class="lost">
-    <Prism />
-    <div class="wrap">
-      <p class="kicker">404 · off the map</p>
-      <h1>This tile isn't on the grid.</h1>
-      <p class="lead">The page you were looking for doesn't exist, or it moved when the site was rebuilt.</p>
-      <div class="actions">
-        <a class="btn primary" href="/">Back to the start</a>
-        <a class="btn" href="/projects/">All projects</a>
+<Base title="404 — Page not found" description="Page not found on Tymoteusz Jaskólski's portfolio." noindex>
+  <div class="rail-frame">
+    <section class="ac-hero">
+      <p class="ac-hero-kicker">HTTP 404 // UNKNOWN ROUTE</p>
+      <h1>Page not found</h1>
+      <p class="ac-hero-lead">
+        Nothing lives at this URL on {site.name}&rsquo;s portfolio. Jump back to the main showcase or inspect all six projects directly.
+      </p>
+      <div class="ac-cta-row">
+        <a class="btn primary" href="/">← Back to Home</a>
+        <a class="btn" href={PROJECTS_INDEX}>Browse All Projects →</a>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </Base>
-
-<style>
-  .lost {
-    position: relative;
-    overflow: hidden;
-    min-height: 70vh;
-    display: grid;
-    align-items: center;
-    padding: 96px 0;
-  }
-  .lost .wrap {
-    position: relative;
-    z-index: 1;
-  }
-  h1 {
-    max-width: 16ch;
-  }
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-top: 24px;
-  }
-</style>

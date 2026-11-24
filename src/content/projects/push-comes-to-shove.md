@@ -1,33 +1,43 @@
 ---
 title: Push Comes to Shove
-summary: Deterministic grid tactics. Read the board, push enemies into pits and into each other, and set up the perfect turn before they get theirs.
+summary: Deterministic grid tactics. Read the board, shove enemies into pits and each other, and compute the outcome forecast before committing a turn.
 genre: Turn-based tactics / puzzle
+kind: game
+category: "TACTICS // DETERMINISTIC GRID"
+platforms:
+  - WebGL (itch.io)
+  - Unity 6 URP 2D
 status: playable
 dates:
   start: "2026-03"
+  end: "2026-10"
 role: Solo — design & programming
-engine: Unity 6 · URP 2D
-order: 2
+engine: Unity 6 (6000.6) · URP 2D
+order: 1
 world:
   kind: board
   accent: "#7fd6c2"
 widget: shove-lab
 highlights:
-  - BFS pathing & push resolution (unit-tested)
-  - Attacks as ScriptableObject strategies
-  - Paced enemy AI with intent reveal
+  - BFS cardinal pathing & multi-tile chain push resolution verified by EditMode tests
+  - ScriptableObject Attack strategies shared cleanly by both player commands and enemy AI
+  - Board-copy Attack.SimulatePushes powering amber landing tiles and exact UnitForecast tags
+  - Fixed deterministic damage with melee retaliation, friendly-fire guards and +50% typed weaknesses
+  - Five ASCII-authored isometric boards built into Tilemap prefabs with unlocks saved to PlayerPrefs
+  - Paced enemy turn revealing each unit's route and target cells one beat before execution
 metrics:
-  - 72 EditMode tests
-  - 5 ASCII-authored levels
-  - Board-copy outcome forecast
+  - 72 EditMode NUnit tests
+  - 5 ASCII-authored isometric boards
+  - Board-copy deterministic outcome forecast (0.6.0)
 myContribution:
-  - "Grid model built from a Tilemap: `RuntimeCellData` per cell with walkable / hazard flags from `CellData` ScriptableObjects, 0-based indexing independent of the tilemap origin."
-  - "Cardinal breadth-first reachability and shortest-path routing that treats walls, hazards and occupied cells as blockers — units walk around obstacles tile by tile instead of teleporting."
-  - "Push resolution: pushes resolve farthest-first and can carry a unit more than one tile; hitting a wall or the map edge deals collision damage, hitting another unit damages both, and a unit shoved onto a hazard tile is destroyed."
-  - "`Attack` as a ScriptableObject strategy (Melee, Ranged, Line): each decides what it can target and which cells it hits, so the player's attack mode and the enemy AI share one rule set. Instant `Execute` for tests, animated coroutine for play (swing → projectile → hit → counter-attack)."
-  - "Enemy AI: attack if a clear shot exists, otherwise move to the best firing cell, otherwise advance by walking distance (a breadth-first distance field from the squad, so enemies go round rocks and pits instead of pressing against them); the whole enemy turn is a paced coroutine that reveals each enemy's intent (green route, red cells) just before it acts."
-  - "72 EditMode tests over grid maths, pathing, pushes, retaliation, weaknesses, first-hit arrows, the piercing shot, the brute's two-tile shove, the attack preview and the full outcome forecast (every unit an attack touches, the counter and the counter's own shove), the AI's friendly-fire check and route round walls, the unlock rules, every level being winnable on paper (room for the squad, every enemy able to walk to it) the counter web (every enemy in the levels has a counter in the squad, and the other way round) and the shipped data, using a test-only grid constructor."
-  - "Most of the code was written with an AI assistant (Claude Code) under my direction: I specified the systems, reviewed the changes and did the testing. The October 2026 upgrade (the shove, audio, feel, front end, review round, the level set, the roster, the outcome forecast) was done that way from a plan I approved step by step."
+  - "Grid model built from a Tilemap: `RuntimeCellData` per cell with walkable and hazard flags from `CellData` ScriptableObjects, zero-based indexing independent of tilemap origin."
+  - "Cardinal breadth-first reachability and shortest-path routing treating walls, pits and occupied cells as blockers so units navigate around terrain obstacles."
+  - "Deterministic push resolution: chains resolve farthest-first and can shove multiple tiles (two tiles for the orc Brute), dealing wall/unit collision damage and destroying units pushed onto hazard pits."
+  - "`Attack` as a ScriptableObject strategy (`Melee`, `Ranged`, `Line`): shared ruleset driving both player targeting and AI selection, with instant execution for tests and paced coroutines for play."
+  - "Board-copy simulation (`Attack.SimulatePushes` & `UnitForecast`, 0.6.0): simulates damage, shoves, pit kills and melee retaliation on a cloned board to preview exact post-attack outcomes before committing."
+  - "Enemy AI: strikes when a clean line exists (without friendly fire), moves to the optimal firing cell, or closes by walking distance field; plays each enemy's route and target telegraph before acting."
+  - "72 EditMode tests pinning grid maths, pathing, multi-tile pushes, weaknesses, piercing line shots, outcome forecasts, AI routing, unlock saves and level solvability invariants."
+  - "Most of the code was written with Claude Code under my direction: I specified the mechanics, reviewed every change, and tested and tuned the live WebGL builds (shipping through v0.6.0 on itch.io)."
 changelog:
   - "Melee retaliation, no friendly fire, and typed weaknesses that add +50% damage: blades, arrows and (since 0.5.0) piercing shots, with every unit type countered by one on the other side."
   - "Roster and counters (0.5.0): three new units from the purchased character sheets, recoloured with the palettes the sheets ship as swatches. The red orc Brute is slow and tough and its heavy blow shoves two tiles. The blue goblin Harrier and, on the player's side, the purple elf Ranger fire the piercing shot, the line attack that had sat unused since the prototype: it hits every foe in a row until a rock, passes allies and shoves each foe one tile. A third damage kind, pierce, is the brute's weakness. To keep the previews honest with two-tile shoves and several units pushed at once, the attack now plays its shoves on a copy of the board (damage first, far units first, collisions and pits) and both the amber landing tiles and the outcome numbers read that simulation."
@@ -36,7 +46,7 @@ changelog:
   - "State-pattern interaction modes (place, move, attack) with phase-gated buttons; roster and enemy info cards built from code; frame-by-frame sprite animator; hit-flash via a custom sprite shader and MaterialPropertyBlock."
   - "Design docs: vision and pillars, mechanic comparison against Into the Breach, King's Bounty and Octopath Traveler, and a staged plan for the HD-2D look."
 tools:
-  - Unity 6000.3 (URP 17, 2D renderer)
+  - Unity 6000.6 (URP 17, 2D renderer)
   - C#
   - Tilemap
   - Input System
@@ -44,7 +54,6 @@ tools:
   - TextMesh Pro
   - Claude Code
   - Shader Graph / HLSL
-clip: /media/push-comes-to-shove/clip.webm
 media:
   - { type: image, src: /media/push-comes-to-shove/cover.avif, alt: "Push Comes to Shove pixel-art key art: human soldiers, archer and purple elf ranger shoving goblins into water and into an orc brute", caption: "Fig. 1 — Push Comes to Shove key art" }
   - { type: image, src: /media/push-comes-to-shove/enemy-turn.avif, alt: "Enemy turn: a goblin's green movement path is revealed before it acts", caption: "Fig. 2 — enemy turn: one enemy's intent at a time (web build)" }

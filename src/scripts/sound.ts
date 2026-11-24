@@ -3,14 +3,13 @@
  * callers say what happened (`sound.play('shove')`) rather than how it should sound. The table is
  * pure data (`toneFor`), so the cues are testable without audio.
  *
- * Callers: the site-wide click (Base.astro), the signal landing's chime, Telegraph Recall's board and
- * popup, and the field map (src/world/boot.ts).
+ * Callers: the site-wide click (Base.astro), Telegraph Recall's board and popup, and the field map
+ * (src/world/boot.ts).
  */
 import { prefs } from './prefs';
 
 export type SoundCue =
   | 'click'
-  | 'chime'
   | 'cue'
   | 'shove'
   | 'step'
@@ -41,8 +40,6 @@ export interface Tone {
   /** Glide the pitch to this frequency over `sweep` seconds (default: the whole duration). */
   sweepTo?: number;
   sweep?: number;
-  /** Fade in over this many seconds instead of starting at full gain. */
-  attack?: number;
   /** Further notes of the same shape, each starting `at` seconds after the first. */
   then?: readonly { freq: number; at: number }[];
 }
@@ -50,8 +47,6 @@ export interface Tone {
 export const TONES: Readonly<Record<SoundCue, Tone>> = {
   /** Every control answers a click with this, site-wide (with the phosphor ripple). */
   click: { freq: 1760, type: 'square', duration: 0.05, gain: 0.035, sweepTo: 880, sweep: 0.04 },
-  /** The signal landing's two-note cue. */
-  chime: { freq: 660, type: 'triangle', duration: 0.16, gain: 0.05, attack: 0.02, then: [{ freq: 990, at: 0.12 }] },
   /** A telegraphed tile lighting up; rises with its position in the sequence. */
   cue: { freq: 300, type: 'triangle', duration: 0.12, stepHz: 55 },
   /** A shove cue's arrow, under the cue tone. */
@@ -117,12 +112,7 @@ export function createSound(deps: SoundDeps): SoundPlayer {
           osc.type = tone.type;
           osc.frequency.setValueAtTime(note.freq, start);
           if (tone.sweepTo !== undefined) osc.frequency.exponentialRampToValueAtTime(tone.sweepTo, start + (tone.sweep ?? tone.duration));
-          if (tone.attack) {
-            gain.gain.setValueAtTime(0.0001, start);
-            gain.gain.exponentialRampToValueAtTime(tone.gain, start + tone.attack);
-          } else {
-            gain.gain.setValueAtTime(tone.gain, start);
-          }
+          gain.gain.setValueAtTime(tone.gain, start);
           gain.gain.exponentialRampToValueAtTime(0.001, start + tone.duration);
           osc.connect(gain).connect(ctx.destination);
           osc.start(start);
@@ -137,7 +127,7 @@ export function createSound(deps: SoundDeps): SoundPlayer {
 
 /**
  * Create the context on first use and keep it while it runs. A context created without a user
- * gesture (the landing's chime fires after idle seconds) comes up suspended under the autoplay
+ * gesture (a cue played before the visitor has clicked anything) comes up suspended under the autoplay
  * policy: it is closed and not kept, so the next gesture's cue gets a fresh, running one instead of
  * a silent first click.
  */

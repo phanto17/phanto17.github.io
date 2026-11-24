@@ -6,8 +6,8 @@ const path = require('node:path');
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 
 const dist = path.resolve(__dirname, '..', 'dist');
-// The home page is the field map (World.astro); the text sections, the Telegraph cabinet and the
-// landing live on /overview/, so the interaction checks run there and the map has its own check.
+// The home page is the field map (World.astro); the text sections and the Telegraph cabinet live on
+// /overview/, so the interaction checks run there and the map has its own check.
 const HOME = 'http://portfolio.test/overview/';
 const routes = [
   '/', '/overview/', '/projects/', '/projects/horde-hours/', '/projects/push-comes-to-shove/',
@@ -106,7 +106,51 @@ async function checkNoJavaScript(browser) {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
     await page.close();
   }
-  console.log('Script-free navigation and game fallback passed.');
+  // Without scripts nothing draws the field: the hero text sits on the static backdrop. Read each
+  // hero line's own colour against the ground under it (the text made transparent, layout kept).
+  // A blurred prism band behind the heroes washed them out until 2026-11-04.
+  const decoder = await browser.newPage();
+  const low = [];
+  for (const theme of ['prism', 'paper', 'crt']) {
+    for (const [url, width] of [['/overview/', 390], ['/overview/', 1440], ['/projects/push-comes-to-shove/', 1440], ['/404.html', 390]]) {
+      const page = await browser.newPage({ viewport: { width, height: 800 }, javaScriptEnabled: false, colorScheme: theme === 'paper' ? 'light' : 'dark' });
+      await page.route('http://portfolio.test/**', async (route) => {
+        const pathname = decodeURIComponent(new URL(route.request().url()).pathname);
+        let file = path.resolve(dist, `.${pathname}`);
+        if (pathname.endsWith('/')) file = path.join(file, 'index.html');
+        if (!file.startsWith(`${dist}${path.sep}`) || !fs.existsSync(file)) return route.fulfill({ status: 404, body: 'Not found' });
+        let body = fs.readFileSync(file);
+        if (file.endsWith('.html')) {
+          let html = body.toString('utf8');
+          // Without scripts the theme can only come from the OS scheme; CRT is set on the element.
+          if (theme === 'crt') html = html.replace('<html ', '<html data-theme="crt" ');
+          if (new URL(route.request().url()).searchParams.has('bare')) {
+            html = html.replace('</head>', '<style>* { color: transparent !important; text-shadow: none !important; }</style></head>');
+          }
+          body = html;
+        }
+        return route.fulfill({ status: 200, contentType: mimeTypes[path.extname(file)] || 'application/octet-stream', body });
+      });
+      await page.goto(`http://portfolio.test${url}`, { waitUntil: 'load' });
+      const regions = await page.evaluate(() => [...document.querySelectorAll('main h1, main .lead, main .kicker, main .meta, main .meta-row, main .locbar .eyebrow, main .locbar-links a')]
+        .map((el) => ({ el, r: el.getBoundingClientRect(), s: getComputedStyle(el) }))
+        .filter(({ r }) => r.width > 0 && r.bottom <= innerHeight)
+        .map(({ el, r, s }) => ({
+          name: el.tagName.toLowerCase() + (el.classList[0] ? `.${el.classList[0]}` : ''),
+          x: r.left, y: r.top, w: r.width, h: r.height, ink: s.color,
+          need: parseFloat(s.fontSize) >= 24 || (Number(s.fontWeight) >= 700 && parseFloat(s.fontSize) >= 18.66) ? 3 : 4.5,
+        })));
+      assert.ok(regions.length > 0, `No hero text found on ${url}`);
+      await page.goto(`http://portfolio.test${url}?bare`, { waitUntil: 'load' });
+      const png = (await page.screenshot()).toString('base64');
+      const ratios = await groundContrast(decoder, png, regions);
+      regions.forEach((r, i) => { if (ratios[i] < r.need) low.push(`${theme} ${url}@${width} ${r.name}: ${ratios[i].toFixed(2)}:1 (needs ${r.need})`); });
+      await page.close();
+    }
+  }
+  await decoder.close();
+  assert.deepEqual(low, [], 'Hero text without scripts falls under its WCAG minimum');
+  console.log('Script-free navigation, game fallback and hero contrast passed.');
 }
 
 async function checkAnchorNavigation(browser) {
@@ -115,11 +159,11 @@ async function checkAnchorNavigation(browser) {
   await page.goto(HOME, { waitUntil: 'networkidle' });
   await readyLab(page);
   await page.locator('.menu-toggle').click();
-  await page.locator('#nav-links a[href="/overview/#projects"]').click();
-  const heading = await page.locator('#projects h2').boundingBox();
+  await page.locator('#nav-links a[href="/overview/#activities"]').click();
+  const heading = await page.locator('#activities h2').boundingBox();
   const navigation = await page.locator('nav.nav').boundingBox();
   assert.ok(heading && navigation && heading.y >= navigation.y + navigation.height,
-    'The sticky navigation obscures the project heading');
+    'The sticky navigation obscures the section heading');
   await page.close();
   console.log('Anchor navigation remains visible below the sticky header.');
 }
@@ -369,6 +413,42 @@ function contrastRatio(foreground, background) {
   return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
 }
 
+/**
+ * The lowest contrast each region's ink reaches on the ground in a screenshot (base64 PNG), read as
+ * 8×8 block means so film grain averages out. `decoder` is any page with JavaScript on (the image
+ * decodes there); a region is { x, y, w, h, ink } in CSS pixels with ink as #rrggbb or rgb().
+ */
+async function groundContrast(decoder, png, regions) {
+  return decoder.evaluate(async ({ png, regions }) => {
+    const img = await new Promise((resolve) => { const i = new Image(); i.onload = () => resolve(i); i.src = `data:image/png;base64,${png}`; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const w = img.width, data = ctx.getImageData(0, 0, w, img.height).data;
+    const lin = (v) => (v / 255 <= 0.03928 ? v / 255 / 12.92 : ((v / 255 + 0.055) / 1.055) ** 2.4);
+    const lum = (r, g, b) => 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    // color-mix() computes to `color(srgb r g b)` with channels in 0–1, rgb() to 0–255.
+    const channels = (c) => {
+      if (c.startsWith('#')) return [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+      const v = c.replace(/^color\(srgb/, '').match(/[\d.]+/g).slice(0, 3).map(Number);
+      return c.startsWith('color(srgb') ? v.map((x) => x * 255) : v;
+    };
+    const ratio = (a, b) => (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    return regions.map((r) => {
+      const li = lum(...channels(r.ink));
+      let worst = Infinity;
+      const x0 = Math.max(0, Math.round(r.x)), y0 = Math.max(0, Math.round(r.y));
+      for (let by = y0; by + 8 <= Math.min(img.height, r.y + r.h); by += 8) for (let bx = x0; bx + 8 <= Math.min(w, r.x + r.w); bx += 8) {
+        let R = 0, G = 0, B = 0;
+        for (let y = 0; y < 8; y++) for (let x = 0; x < 8; x++) { const k = ((by + y) * w + bx + x) * 4; R += data[k]; G += data[k + 1]; B += data[k + 2]; }
+        worst = Math.min(worst, ratio(li, lum(R / 64, G / 64, B / 64)));
+      }
+      return worst;
+    });
+  }, { png, regions });
+}
+
 async function checkThemeContrast(browser) {
   for (const theme of ['prism', 'paper', 'crt']) {
     const page = await browser.newPage({ viewport: { width: 1024, height: 768 }, reducedMotion: 'reduce' });
@@ -390,6 +470,46 @@ async function checkThemeContrast(browser) {
     await page.close();
   }
   console.log('Primary action and project-link contrast passed in all themes.');
+}
+
+/**
+ * The signal field under the content column keeps text at 4.5:1 at night, dawn, day and dusk in every
+ * theme (the map-lit themes change with the Poznań hour). The page's own layers are hidden, the still
+ * frame (reduced motion) is screenshotted, and the lane is read as 8×8 block means so the film grain
+ * averages out.
+ */
+async function checkFieldLane(browser) {
+  // Poznań is UTC+1 on these dates.
+  const hours = { night: '2026-11-04T01:00:00Z', dawn: '2026-11-04T05:30:00Z', day: '2026-11-04T11:00:00Z', dusk: '2026-11-04T18:48:00Z' };
+  const low = [];
+  for (const theme of ['prism', 'paper', 'crt', 'signal']) {
+    for (const [name, iso] of Object.entries(hours)) {
+      const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+      await context.clock.setFixedTime(new Date(iso));
+      await context.addInitScript((value) => {
+        localStorage.setItem('portfolio-theme', value);
+        // The Signal theme needs the reward record.
+        if (value === 'signal') localStorage.setItem('portfolio-signal', JSON.stringify({ best: 9, clears: 1, since: '' }));
+      }, theme);
+      const page = await context.newPage();
+      await serveBuild(page);
+      await page.goto(HOME, { waitUntil: 'load' });
+      await page.waitForFunction(() => document.documentElement.classList.contains('has-field'), null, { timeout: 30000 });
+      assert.equal(await page.locator('html').getAttribute('data-theme'), theme, `The ${theme} theme did not apply`);
+      await page.waitForTimeout(800);
+      const inks = await page.evaluate(() => ['--text', '--text-2', '--text-3'].map((n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim()));
+      await page.addStyleTag({ content: 'body > *:not(.signal-field) { opacity: 0 !important; } body { background: transparent !important; }' });
+      await page.waitForTimeout(150);
+      const png = (await page.screenshot()).toString('base64');
+      const width = 1440, height = 900;
+      const lane = { x: width / 2 - 520, y: 0, w: 1040, h: height };
+      const worst = Math.min(...(await groundContrast(page, png, inks.map((ink) => ({ ...lane, ink })))));
+      if (worst < 4.5) low.push(`${theme} at ${name}: ${worst.toFixed(2)}:1`);
+      await context.close();
+    }
+  }
+  assert.deepEqual(low, [], 'Text over the field lane falls under 4.5:1');
+  console.log('Field lane contrast passed at night, dawn, day and dusk in all themes.');
 }
 
 async function checkThemePreferences(browser) {
@@ -477,6 +597,7 @@ async function checkWorld(browser) {
   const locs = await page.evaluate(() => window.__world.eng.S.locs.map((l) => l.id));
   assert.deepEqual(locs.filter((id) => !['station', 'lab', 'guild', 'mast', 'uncharted'].includes(id)), ['horde-hours', 'push-comes-to-shove', 'cinderhold', 'eternity-keeper']);
   assert.equal(await page.locator('.world-label').count(), locs.length, 'One label per location');
+  assert.equal(await page.evaluate(() => [...document.querySelectorAll('#world-labels button')].filter((b) => b.tabIndex >= 0).length), 0, 'A label in the aria-hidden layer takes keyboard focus');
   // Walk to Cinderhold by BFS and open its panel.
   await page.evaluate(() => { const w = window.__world; w.eng.goTo(w.eng.locOf('cinderhold')); w.eng.stepFrames(600, 1 / 30); });
   assert.equal(await page.evaluate(() => window.__world.eng.S.near?.id), 'cinderhold', 'The explorer did not arrive');
@@ -486,6 +607,14 @@ async function checkWorld(browser) {
   assert.equal(await page.locator('#world-drawer a[href="/projects/cinderhold/"]').isVisible(), true, 'The panel does not link to the write-up');
   await page.keyboard.press('Escape');
   await until(page, () => document.getElementById('world-drawer').hidden, 'Escape did not close the panel');
+  // A panel opened from a key gives the keyboard back to that key when it closes.
+  for (let i = 0; i < 40 && !(await page.evaluate(() => document.activeElement.closest('#world-log-list') !== null)); i += 1) await page.keyboard.press('Tab');
+  await page.keyboard.press('Enter');
+  await until(page, () => !document.getElementById('world-drawer').hidden, 'The log key did not open a panel');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.evaluate(() => document.activeElement.closest('#world-log-list') !== null), true, 'Closing the panel lost the focus');
+  await until(page, () => document.getElementById('world-drawer').hidden, 'Escape did not close the panel');
+  await page.evaluate(() => document.activeElement.blur());
   // Dev Mode: render passes, overlays and a test project that moves nothing.
   await page.keyboard.press('Backquote');
   await page.keyboard.press('2');
@@ -502,6 +631,26 @@ async function checkWorld(browser) {
   await page.evaluate(() => window.__world.openLab());
   await page.waitForTimeout(300);
   assert.equal(await page.locator('#world-lab #tg-open-popup').isVisible(), true, 'The Telegraph cabinet is not in the Lab');
+  // One cabinet, one look: its chrome (frame, LED, popup monitor, status line) reads the Lab accent
+  // on the map exactly as on the overview.
+  const chrome = (p, root) => p.evaluate((r) => {
+    const q = (sel) => document.querySelector(`${r} ${sel}`);
+    return [
+      getComputedStyle(q('.cabinet')).borderTopColor,
+      getComputedStyle(q('.crt-launchpad .crt-led')).backgroundColor,
+      getComputedStyle(q('.crt-popup-monitor')).borderTopColor,
+      getComputedStyle(q('.tg-status')).color,
+    ];
+  }, root);
+  const onMap = await chrome(page, '#world-lab');
+  const twin = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+  await serveBuild(twin);
+  await twin.goto(HOME, { waitUntil: 'networkidle' });
+  const onOverview = await chrome(twin, '#lab');
+  const labAccent = await twin.evaluate(() => getComputedStyle(document.querySelector('#lab .loc-head-line')).color);
+  await twin.close();
+  assert.deepEqual(onMap, onOverview, `The cabinet differs on the map: ${JSON.stringify({ onMap, onOverview })}`);
+  assert.equal(onOverview[3], labAccent, 'The cabinet status line is not in the Lab accent ink');
   await page.locator('[data-lab-tab="mess"]').click();
   await page.waitForTimeout(800);
   assert.ok((await page.evaluate(() => window.__world.letters()?.state().length)) >= 8, 'The letters did not start');
@@ -547,6 +696,279 @@ async function checkWorld(browser) {
   console.log('Field map: boot, walk, panel, Dev Mode, test project, Lab and phone tap passed.');
 }
 
+/**
+ * The HUD nav on every page: the Map link points at the page's place (a write-up, the overview section
+ * in view), Projects is current under /projects/, the nav element survives view transitions, the keys
+ * share the map's size and the footer's status line reads the clock and the field log.
+ */
+async function checkNav(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  await serveBuild(page);
+  await page.addInitScript(() => localStorage.setItem('portfolio-world-visited', JSON.stringify(['lab', 'not-a-place'])));
+  const nav = () => page.evaluate(() => {
+    const link = (label) => [...document.querySelectorAll('#nav-links a')].find((a) => a.textContent.trim() === label);
+    return {
+      map: link('Map').getAttribute('href'),
+      projects: link('Projects').getAttribute('aria-current'),
+      lab: link('Lab').getAttribute('aria-current'),
+      mapCurrent: link('Map').getAttribute('aria-current'),
+      tag: document.querySelector('nav.nav').__tag ?? null,
+    };
+  });
+
+  await page.goto('http://portfolio.test/projects/push-comes-to-shove/', { waitUntil: 'networkidle' });
+  let n = await nav();
+  assert.equal(n.map, '/#push-comes-to-shove', "A write-up's Map link does not open its place");
+  assert.equal(n.projects, 'location', 'Projects is not current on a write-up');
+  const bar = await page.evaluate(() => ({
+    line: document.querySelector('.locbar .eyebrow')?.textContent,
+    links: [...document.querySelectorAll('.locbar-links a')].map((a) => a.getAttribute('href')),
+  }));
+  assert.match(bar.line ?? '', /^Location \d\d · /, 'The location bar does not name the place');
+  assert.deepEqual(bar.links, ['/#push-comes-to-shove', '/projects/'], 'The location bar does not lead back to the place');
+  // The write-up is the drawer panel grown: the project's accent on <main>, the metrics as map labels,
+  // HUD panels instead of umber cards, a diamond per note with the first one read.
+  const dossier = await page.evaluate(() => ({
+    acc: getComputedStyle(document.querySelector('main')).getPropertyValue('--acc').trim(),
+    tags: document.querySelectorAll('.phero .stat-tag.tag').length,
+    side: document.querySelector('.side .box')?.classList.contains('hud-panel'),
+    dots: [...document.querySelectorAll('[data-note-dot]')].map((d) => d.classList.contains('is-done')),
+    count: document.querySelector('[data-notes-progress]')?.textContent,
+  }));
+  assert.match(dossier.acc, /^#[0-9a-f]{6}$/i, 'The write-up does not carry its location accent');
+  assert.ok(dossier.tags > 0 && dossier.side, 'The write-up hero or sidebar is not in the map chrome');
+  assert.ok(dossier.dots.length > 1 && dossier.dots[0] && dossier.count === String(dossier.dots.filter(Boolean).length),
+    `The notes' field-log marks are off: ${JSON.stringify(dossier)}`);
+  const status = (await page.locator('[data-status-line]').textContent()).replace(/\s*·\s*/g, ' · ').replace(/\s+/g, ' ').trim();
+  assert.match(status, /^Poznań \d\d:\d\d · \S.* · 1\/\d+ explored · Style guide$/, `Status line reads "${status}"`);
+  const ground = await page.evaluate(() => {
+    const css = getComputedStyle(document.querySelector('nav.nav'));
+    const key = getComputedStyle(document.querySelector('#theme-switcher'));
+    return { border: css.borderBottomWidth, bg: css.backgroundColor, panel: getComputedStyle(document.documentElement).getPropertyValue('--panel').trim(), font: key.fontSize };
+  });
+  assert.equal(ground.border, '1px', 'The nav still has the thick rule');
+  assert.equal(ground.font, '11.5px', 'The nav keys are not the HUD key size');
+
+  // A client-side move keeps the same nav element and updates the Map link.
+  await page.evaluate(() => { document.querySelector('nav.nav').__tag = 'kept'; });
+  await page.locator('#nav-links a', { hasText: 'Projects' }).click();
+  await page.waitForURL('**/projects/');
+  await page.waitForFunction(() => document.querySelector('[data-nav-map]').getAttribute('href') === '/');
+  n = await nav();
+  assert.equal(n.tag, 'kept', 'The nav was re-created by the page move');
+  assert.equal(n.projects, 'page', 'Projects is not current on the projects index');
+  assert.deepEqual(await page.evaluate(() => [...document.querySelectorAll('.locbar-links a')].map((a) => a.getAttribute('href'))), ['/'],
+    'The projects index bar should lead to the map only');
+  // The index is the map's legend: a minimap diamond per project linking to its row, label rows with
+  // the place's line, a way onto the map, and the explored places filled (the seed above has the Lab).
+  const legend = await page.evaluate(() => ({
+    links: [...document.querySelectorAll('.locmap a.place-link')].map((a) => a.getAttribute('href')),
+    rows: [...document.querySelectorAll('article.loc-row.tag')].map((r) => `#${r.id}`),
+    lines: [...document.querySelectorAll('.loc-row .eyebrow')].map((e) => e.textContent.trim()),
+    onMap: [...document.querySelectorAll('.loc-row a')].filter((a) => a.textContent.trim() === 'On the map').map((a) => a.getAttribute('href')),
+    filled: [...document.querySelectorAll('.locmap .diamond.is-done')].map((d) => d.dataset.visitDot),
+  }));
+  assert.ok(legend.rows.length === 4, `Expected four project rows, got ${legend.rows.length}`);
+  assert.deepEqual([...legend.links].sort(), [...legend.rows].sort(), 'The minimap does not link each project to its row');
+  assert.ok(legend.lines.every((l, i) => l.startsWith(`Location 0${i + 1} · `)), `Row lines: ${legend.lines.join(' | ')}`);
+  assert.deepEqual(legend.onMap, legend.rows.map((r) => `/${r}`), 'A row has no way onto the map');
+  assert.deepEqual(legend.filled, ['lab'], `Explored places filled: ${legend.filled.join(', ')}`);
+
+  // The 404 is the uncharted tile: the dashed marker without the offset, the three ways back, and the
+  // minimap marking the uncharted slot as "You are here" with every project opening its place on the map.
+  await page.goto('http://portfolio.test/404.html', { waitUntil: 'networkidle' });
+  const lost = await page.evaluate(() => {
+    const card = document.querySelector('.lost-card');
+    const cs = card && getComputedStyle(card);
+    return {
+      dashed: cs?.borderTopStyle, shadow: cs?.boxShadow, italic: getComputedStyle(card.querySelector('h1')).fontStyle,
+      keys: [...card.querySelectorAll('.actions a')].map((a) => a.getAttribute('href')),
+      here: document.querySelector('.locmap .is-here')?.className.includes('is-uncharted') && document.querySelector('.locmap .is-here').textContent.trim(),
+      links: [...document.querySelectorAll('.locmap a.place-link')].map((a) => a.getAttribute('href')),
+    };
+  });
+  assert.equal(lost.dashed, 'dashed', 'The 404 card is not the dashed uncharted marker');
+  assert.equal(lost.shadow, 'none', 'The 404 card has an offset');
+  assert.equal(lost.italic, 'italic', 'The 404 title is not italic');
+  assert.deepEqual(lost.keys, ['/', '/overview/', '/projects/'], `404 keys: ${lost.keys.join(', ')}`);
+  assert.equal(lost.here, 'You are here', 'The 404 minimap does not mark the uncharted slot');
+  assert.ok(lost.links.length === 4 && lost.links.every((h) => /^\/#[a-z-]+$/.test(h)), `404 minimap links: ${lost.links.join(', ')}`);
+
+  // The style guide's field kit renders each specimen block in its own theme (data-theme-scope).
+  await page.goto('http://portfolio.test/style-guide/', { waitUntil: 'networkidle' });
+  const kit = await page.evaluate(() => [...document.querySelectorAll('#field-kit [data-theme-scope]')].map((b) => {
+    const probe = document.createElement('i');
+    probe.style.color = getComputedStyle(b).getPropertyValue('--bg');
+    b.append(probe);
+    const want = getComputedStyle(probe).color;
+    probe.remove();
+    return [b.dataset.themeScope, getComputedStyle(b).backgroundColor === want, b.querySelectorAll('.tag, .eyebrow, .diamond-list, .hud-panel, .seg, .meta-row, .accent').length];
+  }));
+  assert.deepEqual(kit.map(([id]) => id), ['prism', 'paper', 'crt', 'signal'], `Field kit themes: ${JSON.stringify(kit)}`);
+  const bgs = await page.evaluate(() => [...document.querySelectorAll('#field-kit [data-theme-scope]')].map((b) => getComputedStyle(b).backgroundColor));
+  assert.equal(new Set(bgs).size, 4, `The field kit blocks share a ground: ${bgs.join(', ')}`);
+  assert.ok(kit.every(([, own, n]) => own && n > 20), `A field kit block is off its theme or missing specimens: ${JSON.stringify(kit)}`);
+
+  // On the overview the Map link follows the section in view.
+  await page.goto('http://portfolio.test/overview/', { waitUntil: 'networkidle' });
+  await page.locator('#lab').scrollIntoViewIfNeeded();
+  await page.evaluate(() => document.getElementById('lab').scrollIntoView({ block: 'start' }));
+  await page.waitForFunction(() => document.querySelector('[data-nav-map]').getAttribute('href') === '/#lab', null, { timeout: 5000 });
+  n = await nav();
+  assert.equal(n.lab, 'location', 'The Lab link is not current over the Lab section');
+  // Back in the hero nothing stays lit.
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+  await page.waitForFunction(() => !document.querySelector('[data-nav-link][aria-current]'), null, { timeout: 5000 });
+
+  // The overview is the field log in text: every section head names its place and links to it on the
+  // map, the landmark sections carry their accent, and each project tile wears its map label.
+  const log = await page.evaluate(() => ({
+    heads: [...document.querySelectorAll('main section[id]')].map((s) => {
+      const head = s.querySelector('.loc-head');
+      return [s.id, head?.querySelector('.loc-head-line')?.textContent.trim(), head?.querySelector('.loc-head-map')?.getAttribute('href'), s.style.getPropertyValue('--acc') !== ''];
+    }),
+    numerals: document.querySelectorAll('.section-index-tag').length,
+    tiles: [...document.querySelectorAll('.tile')].map((t) => [t.querySelector('.tile-label')?.textContent.trim(), t.style.getPropertyValue('--acc') !== '']),
+  }));
+  const expected = [
+    ['about', '01 · Field Station', '/#station', true],
+    ['projects', '02 · 4 locations', '/', false],
+    ['lab', '03 · The Lab', '/#lab', true],
+    ['activities', '04 · Guild Hall', '/#guild', true],
+    ['experience', '05 · Field Station', '/#station', true],
+    ['contact', '06 · Radio Mast', '/#mast', true],
+  ];
+  assert.deepEqual(log.heads, expected, `Overview section heads: ${JSON.stringify(log.heads)}`);
+  assert.equal(log.numerals, 0, 'The big section numerals are back');
+  assert.ok(log.tiles.length === 4 && log.tiles.every(([line, acc], i) => line?.startsWith(`Location 0${i + 1} · `) && acc), `Tiles: ${JSON.stringify(log.tiles)}`);
+
+  // On the map the keys are the same size and Map is the current page.
+  await page.goto('http://portfolio.test/', { waitUntil: 'networkidle' });
+  n = await nav();
+  assert.equal(n.mapCurrent, 'page', 'Map is not current on the map');
+  const sizes = await page.evaluate(() => [...document.querySelectorAll('.world-key, .nav .util-btn')].map((k) => getComputedStyle(k).fontSize));
+  assert.ok(sizes.length > 2 && sizes.every((x) => x === '11.5px'), `Map and nav keys differ: ${sizes.join(', ')}`);
+  await page.close();
+  console.log('HUD nav: Map link per page and section, Projects current, persisted, status line read.');
+}
+
+/**
+ * Map -> write-up -> map is one place: the drawer's eyebrow, title and clip morph into the write-up's
+ * location bar, h1 and cover (their view-transition groups animate), and the location bar's "Back to
+ * the map" reopens the drawer at once, without the first-arrival render-pass montage.
+ */
+async function checkMorph(browser) {
+  const page = await browser.newPage({ viewport: { width: 1280, height: 760 } });
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await serveBuild(page);
+  await page.addInitScript(() => {
+    const watch = () => { if (document.getElementById('world-pass')?.hidden === false) window.__passShown = true; requestAnimationFrame(watch); };
+    requestAnimationFrame(watch);
+  });
+  const drawerOpen = (title) => page.waitForFunction(([t]) => {
+    const d = document.getElementById('world-drawer');
+    return d && !d.hidden && d.classList.contains('is-open') && document.getElementById('world-drawer-title')?.textContent === t;
+  }, [title], { timeout: 60000 });
+
+  await page.goto('http://portfolio.test/#cinderhold', { waitUntil: 'domcontentloaded' });
+  await drawerOpen('Cinderhold');
+  const names = await page.evaluate(() => ['.world-panel .eyebrow', '#world-drawer-title', '.world-clip']
+    .map((sel) => getComputedStyle(document.querySelector(`#world-drawer ${sel}`)).viewTransitionName));
+  assert.deepEqual(names, ['eyebrow-cinderhold', 'title-cinderhold', 'cover-cinderhold'], 'The drawer does not carry the write-up names');
+
+  // Record the view-transition groups that animate while the next page comes in.
+  // The router swaps inside the transition's update callback; the groups animate from the next frames.
+  const watchGroups = () => page.evaluate(() => {
+    const seen = new Set();
+    window.__vtSeen = seen;
+    window.__vtDone = false;
+    document.addEventListener('astro:after-swap', () => {
+      const end = performance.now() + 1500;
+      const look = () => {
+        for (const a of document.getAnimations()) if (a.effect?.pseudoElement) seen.add(a.effect.pseudoElement);
+        if (performance.now() < end) requestAnimationFrame(look);
+        else window.__vtDone = true;
+      };
+      requestAnimationFrame(look);
+    }, { once: true });
+  });
+  const groups = async () => {
+    await page.waitForFunction(() => window.__vtDone, null, { timeout: 30000 });
+    return page.evaluate(() => [...window.__vtSeen]);
+  };
+  const group = (name) => `::view-transition-group(${name})`;
+
+  // The panel as it opens (scrolled to the top): all three parts morph. A script click, so the drawer stays put.
+  await watchGroups();
+  await page.evaluate(() => document.querySelector('#world-drawer a[href="/projects/cinderhold/"]').click());
+  await page.waitForURL('**/projects/cinderhold/');
+  let seen = await groups();
+  for (const name of ['title-cinderhold', 'cover-cinderhold', 'eyebrow-cinderhold']) {
+    assert.ok(seen.includes(group(name)), `${name} did not morph (saw ${seen.join(', ') || 'nothing'})`);
+  }
+
+  await page.evaluate(() => { window.__passShown = false; });
+  await page.locator('.locbar-links a', { hasText: 'Back to the map' }).click();
+  await page.waitForURL((u) => u.pathname === '/' && u.hash === '#cinderhold');
+  await drawerOpen('Cinderhold');
+  assert.equal(await page.evaluate(() => window.__passShown), false, 'The montage played on the way back');
+
+  // Scrolled down to the link: the title and eyebrow are out of the drawer and sit the morph out.
+  await page.evaluate(() => { const b = document.getElementById('world-drawer-body'); b.scrollTop = b.scrollHeight; });
+  await watchGroups();
+  await page.locator('#world-drawer a[href="/projects/cinderhold/"]').click();
+  await page.waitForURL('**/projects/cinderhold/');
+  seen = await groups();
+  assert.ok(!seen.includes(group('title-cinderhold')) && !seen.includes(group('eyebrow-cinderhold')),
+    `A part scrolled out of the drawer still morphed (saw ${seen.join(', ')})`);
+  assert.ok(seen.includes(group('cover-cinderhold')), `The clip still in view did not morph (saw ${seen.join(', ') || 'nothing'})`);
+  assert.deepEqual(errors, []);
+  await page.close();
+  console.log('Morph: drawer eyebrow, title and clip grow into the write-up; Back to the map reopens the drawer.');
+}
+
+/** Keyboard focus never lands on something invisible: a write-up's waiting visuals come up when focused. */
+async function checkNotesFocus(browser) {
+  const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
+  await serveBuild(page);
+  await page.goto('http://portfolio.test/projects/cinderhold/', { waitUntil: 'networkidle' });
+  const waiting = page.locator('.notes-visuals .visual:not(.is-active) button').first();
+  assert.equal(await waiting.count(), 1, 'The pane has no waiting visual with a key: the check would pass vacuously');
+  const id = await waiting.evaluate((b) => b.closest('.visual').dataset.visual);
+  await waiting.focus();
+  await page.waitForTimeout(100);
+  const state = await page.evaluate((v) => ({
+    active: document.querySelector(`.visual[data-visual="${v}"]`).classList.contains('is-active'),
+    opacity: getComputedStyle(document.querySelector(`.visual[data-visual="${v}"]`)).opacity,
+    current: document.getElementById(v).classList.contains('is-current'),
+  }), id);
+  assert.deepEqual(state, { active: true, opacity: '1', current: true }, `Focus in a waiting visual: ${JSON.stringify(state)}`);
+  await page.close();
+  console.log('Notes focus: a focused key brings its waiting visual up.');
+}
+
+/** three.js loads only on the map: no script a text page fetches contains the renderer. */
+async function checkBundle(browser) {
+  const marker = 'WebGLRenderer';
+  const chunks = fs.readdirSync(path.join(dist, '_astro')).filter((x) => x.endsWith('.js'));
+  const threeChunks = chunks.filter((x) => fs.readFileSync(path.join(dist, '_astro', x), 'utf8').includes(marker));
+  assert.ok(threeChunks.length > 0, 'No built chunk contains three.js: the bundle check would pass vacuously');
+  for (const route of routes.filter((r) => r !== '/')) {
+    const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await serveBuild(page);
+    const loaded = [];
+    page.on('response', (r) => { if (r.url().endsWith('.js')) loaded.push(path.basename(new URL(r.url()).pathname)); });
+    await page.goto(`http://portfolio.test${route}`, { waitUntil: 'networkidle' });
+    await page.mouse.wheel(0, 4000);
+    await page.waitForTimeout(1200);
+    const bad = loaded.filter((x) => threeChunks.includes(x));
+    assert.deepEqual(bad, [], `${route} loads three.js (${bad.join(', ')})`);
+    await page.close();
+  }
+  console.log(`Bundle: three.js (${threeChunks.join(', ')}) stays off ${routes.length - 1} text pages.`);
+}
+
 (async () => {
   assert.ok(fs.existsSync(path.join(dist, 'index.html')), 'Run npm run build first.');
   const browser = await chromium.launch({
@@ -560,7 +982,7 @@ async function checkWorld(browser) {
       game: checkGame, campaign: checkFullCampaign, keyboard: checkKeyboardGame,
       motion: checkMotionPreferences, feedback: checkActionFeedback,
       contrast: checkThemeContrast, theme: checkThemePreferences, touch: checkTouchInput,
-      world: checkWorld,
+      world: checkWorld, field: checkFieldLane, nav: checkNav, bundle: checkBundle, morph: checkMorph, notesfocus: checkNotesFocus,
     };
     const selected = process.env.PORTFOLIO_BROWSER_CHECK;
     if (selected) {

@@ -98,65 +98,45 @@ function takeOverReveals() {
  * name on the heading and hides the fragments from assistive tech.
  */
 function kineticHeadings() {
-  const headings = Array.from(document.querySelectorAll<HTMLElement>('.section-head-bar h2, .hero h1 + .lead'));
-  headings.forEach((heading) => {
-    if (!heading.matches('h2')) return;
-    const split = SplitText.create(heading, { type: 'chars,words', charsClass: 'kinetic-char', aria: 'auto' });
+  const strips = Array.from(document.querySelectorAll<HTMLElement>('.section-strip, .section-head-bar'));
+  strips.forEach((strip) => {
+    const heading = strip.matches('.section-head-bar:not(.section-strip)')
+      ? strip.querySelector<HTMLElement>('h2')
+      : strip.querySelector<HTMLElement>('h2');
+    if (!heading) return;
+
+    const split = SplitText.create(heading, { type: 'words', wordsClass: 'kinetic-word-item', aria: 'auto' });
     splits.push(split);
-    gsap.set(split.chars, { yPercent: 60, autoAlpha: 0 });
+    const meta = strip.querySelectorAll<HTMLElement>('.strip-num, .strip-meta');
+    gsap.set(split.words, { yPercent: 32, autoAlpha: 0 });
+    if (meta.length) gsap.set(meta, { autoAlpha: 0, x: -6 });
+
     ScrollTrigger.create({
-      trigger: heading,
-      start: 'top 90%',
+      trigger: strip,
+      start: 'top 92%',
       once: true,
-      onEnter: () =>
-        gsap.to(split.chars, {
+      onEnter: () => {
+        gsap.to(split.words, {
           yPercent: 0,
           autoAlpha: 1,
-          duration: timing.reveal,
-          ease: timing.ease,
-          stagger: { each: 0.028, from: 'start' },
+          duration: 0.62,
+          ease: 'power3.out',
+          stagger: { each: 0.045, from: 'start' },
           onComplete: () => {
-            // Hand the heading back to the CSS (hover grow, font-variation transitions) once it has arrived.
             split.revert();
           },
-        }),
+        });
+        if (meta.length) {
+          gsap.to(meta, {
+            autoAlpha: 1,
+            x: 0,
+            duration: 0.56,
+            ease: 'power3.out',
+            clearProps: 'transform,opacity',
+          });
+        }
+      },
     });
-  });
-}
-
-/**
- * Scroll choreography (Phase 2). Everything is scrubbed by scroll position or fires once on entry;
- * the document always scrolls natively (no pinning spacers, no scroll-jacking, no parallax).
- * - The outlined section numeral (01–06) fills with coral as its section arrives.
- * - The prism band (shown when the WebGL field is unavailable) turns a few degrees with scroll.
- * - Timeline cards tip up from a rotateX tied to their tilt limit when they enter.
- * The Projects head bar stays in view while the rows scroll under it: that is CSS `position: sticky`
- * (global.css), toggled to its stuck look by index.astro, so it also works without this module.
- */
-function scrollChoreography() {
-  document.querySelectorAll<HTMLElement>('.section-index-tag').forEach((tag) => {
-    const section = tag.closest('section') ?? tag;
-    gsap.fromTo(
-      tag,
-      { '--fill': '0%' },
-      {
-        '--fill': '100%',
-        ease: 'none',
-        scrollTrigger: { trigger: section, start: 'top 85%', end: 'top 30%', scrub: 0.4 },
-      },
-    );
-  });
-
-  document.querySelectorAll<HTMLElement>('.prism-wrap').forEach((wrap) => {
-    gsap.fromTo(
-      wrap,
-      { rotate: -2.5 },
-      {
-        rotate: 2.5,
-        ease: 'none',
-        scrollTrigger: { trigger: wrap.parentElement ?? wrap, start: 'top bottom', end: 'bottom top', scrub: 0.6 },
-      },
-    );
   });
 }
 
@@ -216,13 +196,13 @@ function decodeReveals() {
     };
     const tween = gsap.to(state, {
       progress: 1,
-      duration: Math.min(1.1, 0.5 + chars.length * 0.004),
-      ease: 'none',
+      duration: Math.min(0.65, 0.35 + chars.length * 0.003),
+      ease: 'power2.out',
       paused: true,
       onUpdate: () => {
         const resolved = Math.floor(state.progress * chars.length);
         const now = performance.now();
-        const shuffle = now - lastShuffle > 45;
+        const shuffle = now - lastShuffle > 28;
         if (shuffle) lastShuffle = now;
         chars.forEach((c, i) => {
           if (i < resolved) {
@@ -344,7 +324,6 @@ export function init(): void {
       takeOverReveals();
       kineticHeadings();
       decodeReveals();
-      scrollChoreography();
     });
     smoothScroll();
   };

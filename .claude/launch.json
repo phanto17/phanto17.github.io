@@ -16,6 +16,19 @@
       "port": 4321
     },
     {
+      "name": "astro-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "astro",
+        "preview",
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "8850"
+      ],
+      "port": 8850
+    },
+    {
       "name": "pcts-web",
       "runtimeExecutable": "node",
       "runtimeArgs": [

@@ -15,7 +15,9 @@ const projects = defineCollection({
     summary: z.string().max(220),
     genre: z.string(),
     /** game (needs an itch.io link to count as playable) or tool (released on GitHub) */
-    kind: z.enum(['game', 'tool']).default('game'),
+    kind: z.enum(['game', 'tool', 'engine']).default('game'),
+    category: z.string().optional(),
+    platforms: z.array(z.string()).default([]),
     /** playable = itch.io link live · released = tool download live · in-progress · planned */
     status: z.enum(['playable', 'released', 'in-progress', 'planned']),
     dates: z.object({

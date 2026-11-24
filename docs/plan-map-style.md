@@ -44,6 +44,10 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 
 ## Decisions for the owner
 
+**Answered 2026-11-04: the owner accepted all six recommendations** (D1 = B, D2 yes, D3 the label chrome
+everywhere, D4 location tags, D5 replace WinBar on the projects index, D6 delete). The plan below
+therefore keeps F5 and the full P1/P3/P4 estimates.
+
 | # | Question | Options | Recommendation |
 |---|---|---|---|
 | D1 | What sits behind the text pages? | **A** keep the signal field as it is · **B** the field takes the map's palette at the current Poznań hour (water, grass, path, fog, sun from `light.ts`), still mixed toward `bg` under the content column · **C** a static blurred render of the map | **B**. It ties every page to the map and the clock while keeping `field.ts`, its contrast lane and its fallbacks. The owner chose the signal field's references on 2026-10-29, so this replaces their colours; A is the answer if those references must stay. |
@@ -64,6 +68,8 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The map's chrome is built from the same seams the restyled pages will use, so F1 moves
   clean CSS rather than special cases.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. B1 had already been fixed with the review fixes (0ed6f96), so F0 was the
+  footer, the keys and the duplicate block.
 
 ### F1. A field kit stylesheet
 - **Description:** Move the map's reusable vocabulary out of `world.css` into `src/styles/field-kit.css`,
@@ -75,6 +81,12 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** One definition of the map look that any page can use; `world.css` shrinks; nothing on
   the map changes visually (screenshot diff of `/` before/after).
 - **Estimate:** 4 h
+- **Status:** Done on 2026-11-04. The proof was a computed-style diff in place of screenshots (the map
+  moves): 22 states (start, map, Dev Mode, three panels, the Lab; Paper and Prism at 1440 px, Prism at
+  390 px with the log open), labels measured as clones at rest and near. The one difference is
+  intended: the open phone log keeps a gap between its rows, which F0's keys needed. `--panel` is
+  defined in the kit until F2 moves it to the tokens; the map's label is `.world-label.tag`, the
+  free slot `.tag.uncharted`.
 
 ### F2. Accent and panel tokens
 - **Description:** Add to `design/tokens.json` (and the design-system artifact copy): `panel` (the
@@ -85,6 +97,16 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** No hex in `World.astro` or `world.css`; every accent passes 3:1 for borders and 4.5:1
   for eyebrow text on all four themes (checked by the contrast table the style guide already builds).
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04, with one change of shape. A location keeps one accent (the 3D world and
+  the minimap need a single colour), so the per-theme part is not four landmark colours but how any
+  accent is drawn: a themed `accent` family (`acc-tone` 100 % / Paper 45 %, `acc-edge` 70 % / Paper
+  85 %, `acc-ink` 60 %, `acc-offset` 2px) that the kit applies through `--acc-ui`. `loc-*` hold the
+  landmark accents, plus `panel`, `ink-black`, `world-ground`, `ai-*` and `pass*`. The style guide's
+  new "Location accents" table and `tests/accents.test.ts` check all nine accents in all four themes
+  (lowest: 3.2:1 border and 7.3:1 eyebrow on Paper, 3.5:1 border on the dark themes); the test also fails
+  on any hex in `World.astro`, `world.css` or `field-kit.css`. Visible change: tag borders went from
+  55 % to 70 % on the dark themes; on Paper the eyebrows, borders and diamonds are now readable. The
+  design-system artifact's `tokens.json` matches `design/tokens.json` again (version 19).
 
 ### F3. One location list
 - **Description:** A data module (`src/data/locations.ts`) that builds the location list once: projects
@@ -98,6 +120,17 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   exactly one location everywhere (`tests/world-gen.test.ts` keeps passing; a new test pins that every
   location has an href and a map link).
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. `src/data/locations.ts` holds `LANDMARKS` (title, eyebrow, `loc-*`
+  accent, slot, overview anchor, nav word), `buildLocations(projects)`, the seed adapters for the map and
+  `NAV` (site.ts no longer lists the nav). `src/lib/project-view.ts` is the one status / period / live
+  link; the map panel, `ProjectTile`, `ProjectRow` and the write-up page use it. `World.astro` builds
+  its seeds and panels from both; the map's embedded data is unchanged. `tests/locations.test.ts` pins
+  order, hrefs, map links, one location per project file (through `buildLayout`), a landmark id clash,
+  that every landmark anchor exists on the overview, the nav, and the project view. Visible wording:
+  the tile and row pills read "▶ Play on itch.io" / "↓ Download on GitHub" (sentence case, as on the
+  map and the write-up), and Eternity Keeper's write-up button "↓ Download on GitHub (Windows)". Not
+  done here: the overview, the projects index and the write-up pages don't show their location yet
+  (no map link, no accent); that is F7 (location bar) and P1–P4.
 
 ### F4. Three breakpoints
 - **Description:** Replace the fourteen widths with three named ones in the token file (`wide` ≥ 981,
@@ -107,6 +140,19 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The pages and the map change layout at the same widths; `check-browser` layouts pass at
   320/375/640/768/1440 on all themes.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-04. `design/tokens.json` has a `breakpoint` family (`bp-wide` 981px,
+  `bp-mid` 760px, `bp-narrow` 420px); `tools/build-tokens.mjs` writes the five queries as a comment at
+  the top of `tokens.css` and as `MEDIA` in `src/scripts/generated/breakpoints.ts` (`wide`, `belowWide`,
+  `mid`, `aboveMid`, `narrow`). `tests/breakpoints.test.ts` allows no other width query in the
+  `.css`/`.astro` files and no width number in scripts (`matchMedia` literals, `innerWidth < N`);
+  `prefs-boot.test.ts` checks the generated file is current. Every query moved **up** to the next
+  breakpoint (900/860/960 → 980; 700/680/640/600/580/560/540/520 → 760; 419 → 420), so nothing
+  collapses later than before. Visible: the write-up split, the sticky Projects head bar and the
+  two-column layouts start at 981px (were 861px), the compact phone rules start at 760px (the overview
+  facts panel, popup, tiles and mini-game stack at 541–760 now). `Nav.astro`, `NotesExplorer` and the
+  map's `boot.ts` read `MEDIA`; the map's phone test was `innerWidth < 760`, off by one from its own
+  CSS at exactly 760px. A sweep at 440–980px found no horizontal overflow; `check-browser` world,
+  layouts, motion, contrast, theme, nojs, anchors, keyboard and feedback pass.
 
 ### F5. The map-lit field (if D1 = B)
 - **Description:** Split `light.ts` into a pure `daylight.ts` (hours, `phaseName`, `poznanHour`, the key
@@ -118,6 +164,25 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** Every page's backdrop is the map seen from far away, at the same time of day as the
   map; page text keeps ≥ 4.5:1 (the contrast check samples the lane at night, dawn, day and dusk).
 - **Estimate:** 6 h
+- **Status:** Done on 2026-11-04. `src/world/daylight.ts` is the pure part (the key table as hex,
+  `poznanHour`, `fmtHour`, `phaseName`, `keysAround`, `fieldPalette`); `light.ts` wraps the same table
+  in THREE colours, so the map's lighting is unchanged, and the HUD (`boot.ts`) reads the clock from
+  `daylight.ts`. The five stops are sun, the path tile in that sunlight (dimmed at night), ground,
+  water and fog, in the ramp's bright / warm / dark / dark / mid order (the hour table has no grass or
+  path colour of its own: ground is the hemisphere ground colour). "Map-styled" became a theme switch
+  in a new themed `field` token family: `field-map` 1 in Prism and Paper, 0 in CRT and Signal (their
+  field colours are what makes those themes; one value flips each). The map's daytime sun is far
+  lighter than any theme stop, so map-lit themes draw the lane at `field-map-lane` (Prism 0.13, Paper
+  0.15) instead of `field-lane` 0.20. `field.ts` re-samples every 5 minutes and eases like a theme
+  change. The no-WebGL body gradient reads generated `--field-fallback-1..5` (the noon palette in
+  map-lit themes, `field-1..5` otherwise). Checks: `tests/field-lane.test.ts` bounds the lane by the
+  stops (`src/lib/field-lane.ts`) in every theme at every quarter hour, the new `check-browser` `field`
+  check measures the rendered still frame at night, dawn, day and dusk in all four themes (worst 4.9:1;
+  a 0.35 lane fails it), and the other nine checks pass. Found and fixed right after (2026-11-04): without WebGL or
+  JavaScript the hero text sat on the fallback backdrop and fell under WCAG minimums — the prism band
+  behind it (retired), no lane in the body gradient (now a CSS lane layer at `--field-fallback-lane`,
+  which also covers the brighter noon palette in Prism) and a dark vignette on Paper (a themed
+  `vignette` token, transparent on Paper). The `nojs` check now measures the hero lines on four pages.
 
 ### F6. HUD nav and status line
 - **Description:** Restyle `Nav.astro` as the map's HUD bar on every page: translucent `panel` ground with
@@ -129,6 +194,21 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** Moving between the map and any page keeps the same chrome; the persisted nav still
   carries across view transitions; no three.js on text pages (bundle check).
 - **Estimate:** 4 h
+- **Status:** Done on 2026-11-05. `Nav.astro` sits on the `panel` ground with a hairline (the drawer
+  too); the theme, motion, menu and CV keys take the new field-kit `.hud-key` (mono 11.5px, the map's
+  keys use it as well, `.world-key` keeps only its pressed colours). The Map link points at
+  `mapHrefFor(body[data-location])` — Base's new `location` prop, set by every write-up — and on the
+  overview at the landmark of the section in view (the scroll-spy reads its sections as data, so no
+  location list ships to the client); Projects now opens `/projects/` and is current on the index and
+  on every write-up. The footer's first row is the status line "Poznań 08:22 · Day · 3/8 explored ·
+  Style guide" (`src/lib/status-line.ts`, the field log's count over `buildLocations`, re-read every
+  30 s, hidden without JavaScript); the second row keeps the © line and the GitHub / YouTube / email
+  links, so text pages still carry the contact links. The `nav-bg` token stays for the design-system
+  artifact's nav component; the site no longer reads it. Checks: `tests/status-line.test.ts`, the nav
+  cases in `tests/locations.test.ts`, and two new `check-browser` checks — `nav` (Map link per write-up
+  and per overview section, Projects current, the nav element survives a client-side move, key sizes
+  match the map's, the status line reads) and `bundle` (no script fetched by the eight text pages
+  contains three.js, and some chunk does); the other ten checks and the link check pass.
 
 ### F7. Location bar
 - **Description:** A `LocationBar.astro` for the top of every page under the nav: a diamond in the
@@ -137,6 +217,18 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   section kicker on the projects index.
 - **Objective:** Every page says where on the map it is and gets back there in one click.
 - **Estimate:** 2 h
+- **Status:** Done on 2026-11-05. `src/components/LocationBar.astro` is rendered by `Base.astro` at the
+  top of `<main>` on every text page (not on the map). A write-up passes `location` and gets its
+  accent diamond, "Location 03 · 2D dungeon crawler / roguelite" (`locationEyebrow` in
+  `src/data/locations.ts`: the project's number in the projects' order, the same number as the tiles
+  and the index rows) and "← Back to the map" to `/#<id>`; the other pages pass `place` (projects
+  index "Projects · 4 locations on the map", overview, 404, style guide) and go back to `/`. "All
+  projects" shows on every page but the index. It replaced the write-up's "← Projects" kicker, the
+  404's kicker and the style guide's "← Portfolio Home" link; the hero tops were tightened (96 → 56px,
+  phones 64 → 32px). The projects index had no section kicker to replace. Checks: a `locationEyebrow`
+  test, the `nav` check reads the bar's line and links, the `nojs` check measures the bar's text — and
+  its shared `groundContrast` now reads `color(srgb …)` inks (what `color-mix()` computes to) in
+  0–1, which it had read as near-black.
 
 ## Phase 1 — pages
 
@@ -153,6 +245,20 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   the same panel, grown; all four write-ups pass `tests/write-ups.test.ts` and the layout checks at every
   width and theme.
 - **Estimate:** 10 h
+- **Status:** Done on 2026-11-05. `Base.astro` looks up the page's location and sets its accent on
+  `<main class="accent">`, so every descendant reads the toned `--acc-ui` (the location bar no longer sets
+  its own). Hero: the drawer's `.meta-row` (status pill, period, engine, role — role kept, it was in the
+  old meta line) and the metrics as `.tag` labels; no separate eyebrow, because the location bar right
+  above already reads "Location 0N · genre". "What I built" is a `.diamond-list`; the sidebar box, the
+  changelog, the gallery and the credits table are `.hud-panel`s; the CRT switch is a `.key.hud-key`
+  (the hand-rolled `.crt-toggle-btn` and the box's tilt are gone); release-note H4s take the accent ink.
+  `Figure.astro` frames take the label chrome (accent border + hard offset on `ink-black`) instead of
+  the Prism gradient and rainbow glow — on every page that uses Figure, so the projects index rows get
+  coral frames until P3. NotesExplorer: a `.diamond` per note in its bar, filled once read in this visit,
+  and "n/N notes" in the head, now shown in the split layout too (the count used to update only on
+  clicks; the scroll observer now updates it); the explore pane is a panel with a hairline. Checks: the
+  `nav` check asserts the accent on `<main>`, the label metrics, the HUD sidebar and the note marks;
+  `nojs` measures `.meta-row`; `tests/write-ups.test.ts` and all twelve browser checks pass.
 
 ### P2. Drawer → write-up transition
 - **Description:** Give the drawer's title, clip and eyebrow the same `transition:name`s as the write-up
@@ -161,6 +267,18 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   (the deep link exists in `World.astro:238`).
 - **Objective:** Map → write-up → map feels like one place; under reduced motion it is an instant swap.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-05. The project panels in `World.astro` carry `eyebrow-<id>`, `title-<id>`
+  and `cover-<id>` on their genre line, h2 and clip (video or image); the write-up pairs them with the
+  location bar's line (new `eyebrow-<id>`), its h1 and its cover. The map's canvas fades with the root
+  power-cycle (no extra rule needed). Found while testing: a visitor scrolls the drawer to reach "Read the
+  write-up", and a named element scrolled out of the drawer is still captured, so the title flew in from
+  above the screen; `boot.ts` now sets `view-transition-name: none` on any named part outside the
+  drawer's visible box when a write-up link is clicked (before the router's own click handler), and it
+  arrives with the page. Coming back: `/#<id>` already reopened the drawer; `begin()` now skips the
+  render-pass montage on a deep link, so the drawer opens at once. Reduced motion: the existing
+  `motion.css` rules zero every view-transition animation. Check: `check-browser` `morph` — the three
+  groups animate from a panel at the top, only the clip from a panel scrolled to the link, and "Back to
+  the map" reopens the drawer without the montage; the other twelve checks pass.
 
 ### P3. Projects index (`/projects/`) as the location index
 - **Description:** Replace ProjectRow's WinBar card with the map label grown into a row: accent border
@@ -171,6 +289,22 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The list reads as the map's legend and shows where each project sits; the page works
   without JavaScript.
 - **Estimate:** 6 h
+- **Status:** Done on 2026-11-05. `ProjectRow.astro` is an `article.loc-row.tag` (accent border + hard
+  offset) with the place's line ("Location 0N · genre" from `locationEyebrow`, the same as the location
+  bar) and its explored diamond, the Fraunces title (h2 now, under the page's h1), the meta row, the
+  summary, the highlights as a `.diamond-list` and glass keys (Play, Read the write-up, On the map
+  `/#<id>`, Source); WinBar, the brick numeral, the kind tag and the metric chips are gone from the index
+  (the metrics stay on the write-up). The row's id is the place id. `src/lib/minimap.ts` builds the
+  minimap at build time from `buildLayout` + `generate` — land and path tiles as merged row runs
+  (102×85 tiles, ~4.6 KB of path) — and `LocationMap.astro` draws it as an SVG under HTML markers in
+  percent: project diamonds link to their rows and carry their titles (labels toward the middle on
+  wide screens, centred under the diamond on phones), landmarks are small diamonds, the uncharted slot
+  is dashed; with JavaScript the places in `portfolio-world-visited` fill. On wide screens the page
+  title sits beside the map. Found on the way: no `.sr-only` class existed, so the map's field log
+  showed its "(visited)" text on screen; `base.css` has it now. Checks: `tests/minimap.test.ts` (the
+  runs cover exactly the generated land and path tiles, every place inside the map, label sides), the
+  `nav` check reads the legend (minimap links = rows, the place lines, On the map links, the explored
+  Lab filled); all thirteen browser checks pass.
 
 ### P4. Overview (`/overview/`) as the field log in text
 - **Description:** Each section is a location: the section head becomes a location tag (diamond,
@@ -184,6 +318,24 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The overview is visibly the text twin of the map: same accents, same labels, same
   order; every section links to its place; the no-JS and keyboard checks still pass.
 - **Estimate:** 8 h
+- **Status:** Done on 2026-11-05. `src/components/LocationHead.astro` is every section head: the filled
+  diamond and "NN · Place" in the section's accent, the h2 and sub-head, and an "On the map →" key
+  (`/#station`, `/#lab`, `/#guild`, `/#mast`; Projects, "02 · 4 locations", opens the map itself). It
+  keeps the `.section-head-bar` class, so the kinetic heading and the sticky Projects head work as
+  before; inside the map's Lab overlay the key is hidden (the visitor is already on the map). The
+  sections take their landmark's accent (`landmarkById`): About and Experience the station, the Lab
+  the lab (set in `TelegraphMiniGame.astro`), Activities the guild, Contact the mast. The big outlined
+  numerals and their scroll scrub are gone (`scrollChoreography` was only that scrub and was deleted;
+  the timeline tip-up lives in the reveal takeover and stays); the head rule is a hairline. Cards are
+  `.tag`s: the activities, the experience entries and the call to action; the timeline dots are
+  diamonds; the dossier's rules are hairlines and its codes, titles and hints use the accent ink. The
+  hero's field note and the experience note are `.hud-panel`s with an accent rule, the spec grid a
+  `.hud-panel` with hairline cell rules. `ProjectTile` is a `.tag` in the project's accent with the
+  map's label ("Location 0N · genre", `eyebrow-<id>` for the morph) pinned over the cover in place of
+  the WinBar; the cover numeral is gone and the meta line is period · engine. The contact terminal
+  keeps its CRT chrome in the mast's accent. The Telegraph cabinet keeps its own colours until P7 moves
+  them to tokens and `--acc`. The `nav` check reads the overview's heads (line, map link, accent),
+  asserts no numerals and the tiles' labels; all thirteen browser checks pass.
 
 ### P5. 404 as the uncharted tile
 - **Description:** Use the map's uncharted marker (dashed border, italic title, no offset) for the
@@ -191,6 +343,15 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   overview and the projects.
 - **Objective:** The error page belongs to the same world and offers the three ways back.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-05. `404.astro` is a `.tag.uncharted` card in the uncharted accent
+  (`UNCHARTED_ACCENT` from `gen.ts`): dashed border, no offset, the italic title "This tile isn't on the
+  grid." with a dashed diamond and "Uncharted · no location here"; the card keeps full opacity (the
+  map's label fades, a page of text must not). Its keys are Back to the map, Overview and All projects.
+  Beside it (under it on narrow screens) is the P3 minimap: `LocationMap` gained `links="map"` (a
+  project's diamond opens `/#<id>` instead of its row), `here` (the uncharted slot shows "You are
+  here" with a full-size dashed diamond) and `caption`. The `nav` check reads the 404 (dashed, no
+  offset, italic, the three keys, "You are here" on the uncharted slot, four map links); all thirteen
+  browser checks pass.
 
 ### P6. Style guide: the field kit
 - **Description:** Add a section to `/style-guide/` that renders the kit: a label, the uncharted
@@ -199,6 +360,17 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   contrast rows from F2.
 - **Objective:** The style guide documents what the pages now use; a regression shows up there first.
 - **Estimate:** 3 h
+- **Status:** Done on 2026-11-05. `/style-guide/` has "05 · Field kit" (`#field-kit`): one block per
+  theme, each wearing its theme through the new `[data-theme-scope='<id>']` selector that
+  `tools/build-tokens.mjs` now writes beside `html[data-theme='<id>']` on every theme block of
+  `tokens.css` (themes stayed html-only before, so a per-theme specimen could not use the real tokens).
+  Each block shows the first project as a `.tag` label (and `.is-near`), the `.uncharted` marker, an
+  `.eyebrow` + `.diamond` for every place and the free slot, the `.diamond-list`, the field log as a
+  `.hud-panel` ("2/8 explored"), the `.meta-row`, a `.seg` with the map's render-pass names, two
+  `.hud-key`s and a still of the drawer (`.accent`, accent rule and offset). The F2 location accent
+  table moved from 01 into this section, under the specimens it measures. The `nav` check reads the
+  kit: four blocks in theme order, each on its own theme's `bg` and holding its specimens; all
+  thirteen browser checks pass.
 
 ### P7. Shared pieces that also live on the map
 - **Description:** TelegraphMiniGame, PopupCRT, ShoveLab and SignalStamp move their hardcoded colours to
@@ -208,6 +380,24 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** The cabinet looks the same in the Lab overlay and on the overview; no hex left in
   components (a test greps `src/components` for `#[0-9a-f]{3,6}` outside tokens).
 - **Estimate:** 5 h
+- **Status:** Done on 2026-11-05. No component held a hex value any more (Prism.astro was retired on
+  2026-11-04, Figure's frame moved to the accent chrome in P1); what was left were theme-tinted
+  `rgba()` literals and the coral/gold/peach chrome. The field kit now sets `--acc-text` (the accent
+  pulled toward the text, the eyebrow's ink) beside `--acc-ui`. The cabinet (launchpad, board frame,
+  portal cards, inspector, status line, design-note numbers, bold readouts), the popup monitor (border,
+  glow, active tab, close key, kickers, prompt, lit mini-cells, wave bars, stage-3 title) and ShoveLab
+  (panel edge and offset, selected ring, reset key) draw with `--acc-ui`/`--acc-text`, so they wear
+  the Lab accent on the map and on the overview and Push Comes to Shove's on its write-up; the popup and
+  ShoveLab roots carry `.accent`. The CRT LED (`base.css`) reads `--acc-ui` with coral as the fallback.
+  Game states keep their own tokens: hit (mint), miss and unavailable (coral), the shove cue (gold),
+  pits (sky), allies and enemies; the primary key stays the site's coral action. The popup's backdrop
+  is `--backdrop`, its scanlines mix `--text`/`--bg-0`. SignalStamp sits outside any place and was
+  already tokens plus neutral bevels, so it kept its gold. `tests/component-colours.test.ts` fails on
+  any hex or tinted `rgb()`/`hsl()` in `src/components` (pure black or white at an alpha — the glass
+  gloss and shade — may stay); the `world` check compares the cabinet's computed chrome in the Lab
+  overlay with the overview's and checks its status line is the Lab's accent ink. Measured on the
+  cabinet's own ground, the accent text is at least 5.4:1 in every theme; all thirteen browser checks
+  pass.
 
 ## Phase 2 — clean-up and proof
 
@@ -217,6 +407,18 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   ProjectRow use if D5 removes it, and remove the base.css helpers no page uses after Phase 1.
 - **Objective:** Nothing in `src/` is unused; `astro check` 0 errors.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-05. `SignalLanding.astro` is deleted (D6; its CSS was scoped inside it)
+  together with what only it used: `LANDING_KEY`/`LANDING_DELAY_MS`/`LANDING_SCROLL_THRESHOLD`,
+  `LandingContext` and `shouldShowLanding` in `signal-reward.ts` and their tests, the `chime` cue and
+  the `attack` fade-in only the chime had (the multi-note test now plays the map's `arrive`). Comments
+  fixed: base.css's sticky head ("overview.astro adds .is-stuck"), the popup's focus return, the lab's
+  hash loader and check-browser's header no longer name the landing; ProjectTile's "home page's bento"
+  went in P4. WinBar lost its `size` prop and tile style: its one use is the contact terminal (D5).
+  The base.css `.todo` helper is gone (no TODO markers since 2026-10-17). A scan of base.css,
+  motion.css, keys.css and field-kit.css against the markup and scripts finds no other unused selector;
+  every component and module is imported; the remaining unshared exports are types in public
+  signatures. `astro check`: 0 errors, 0 warnings, 0 hints (an unused `education` import on the
+  overview and an unused parameter in the morph check went too). All thirteen browser checks pass.
 
 ### C2. Verification
 - **Description:** `npm test`, `astro check`, `npm run build`, `tools/check-links.mjs`, every
@@ -226,6 +428,69 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
 - **Objective:** Same or better scores than the 2026-11-02 audit; the owner reviews the screenshots
   before anything is pushed to `main`.
 - **Estimate:** 5 h
+- **Status:** Done on 2026-11-06. The owner reviewed the screenshots the same day and judged the
+  branch better than before. Automated: Vitest
+  244, `astro check` 0/0/0, build, 41 external links with 0 bad, all seventeen browser checks (a new
+  `notesfocus`). axe-core 4.10.2 (WCAG 2.0/2.1 A + AA + best practice) in 74 runs: eight text pages in
+  four themes, the same pages at 390 px, motion on with the reveals finished, and in every theme the
+  start screen, the map, four panels, the Lab and the Telegraph popup: **0 violations**, 22–50 rules
+  passing per run; the audit of 2026-11-02 covered two pages in three themes. Keyboard walk: every page
+  tabbed through with real key events (ring, on screen, not covered or faded, named, nothing skipped),
+  26 checks, all pass.
+
+  What they found, all small and fixed. All were already on `main` except the location bar's diamond:
+  - Waiting notes dimmed with `opacity: 0.82` took inline code under 4.5:1 (3.64:1 on Paper) and code
+    blocks to 4.2:1 on Prism. They now recede in tone (`text-3`) on prose only.
+  - Tab landed on code and copy keys in the pinned pane's faded-out visuals, so the ring was invisible.
+    Focus now brings that visual up, and the scroll-spy leaves it up (`notesfocus`).
+  - The map's labels were tab stops inside an `aria-hidden` layer; they are `tabindex="-1"` (the field
+    log is their keyboard twin).
+  - Closing a map panel or the Lab dropped focus to `body`; it returns to the key that opened it, and
+    the field log's rebuild keeps the key in focus.
+  - A project tile focused by keyboard could sit under the sticky Projects head (`scroll-margin-top`).
+  - The style guide's scrolling tables took no keyboard focus (now labelled regions), and squeezed
+    columns to one letter wide on a phone (`min-width`, they scroll).
+  - `aria-label` on a role-less `div` (`.stat-chips`) and on the stamp's `p`; roles added. Links in a
+    map caption had no underline.
+  - From the screenshots: the overview's nav kept "Contact" lit back at the top of the page (the hero
+    now clears it; pinned in `nav`); the location bar's diamond sat alone on its line on a phone (from
+    F7, this plan); the map panel's clip was black until it decoded (poster = the cover).
+
+  axe still marks `aria-controls` on `#tg-open-popup` for review (the id exists), and about 8,000
+  contrast nodes it cannot judge over gradients and the field; `contrast`, `field` and
+  `tests/field-lane.test.ts` cover those by token and by pixels, not node by node.
+
+  Local performance, 4 × CPU on the overview, three runs each (noisy): `world` LCP 976–1936 ms, median
+  1796; `main` 1384–2212 ms, median 2024; CLS 0.004; 71 KB gzipped script (77 on 2026-11-02). One run on
+  2026-11-02 gave 1.42 s on the old home page, so this is no regression against `main`, and not provably
+  better than that run. Network throttling did not apply to routed responses, so there is no 3G number.
+
+  Phone (S20 FE, Brave, local build over `adb reverse`: no gzip, no CDN, so not comparable with the
+  published 2026-11-02 numbers except where `main` was measured the same way):
+  - *`main` against `world`, overview, four alternating cold loads each:* LCP median 980 ms against 976 ms
+    (the last hero word), FCP 288 against 280, CLS 0 on both, worst tap in a game turn 96–104 ms against
+    96–120 ms. The gap to the 0.70 s published on 2026-11-02 is the same on `main`, so it does not come
+    from this branch; publishing `world` and rerunning the tool gives the like-for-like number.
+  - *One outlier:* the first trace of the session saw 368 ms on the Start tap. It did not repeat in the
+    four runs above or in the field-cost run (worst 104 ms). Target 200 ms.
+  - *Map-lit field (F5), idle, field on against stopped:* renderer main 8 % against 4 %, compositor 10 %
+    against 7 %, GPU main 2–3 % against 0 (2026-11-01: about +4 % main, +11 % compositor). 60 fps at idle
+    either way, nothing over 16.8 ms.
+  - *Scroll:* 84.5 fps, nothing over 33 ms; over a 2 s scroll renderer main 65 %, compositor 49 %, GPU main
+    42 % (72 %, 61 %, 63 % on 2026-11-02), longest main-thread task 6.2 ms. Cold load 27 requests, 425 KB
+    transferred uncompressed.
+  - *The field map:* start screen LCP 256 ms, three.js not loaded before Explore, ready 0.6 s after it
+    (local transport), canvas 540 × 826, 60 fps idle and walking, nothing over 16.8 ms, no long task.
+
+  Tools: `tools/phone-trace.mjs` takes `[url] [resultFile]` and defaults to the published overview; it
+  disables the cache for the cold load instead of wiping the phone's; both phone tools use the site's
+  motion switch (the event they sent was deleted on 2026-11-02). For a local build: preview
+  `astro-preview` (8850), `adb reverse tcp:8850 tcp:8850`, Brave in front, screen on, then open the tab
+  with `adb shell am start` (`/json/new` is refused on the phone).
+
+  Screenshots: `.review/c2/index.html` (git-ignored), 192 shots, `main` against `world`, four themes,
+  desktop and phone. Full-page shots paint the fixed field over the first screen only: that band is the
+  capture, not the page. The style guide's shots are cut at 16,000 px, the capture limit.
 
 ### C3. Docs
 - **Description:** Update `CLAUDE.md` (the field-kit seam, location tokens, breakpoints, the map-lit
@@ -233,6 +498,14 @@ AI tags and the Dev Mode pass badge. Breakpoints in use: 980, 960, 900, 860, 760
   design-system artifact's `tokens.json`.
 - **Objective:** The next session finds the new rules without reading the CSS.
 - **Estimate:** 1.5 h
+- **Status:** Done on 2026-11-06. `CLAUDE.md` has one "Map style, the rules" block under Visual style (the
+  field-kit seam, location accents, no loose colours, breakpoints, the map-lit field, the C2 accessibility
+  rules) and lost its stale lines (`index.astro` as the home sections, `WinBar` sizes, prism drift).
+  `docs/design-system.md` gained breakpoints, §6c (kit classes, accent table, the toning mixes) and §6d (the
+  field and the map-lit palette), and dropped the numerals, the 861px split, the 860px gutter and the prism
+  smear. `GLOSSARY.md`: Field kit, Location bar, Panel, Visual, Window bar and Sound cue. The artifact's
+  `project/tokens.json` already matched `design/tokens.json` (sha256 `a484f925…`), so nothing was published;
+  the artifact's component list still has no field-kit pieces, which C3 did not ask for.
 
 ## Order and total
 

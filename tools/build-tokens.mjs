@@ -2,7 +2,9 @@
 //   src/styles/tokens.css              the themed custom properties,
 //   src/scripts/generated/themes.ts    the theme ids and each theme's page background,
 //   src/scripts/generated/prefs-boot.js the inline head script that paints the saved preferences
-//                                      before first paint (rows from src/scripts/prefs-table.ts).
+//                                      before first paint (rows from src/scripts/prefs-table.ts),
+//   src/scripts/generated/breakpoints.ts the five width queries (MEDIA).
+// The map-lit themes' no-WebGL backdrop is the noon palette of src/world/daylight.ts.
 //   node tools/build-tokens.mjs
 // The design system artifact is the source of truth for the values; design/tokens.json is a copy of
 // its project/tokens.json. Run this after updating the copy or the preference table, then commit the
@@ -17,7 +19,14 @@ const GENERATED_NOTE = 'generated from design/tokens.json by tools/build-tokens.
 /** Which themes are light (`color-scheme`); the one light theme also follows the OS when nothing is saved. */
 const scheme = { prism: 'dark', paper: 'light', crt: 'dark', signal: 'dark' };
 
-export function renderTokensCss(tokens) {
+/** The hour whose map palette is the static backdrop of the map-lit themes. */
+export const BACKDROP_HOUR = 12;
+
+/**
+ * tokens.css. `backdrop` is the map's palette at BACKDROP_HOUR as five hex colours: map-lit themes
+ * (`field-map` 1) draw the no-WebGL body gradient from it, the others from their own field-1..5.
+ */
+export function renderTokensCss(tokens, backdrop) {
   const themes = tokens.color.themes;
   const first = themes[0].id;
   const value = (t, theme) => (typeof t.value === 'string' ? t.value : (t.value[theme] ?? t.value[first]));
@@ -27,13 +36,31 @@ export function renderTokensCss(tokens) {
     let s = '';
     for (const t of tokens.color.tokens) s += `  --${t.name}: ${colour(value(t, id))};\n`;
     for (const t of tokens.shadow.tokens) s += `  --${t.name}: ${value(t, id)};\n`;
+    // How a location accent is drawn per theme (tone, edge, ink, offset): themed like the colours.
+    for (const t of tokens.accent?.tokens ?? []) s += `  --${t.name}: ${value(t, id)};\n`;
+    // Where the field's colours come from (the map at the hour, or the theme's own) and its lane.
+    for (const t of tokens.field?.tokens ?? []) s += `  --${t.name}: ${value(t, id)};\n`;
+    const mapToken = tokens.field?.tokens.find((t) => t.name === 'field-map');
+    const mapLit = mapToken ? value(mapToken, id) === '1' : false;
+    if (mapLit && backdrop?.length !== 5) throw new Error('renderTokensCss: a map-lit theme needs the five backdrop colours');
+    for (let i = 1; i <= 5; i++) s += `  --field-fallback-${i}: ${mapLit ? backdrop[i - 1] : `var(--field-${i})`};\n`;
+    // The fallback's content lane: the same share of colour as the field's lane in this theme.
+    s += `  --field-fallback-lane: ${mapLit ? 'var(--field-map-lane)' : 'var(--field-lane)'};\n`;
     s += `  color-scheme: ${scheme[id] ?? 'dark'};\n`;
     return s;
   }
 
   let out = `/* ${tokens.name} — ${GENERATED_NOTE} */\n\n`;
+  // Media queries cannot read custom properties: the breakpoints are listed here as the queries to write.
+  if (tokens.breakpoint) {
+    out += `/* Breakpoints (src/scripts/generated/breakpoints.ts; tests/breakpoints.test.ts allows no other width):\n`;
+    for (const [name, query] of Object.entries(mediaQueries(tokens))) out += `     ${name.padEnd(9)} ${query}\n`;
+    out += `*/\n\n`;
+  }
   for (const th of themes) {
-    out += th.id === first ? `:root,\nhtml[data-theme='${th.id}'] {\n` : `html[data-theme='${th.id}'] {\n`;
+    // [data-theme-scope] wears a theme on one element (the style guide's field-kit specimens).
+    const scope = `[data-theme-scope='${th.id}']`;
+    out += th.id === first ? `:root,\nhtml[data-theme='${th.id}'],\n${scope} {\n` : `html[data-theme='${th.id}'],\n${scope} {\n`;
     out += themeBlock(th.id) + `}\n\n`;
   }
   // Paper follows the OS when nothing is stored (the site's Nav stores an explicit choice).
@@ -49,6 +76,37 @@ export function renderTokensCss(tokens) {
   for (const [key, stack] of Object.entries(tokens.type.families)) out += `  --font-${key}: ${stack};\n`;
   out += `}\n`;
   return out;
+}
+
+/**
+ * The media queries for the three breakpoints, named by what holds inside them:
+ * wide ≥ bp-wide, belowWide < bp-wide, mid ≤ bp-mid, aboveMid > bp-mid, narrow ≤ bp-narrow.
+ */
+export function mediaQueries(tokens) {
+  const px = (name) => {
+    const t = tokens.breakpoint.tokens.find((x) => x.name === name);
+    if (!t) throw new Error(`design/tokens.json has no breakpoint ${name}`);
+    return parseInt(t.value, 10);
+  };
+  const [wide, mid, narrow] = [px('bp-wide'), px('bp-mid'), px('bp-narrow')];
+  return {
+    wide: `(min-width: ${wide}px)`,
+    belowWide: `(max-width: ${wide - 1}px)`,
+    mid: `(max-width: ${mid}px)`,
+    aboveMid: `(min-width: ${mid + 1}px)`,
+    narrow: `(max-width: ${narrow}px)`,
+  };
+}
+
+export function renderBreakpointsTs(tokens) {
+  const q = mediaQueries(tokens);
+  return (
+    `/* Prism CRT breakpoints — ${GENERATED_NOTE} */\n\n` +
+    `/** The only width queries on the site, for CSS (write them as they are) and for matchMedia in scripts. */\n` +
+    `export const MEDIA = {\n` +
+    Object.entries(q).map(([k, v]) => `  ${k}: '${v}',\n`).join('') +
+    `} as const;\n`
+  );
 }
 
 /** Theme ids, the public cycle, the Signal theme, the light theme and each theme's `bg`. */
@@ -141,6 +199,7 @@ export const OUTPUTS = {
   css: 'src/styles/tokens.css',
   themes: 'src/scripts/generated/themes.ts',
   boot: 'src/scripts/generated/prefs-boot.js',
+  breakpoints: 'src/scripts/generated/breakpoints.ts',
 };
 
 async function main() {
@@ -149,14 +208,17 @@ async function main() {
   const table = await import(pathToFileURL(join(root, 'src/scripts/prefs-table.ts')).href);
   const facts = themeFacts(tokens, table.SIGNAL_UNLOCK.theme);
   const rows = table.prefRows(facts.ids);
+  const daylight = await import(pathToFileURL(join(root, 'src/lib/daylight.ts')).href);
+  const backdrop = daylight.fieldPalette(BACKDROP_HOUR).map(daylight.rgbToHex);
 
-  writeFileSync(join(root, OUTPUTS.css), renderTokensCss(tokens));
+  writeFileSync(join(root, OUTPUTS.css), renderTokensCss(tokens, backdrop));
   mkdirSync(join(root, 'src/scripts/generated'), { recursive: true });
   writeFileSync(join(root, OUTPUTS.themes), renderThemesTs(facts));
   writeFileSync(join(root, OUTPUTS.boot), renderBoot(rows, facts, table.SIGNAL_UNLOCK));
+  writeFileSync(join(root, OUTPUTS.breakpoints), renderBreakpointsTs(tokens));
 
   const themes = tokens.color.themes;
-  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length);
+  const count = themes.length * (tokens.color.tokens.length + tokens.shadow.tokens.length + (tokens.accent?.tokens.length ?? 0) + (tokens.field?.tokens.length ?? 0) + 5);
   console.log(`${OUTPUTS.css}: ${themes.length} themes, ${count} themed values, ${tokens.type.groups.reduce((n, g) => n + g.styles.length, 0)} type styles described in the token file`);
   console.log(`${OUTPUTS.themes}: ${facts.ids.join(', ')} (light: ${facts.light}, unlock: ${facts.signalTheme})`);
   console.log(`${OUTPUTS.boot}: ${rows.length} preference rows`);

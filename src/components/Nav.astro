@@ -1,394 +1,255 @@
 ---
-import { site, nav } from '../data/site';
+import { NAV } from '../data/locations';
+import { PROJECTS_INDEX, site } from '../data/site';
+
+const pathname = Astro.url.pathname;
+const isCurrent = (href: string) => {
+  if (href === '/') return pathname === '/';
+  if (href === PROJECTS_INDEX) return pathname.startsWith(PROJECTS_INDEX);
+  return false;
+};
 ---
 
-<!-- The nav persists across client-side page navigations: its state and listeners survive the swap. -->
-<nav class="nav" aria-label="Main" transition:persist="site-nav">
-  <div class="wrap bar">
-    <a class="brand" href="/">{site.name} <em>— field notes</em></a>
-    <ul id="nav-links" class="nav-list">
-      {nav.map((item) => <li><a href={item.href} data-nav-link={item.href}>{item.label}</a></li>)}
-      <li class="mobile-motion">
-        <button type="button" class="btn util-btn" data-motion-switcher aria-pressed="true">
-          <span data-motion-label>Motion: ON</span>
-        </button>
+<header class="ac-nav" id="site-nav">
+  <nav class="ac-nav-inner" aria-label="Primary">
+    <a class="ac-brand" href="/">
+      <span class="ac-brand-mark" aria-hidden="true">◆</span>
+      <span>{site.name}</span>
+    </a>
+
+    <ul id="nav-links" class="ac-nav-links">
+      {
+        NAV.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              aria-current={isCurrent(item.href) ? 'page' : undefined}
+              data-nav-href={item.href}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+      <li class="ac-mobile-cv">
+        <a href={site.cv} download>↓ Download CV (PDF)</a>
       </li>
     </ul>
-    <div class="nav-actions">
+
+    <div class="ac-nav-actions">
+      <a class="ac-nav-ext" href={site.github} target="_blank" rel="noopener">GitHub ↗</a>
+      <a class="ac-nav-ext" href={site.itch} target="_blank" rel="noopener">itch.io ↗</a>
+
       <button
-        type="button"
         id="theme-switcher"
-        class="btn util-btn"
-        aria-label="Cycle visual theme (Prism Darkroom, Daylight Paper, CRT Terminal)"
-        title="Switch Theme: Prism / Paper / CRT"
-      >
-        <span class="util-dot" aria-hidden="true">◐</span>
-        <span id="theme-label">Prism</span>
-      </button>
-      <button
         type="button"
+        class="ac-pref-btn"
+        aria-label="Cycle colour theme"
+        title="Cycle colour theme"
+      >
+        <span data-theme-label>Prism</span>
+      </button>
+
+      <button
         id="motion-switcher"
-        data-motion-switcher
-        class="btn util-btn"
-        aria-pressed="true"
-        aria-label="Toggle kinetic animations and motion effects"
-        title="Toggle Motion (Full / Reduced)"
-      >
-        <span data-motion-label>Motion: ON</span>
-      </button>
-      <button
         type="button"
-        class="btn menu-toggle"
-        aria-expanded="false"
-        aria-controls="nav-links"
-        aria-label="Toggle navigation menu"
+        class="ac-pref-btn"
+        aria-pressed="true"
+        aria-label="Toggle animations"
+        title="Toggle animations"
       >
-        <span class="menu-icon" aria-hidden="true">☰</span>
-        <span class="menu-text">Menu</span>
+        <span data-motion-label>Motion: On</span>
       </button>
-      <a class="btn cv" href={site.cv} download data-astro-prefetch="false">
-        <span class="long">Download CV</span><span class="short">CV</span>
-      </a>
+
+      <a class="ac-nav-cv" href={site.cv} download>↓ CV</a>
+
+      <button
+        id="nav-toggle"
+        type="button"
+        class="ac-menu-toggle"
+        aria-controls="nav-links"
+        aria-expanded="false"
+      >
+        Menu
+      </button>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>
+
+<style>
+  .ac-mobile-cv {
+    display: none;
+  }
+
+  :global(html:not(.js-nav)) #theme-switcher,
+  :global(html:not(.js-nav)) #motion-switcher {
+    display: none;
+  }
+
+  @media (max-width: 980px) {
+    .ac-mobile-cv {
+      display: block;
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px solid var(--hairline);
+    }
+  }
+</style>
 
 <script>
-  import type { ThemeId } from '../scripts/generated/themes';
+  import { MEDIA } from '../scripts/generated/breakpoints';
+  import { THEME_BG, type ThemeId } from '../scripts/generated/themes';
   import { onPage } from '../scripts/page';
   import { prefs } from '../scripts/prefs';
-  import { OVERVIEW } from '../data/site';
 
-  const root = document.documentElement;
-  root.classList.add('js-nav');
-  const toggle = document.querySelector<HTMLButtonElement>('.menu-toggle');
-  const list = document.querySelector<HTMLUListElement>('#nav-links');
-  const navEl = document.querySelector<HTMLElement>('.nav');
-  const themeBtn = document.querySelector<HTMLButtonElement>('#theme-switcher');
-  const themeLabel = document.querySelector<HTMLElement>('#theme-label');
-  const motionButtons = document.querySelectorAll<HTMLButtonElement>('[data-motion-switcher]');
-  const motionLabels = document.querySelectorAll<HTMLElement>('[data-motion-label]');
-
-  // 1. Theme key: Prism -> Paper -> CRT, and -> Signal once the visitor has cleared Telegraph Recall in
-  // this browser. The cycle, the storage and the browser chrome colour belong to src/scripts/prefs.ts;
-  // this key only presents them.
-  const themeNames: Record<ThemeId, string> = {
+  const THEME_NAMES: Record<ThemeId, string> = {
     prism: 'Prism',
     paper: 'Paper',
     crt: 'CRT',
     signal: 'Signal',
   };
 
-  const syncThemeUi = () => {
-    const cur = prefs.currentTheme();
-    if (themeLabel) themeLabel.textContent = themeNames[cur];
-    themeBtn?.setAttribute('aria-label', `Current theme: ${themeNames[cur]}. Change theme`);
-  };
-  syncThemeUi();
-  // Also fired when the OS scheme moves while no theme is saved.
-  prefs.onChange('theme', syncThemeUi);
+  onPage(({ signal }) => {
+    document.documentElement.classList.add('js-nav');
+    const navEl = document.getElementById('site-nav');
+    const toggle = document.getElementById('nav-toggle') as HTMLButtonElement | null;
+    const themeBtn = document.getElementById('theme-switcher') as HTMLButtonElement | null;
+    const themeLabel = themeBtn?.querySelector<HTMLElement>('[data-theme-label]');
+    const motionBtn = document.getElementById('motion-switcher') as HTMLButtonElement | null;
+    const motionLabel = motionBtn?.querySelector<HTMLElement>('[data-motion-label]');
+    const linksWrap = document.getElementById('nav-links');
 
-  /**
-   * A theme change is a CRT power-cycle: surfaces and text cross-fade for one lift duration while
-   * the page flickers once (360ms), both skipped under reduced motion.
-   */
-  let flickerTimer: number | null = null;
-  let switchTimer: number | null = null;
-  const flickerTheme = () => {
-    if (!prefs.isMotionAllowed()) return;
-    root.classList.add('is-theme-switching');
-    root.classList.remove('is-theme-flicker');
-    void root.offsetWidth;
-    root.classList.add('is-theme-flicker');
-    if (flickerTimer !== null) window.clearTimeout(flickerTimer);
-    if (switchTimer !== null) window.clearTimeout(switchTimer);
-    flickerTimer = window.setTimeout(() => root.classList.remove('is-theme-flicker'), 400);
-    switchTimer = window.setTimeout(() => root.classList.remove('is-theme-switching'), 320);
-  };
-
-  themeBtn?.addEventListener('click', () => {
-    flickerTheme();
-    prefs.set('theme', prefs.nextTheme());
-  });
-
-  // 2. Motion key (Full vs Reduced), disabled while the OS itself asks for reduced motion.
-  const syncMotionUi = () => {
-    const system = prefs.systemReducedMotion();
-    const isReduced = !prefs.isMotionAllowed();
-    motionButtons.forEach((button) => {
-      button.setAttribute('aria-pressed', String(!isReduced));
-      button.disabled = system;
-      button.title = system ? 'Reduced motion is enabled in your system settings' : 'Toggle motion';
-    });
-    motionLabels.forEach((label) => {
-      label.textContent = system ? 'Motion: system reduced' : isReduced ? 'Motion: OFF' : 'Motion: ON';
-    });
-  };
-  syncMotionUi();
-  prefs.onChange('motion', syncMotionUi);
-  motionButtons.forEach((button) =>
-    button.addEventListener('click', () => {
-      prefs.set('motion', prefs.get('motion') === 'reduced' ? 'full' : 'reduced');
-    }),
-  );
-
-  // 3. Mobile Drawer
-  if (toggle && list) {
-    const setOpen = (open: boolean) => {
-      toggle.setAttribute('aria-expanded', String(open));
-      list.classList.toggle('open', open);
-      const icon = toggle.querySelector('.menu-icon');
-      if (icon) icon.textContent = open ? '✕' : '☰';
+    const syncTheme = () => {
+      const cur = prefs.currentTheme();
+      if (themeLabel) themeLabel.textContent = THEME_NAMES[cur] ?? cur;
+      const meta = document.getElementById('theme-color');
+      if (meta && THEME_BG[cur]) meta.setAttribute('content', THEME_BG[cur]);
     };
 
-    toggle.addEventListener('click', () => {
-      const expanded = toggle.getAttribute('aria-expanded') === 'true';
-      setOpen(!expanded);
-    });
-
-    list.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => setOpen(false));
-    });
-
-    document.addEventListener('click', (e) => {
-      if (toggle.getAttribute('aria-expanded') === 'true' && navEl && !navEl.contains(e.target as Node)) {
-        setOpen(false);
+    const syncMotion = () => {
+      const osReduced = prefs.systemReducedMotion();
+      const allowed = prefs.isMotionAllowed();
+      if (motionBtn) {
+        motionBtn.setAttribute('aria-pressed', String(allowed));
+        motionBtn.disabled = osReduced;
+        motionBtn.title = osReduced
+          ? 'Animations disabled by your OS reduced-motion setting'
+          : 'Toggle animations';
       }
-    });
-
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') {
-        setOpen(false);
-        toggle.focus();
+      if (motionLabel) {
+        motionLabel.textContent = osReduced ? 'Motion: OS' : allowed ? 'Motion: On' : 'Motion: Off';
       }
-    });
+    };
 
-    window.matchMedia('(max-width: 980px)').addEventListener('change', () => setOpen(false));
-    document.addEventListener('astro:after-swap', () => setOpen(false));
-  }
+    syncTheme();
+    syncMotion();
 
-  // 4. Active section scroll-spy on the overview (re-armed for every page the router brings in);
-  // on the map, the Map link is current.
-  let spy: IntersectionObserver | null = null;
-  const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]'));
-  const armScrollSpy = () => {
-    spy?.disconnect();
-    spy = null;
+    prefs.onChange('theme', syncTheme, { signal });
+    prefs.onChange('motion', syncMotion, { signal });
+
+    themeBtn?.addEventListener(
+      'click',
+      () => {
+        prefs.set('theme', prefs.nextTheme());
+      },
+      { signal },
+    );
+
+    motionBtn?.addEventListener(
+      'click',
+      () => {
+        const currentlyAllowed = prefs.isMotionAllowed();
+        prefs.set('motion', currentlyAllowed ? 'reduced' : 'full');
+      },
+      { signal },
+    );
+
+    const setOpen = (open: boolean) => {
+      if (!navEl || !toggle) return;
+      navEl.classList.toggle('is-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+
+    toggle?.addEventListener(
+      'click',
+      () => {
+        const isOpen = toggle.getAttribute('aria-expanded') === 'true';
+        setOpen(!isOpen);
+      },
+      { signal },
+    );
+
+    linksWrap?.addEventListener(
+      'click',
+      (e) => {
+        if ((e.target as HTMLElement | null)?.closest('a')) setOpen(false);
+      },
+      { signal },
+    );
+
+    document.addEventListener(
+      'click',
+      (e) => {
+        if (toggle?.getAttribute('aria-expanded') === 'true' && navEl && !navEl.contains(e.target as Node)) {
+          setOpen(false);
+        }
+      },
+      { signal },
+    );
+
+    document.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.key === 'Escape' && toggle?.getAttribute('aria-expanded') === 'true') {
+          setOpen(false);
+          toggle.focus();
+        }
+      },
+      { signal },
+    );
+
+    const mq = window.matchMedia(MEDIA.belowWide);
+    const onMq = () => {
+      if (!mq.matches) setOpen(false);
+    };
+    mq.addEventListener('change', onMq);
+    signal.addEventListener('abort', () => mq.removeEventListener('change', onMq));
+
+    // Scroll-spy for home hash nav links while staying compatible with multipage routes.
     const path = window.location.pathname;
-    const onMap = path === '/' || path === '/index.html';
-    const onOverview = path === OVERVIEW || path === `${OVERVIEW}index.html`;
-    if (!onOverview) {
-      links.forEach((l) => {
-        const match = onMap && l.getAttribute('href') === '/';
-        l.classList.toggle('active', match);
-        if (match) l.setAttribute('aria-current', 'page');
-        else l.removeAttribute('aria-current');
-      });
-      return;
-    }
-    const sections = links
-      .map((l) => {
-        const hash = l.getAttribute('href')?.split('#')[1];
-        return hash ? document.getElementById(hash) : null;
-      })
-      .filter((s): s is HTMLElement => Boolean(s));
+    const isHome = path === '/' || path === '/index.html';
+    if (isHome) {
+      const anchors = Array.from(document.querySelectorAll<HTMLAnchorElement>('#nav-links a[data-nav-href]'));
+      const hashPairs = anchors
+        .map((a) => {
+          const href = a.dataset.navHref ?? '';
+          if (!href.startsWith('/#')) return null;
+          const el = document.getElementById(href.slice(2));
+          return el ? { a, el } : null;
+        })
+        .filter((x): x is { a: HTMLAnchorElement; el: HTMLElement } => x !== null);
 
-    if ('IntersectionObserver' in window && sections.length > 0) {
-      spy = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (!entry.isIntersecting) return;
-            const activeHref = `${OVERVIEW}#${entry.target.id}`;
-            links.forEach((l) => {
-              const match = l.getAttribute('href') === activeHref;
-              l.classList.toggle('active', match);
-              if (match) l.setAttribute('aria-current', 'location');
-              else l.removeAttribute('aria-current');
-            });
-          });
-        },
-        { rootMargin: '-30% 0px -55% 0px', threshold: 0 },
-      );
-      sections.forEach((s) => spy?.observe(s));
+      const homeLink = anchors.find((a) => a.dataset.navHref === '/');
+
+      const syncSpy = () => {
+        const y = window.scrollY;
+        const trigger = y + 150;
+        let currentHashAnchor: HTMLAnchorElement | null = null;
+        for (const pair of hashPairs) {
+          const top = pair.el.getBoundingClientRect().top + y;
+          if (top <= trigger) currentHashAnchor = pair.a;
+        }
+        for (const pair of hashPairs) {
+          pair.a.classList.toggle('is-active', pair.a === currentHashAnchor);
+        }
+        if (homeLink) {
+          if (currentHashAnchor) homeLink.removeAttribute('aria-current');
+          else homeLink.setAttribute('aria-current', 'page');
+        }
+      };
+
+      syncSpy();
+      window.addEventListener('scroll', syncSpy, { passive: true, signal });
     }
-  };
-  onPage(armScrollSpy);
+  });
 </script>
-
-<style>
-  .nav {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: var(--nav-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border-bottom: 2px solid var(--umber);
-  }
-  .bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 68px;
-    gap: 12px;
-  }
-  .brand {
-    font-family: var(--display);
-    font-size: 20px;
-    font-weight: 600;
-    font-variation-settings: var(--soft);
-    letter-spacing: -0.01em;
-    color: var(--text);
-    white-space: nowrap;
-  }
-  .brand:hover {
-    color: var(--peach);
-  }
-  .brand em {
-    font-style: italic;
-    font-weight: 400;
-    color: var(--text-2);
-  }
-  .nav-list {
-    list-style: none;
-    display: flex;
-    gap: 22px;
-    margin: 0;
-    padding: 0;
-    font-size: 15px;
-  }
-  .nav-list a {
-    color: var(--text-2);
-    padding: 4px 2px;
-    border-bottom: 2px solid transparent;
-    transition: color 0.2s, border-color 0.2s;
-  }
-  .nav-list a:hover,
-  .nav-list a.active {
-    color: var(--text);
-  }
-  .nav-list a.active {
-    border-bottom-color: var(--coral);
-    color: var(--gold);
-  }
-  .nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .util-btn {
-    padding: 7px 11px;
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.04em;
-    gap: 5px;
-  }
-  .util-dot {
-    color: var(--coral);
-    font-size: 12px;
-  }
-  .menu-toggle {
-    display: none;
-    padding: 7px 12px;
-    font-family: var(--mono);
-    font-size: 11px;
-    gap: 6px;
-  }
-  .mobile-motion {
-    display: none;
-  }
-  :global(html:not(.js-nav)) #theme-switcher,
-  :global(html:not(.js-nav)) #motion-switcher {
-    display: none;
-  }
-  .cv {
-    white-space: nowrap;
-    padding: 8px 14px;
-    font-size: 13px;
-  }
-  .cv .short {
-    display: none;
-  }
-  @media (max-width: 980px) {
-    #motion-switcher {
-      display: none;
-    }
-  }
-  @media (max-width: 980px) {
-    .nav-actions .btn,
-    .mobile-motion .btn { min-width: 44px; min-height: 44px; justify-content: center; }
-    :global(html.js-nav) .menu-toggle {
-      display: inline-flex;
-    }
-    .nav-list {
-      display: flex;
-      position: absolute;
-      top: 68px;
-      left: 0;
-      right: 0;
-      max-height: calc(100dvh - 68px);
-      overflow-y: auto;
-      flex-direction: column;
-      gap: 0;
-      background: var(--surface);
-      border-bottom: 2px solid var(--umber);
-      padding: 8px 20px 16px;
-      box-shadow: 0 18px 36px rgba(0, 0, 0, 0.65);
-    }
-    :global(html.js-nav) .nav-list {
-      display: none;
-    }
-    :global(html.js-nav) .nav-list.open {
-      display: flex;
-    }
-    .nav-list li {
-      margin: 0;
-    }
-    .mobile-motion {
-      display: none;
-      padding-top: 12px;
-    }
-    :global(html.js-nav) .mobile-motion {
-      display: block;
-    }
-    .nav-list li a {
-      display: block;
-      padding: 12px 4px;
-      border-bottom: var(--line);
-    }
-    .nav-list li:last-child a {
-      border-bottom: none;
-    }
-    .brand em {
-      display: none;
-    }
-    .cv .long {
-      display: none;
-    }
-    .cv .short {
-      display: inline;
-    }
-  }
-  @media (max-width: 980px) {
-    :global(html:not(.js-nav)) .nav { position: static; }
-    :global(html:not(.js-nav)) .bar { height: auto; min-height: 68px; flex-wrap: wrap; }
-    :global(html:not(.js-nav)) .nav-list {
-      position: static;
-      order: 3;
-      width: 100%;
-      max-height: none;
-      box-shadow: none;
-      padding: 0 0 12px;
-    }
-    :global(html:not(.js-nav)) .nav-actions { order: 2; }
-    :global(html:not(.js-nav)) #theme-switcher { display: none; }
-  }
-  @media (max-width: 420px) {
-    .brand { font-size: 14px; }
-    .bar { gap: 6px; }
-    .nav-actions { gap: 4px; }
-    .util-btn, .menu-toggle, .cv { padding-inline: 7px; }
-    #theme-label { display: none; }
-    .menu-text { display: none; }
-  }
-</style>

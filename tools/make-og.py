@@ -21,7 +21,9 @@ PROJECTS = [
     ("push-comes-to-shove", "Push Comes to Shove", "Deterministic grid tactics · playable in the browser", "PROJECT · TACTICS", "push-comes-to-shove/cover.avif"),
     ("horde-hours", "Horde Hours", "3D survivors-like · playable in the browser", "PROJECT · SURVIVORS-LIKE", "horde-hours/cover.avif"),
     ("cinderhold", "Cinderhold", "2D dungeon crawler · playable in the browser", "PROJECT · DUNGEON CRAWLER", "cinderhold/cover.avif"),
-    ("eternity-keeper", "Eternity Keeper", "Open-source save editor for Pillars of Eternity", "PROJECT · TOOL", "eternity-keeper/inventory.avif"),
+    ("please-take-a-number", "Please Take a Number", "Waiting-room mystery · playable in the browser", "PROJECT · GAME JAM", "please-take-a-number/cover.avif"),
+    ("barrowlight", "Barrowlight", "Playable 2D pixel-art RPG & custom C# / .NET 10 engine", "PROJECT · PLAYABLE RPG", "barrowlight/cover.avif"),
+    ("eternity-keeper", "Eternity Keeper", "Open-source save editor for Pillars of Eternity", "PROJECT · TOOL", "eternity-keeper/cover.avif"),
 ]
 
 

@@ -37,7 +37,7 @@ const idleLabel = isNote ? '○ NOTE' : '○ PORTAL';
   .interactive-panel {
     text-align: left;
     background: var(--surface);
-    border: 1px solid var(--umber);
+    border: 1px solid color-mix(in srgb, var(--acc-ui) var(--acc-edge), transparent);
     border-radius: var(--r-md);
     padding: 16px;
     color: var(--text);
@@ -51,12 +51,12 @@ const idleLabel = isNote ? '○ NOTE' : '○ PORTAL';
   }
   .interactive-panel:hover {
     transform: translateY(-2px);
-    border-color: var(--peach);
+    border-color: var(--acc-ui);
   }
   .interactive-panel.is-active {
-    border-color: var(--coral);
+    border-color: var(--acc-ui);
     background: var(--surface-2);
-    box-shadow: var(--glow);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--acc-ui) 55%, transparent), 0 0 40px color-mix(in srgb, var(--acc-ui) 25%, transparent);
   }
   .panel-top {
     display: flex;
@@ -68,7 +68,7 @@ const idleLabel = isNote ? '○ NOTE' : '○ PORTAL';
     color: var(--text-3);
   }
   .interactive-panel.is-active .panel-status {
-    color: var(--gold);
+    color: var(--acc-text);
   }
   .interactive-panel.is-explored:not(.is-active) .panel-status {
     color: var(--mint);
@@ -91,7 +91,7 @@ const idleLabel = isNote ? '○ NOTE' : '○ PORTAL';
   .panel-tag {
     font-family: var(--mono);
     font-size: 11px;
-    color: var(--peach);
+    color: var(--acc-text);
   }
 
 </style>

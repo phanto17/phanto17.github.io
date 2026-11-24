@@ -1,0 +1,75 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { PROJECTS_INDEX } from '../data/site';
+import { projectView } from '../lib/project-view';
+
+interface Props {
+  project: CollectionEntry<'projects'>;
+  index: number;
+}
+
+const { project, index } = Astro.props;
+const d = project.data;
+const cover = d.media[0];
+const view = projectView(d);
+const num = String(index + 1).padStart(2, '0');
+const href = `${PROJECTS_INDEX}${project.id}/`;
+const tags = [...(d.platforms ?? []), ...d.tools.slice(0, 2)].slice(0, 4);
+---
+
+<article class="ac-card accent" style={`--acc: ${d.world.accent}; --reveal-delay: ${index % 3}`} data-reveal>
+  <div class="ac-card-head">
+    <div class="ac-card-head-left">
+      <span class="ac-idx-badge">{num}</span>
+      <span class="ac-card-cat">{d.category ?? d.genre}</span>
+    </div>
+    <span class:list={['pill', view.live ? 'play' : 'wip']}>{view.status}</span>
+  </div>
+
+  <a class="ac-card-media crt-frame" href={href} tabindex="-1" aria-hidden="true">
+    {
+      cover && (
+        <img
+          src={cover.src}
+          alt=""
+          width="960"
+          height="540"
+          loading="lazy"
+          decoding="async"
+          transition:name={`cover-${project.id}`}
+        />
+      )
+    }
+  </a>
+
+  <h3 class="ac-card-title">
+    <a href={href}>
+      <span transition:name={`title-${project.id}`}>{d.title}</span>
+    </a>
+  </h3>
+
+  <p class="ac-card-summary">{d.summary}</p>
+
+  {
+    tags.length > 0 && (
+      <div class="ac-tag-row">
+        {tags.map((tag) => (
+          <span class="ac-mini-pill">{tag}</span>
+        ))}
+      </div>
+    )
+  }
+
+  <div class="ac-card-foot">
+    <a class="ac-explore-link" href={href}>
+      Explore write-up →
+    </a>
+    {
+      view.live && (
+        <a class="ac-live-ext" href={view.live.href} target="_blank" rel="noopener">
+          {view.live.short}
+        </a>
+      )
+    }
+  </div>
+</article>

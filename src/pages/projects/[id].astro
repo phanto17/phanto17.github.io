@@ -1,35 +1,42 @@
 ---
 import { getCollection, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
-import Prism from '../../components/Prism.astro';
+import SectionStrip from '../../components/SectionStrip.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
 import Figure from '../../components/Figure.astro';
 import NotesExplorer from '../../components/NotesExplorer.astro';
 import ShoveLab from '../../components/ShoveLab.astro';
-import { site, PERSON_ID } from '../../data/site';
+import { PERSON_ID, PROJECTS_INDEX, site } from '../../data/site';
 import { planWriteUp } from '../../lib/notes';
+import { projectView } from '../../lib/project-view';
 
 export async function getStaticPaths() {
-  const projects = await getCollection('projects');
-  return projects.map((project) => ({ params: { id: project.id }, props: { project } }));
+  const projects = (await getCollection('projects')).sort(
+    (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id),
+  );
+  return projects.map((project) => ({ params: { id: project.id }, props: { project, allProjects: projects } }));
 }
 
-const { project } = Astro.props;
+const { project, allProjects } = Astro.props;
 const d = project.data;
 const { Content } = await render(project);
-// The technical breakdown becomes nonlinear notes when the write-up has one (src/lib/notes.ts): each
-// note with the visual the pinned pane holds for it; the frontmatter's `widget` goes with the first note.
-const plan = project.rendered?.html ? planWriteUp({ html: project.rendered.html, media: d.media, widget: d.widget }) : null;
+const plan = project.rendered?.html
+  ? planWriteUp({ html: project.rendered.html, media: d.media, widget: d.widget })
+  : null;
 const hero = d.media[0];
 const gallery = d.media.slice(1);
-const period = `${d.dates.start}${d.dates.end ? ` – ${d.dates.end}` : ' – now'}`;
+const featuredShot = gallery[0];
+const restShots = gallery.slice(1);
+const view = projectView(d);
+const period = view.period;
+const siblings = allProjects.filter((p) => p.id !== project.id).slice(0, 3);
 
-// Structured data (schema.org), linked to the site's Person node by @id (see Base.astro).
-// VideoGame is a subtype of SoftwareApplication. All three games are free on itch.io and the tool is
-// GPL-3.0, hence the zero-price offer. No ratings or reviews: none exist, so none are claimed.
-const pageUrl = `${site.url}/projects/${project.id}/`;
+const isGame = d.kind === 'game';
+const pageUrl = `${site.url}${PROJECTS_INDEX}${project.id}/`;
 const abs = (path: string) => new URL(path, site.url).toString();
+
 const appNode: Record<string, unknown> = {
-  '@type': d.kind === 'tool' ? 'SoftwareApplication' : 'VideoGame',
+  '@type': isGame ? 'VideoGame' : 'SoftwareApplication',
   '@id': `${pageUrl}#app`,
   name: d.title,
   description: d.summary,
@@ -39,15 +46,30 @@ const appNode: Record<string, unknown> = {
   screenshot: d.media.filter((m) => m.type === 'image').map((m) => abs(m.src)),
   dateCreated: d.dates.start,
   author: { '@id': PERSON_ID },
-  applicationCategory: d.kind === 'tool' ? 'UtilitiesApplication' : 'GameApplication',
-  operatingSystem: d.kind === 'tool' ? 'Windows' : 'Web browser (WebGL)',
-  offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD', availability: 'https://schema.org/InStock', url: d.itchUrl ?? d.downloadUrl ?? pageUrl },
-  sameAs: [d.itchUrl, d.githubUrl].filter(Boolean),
+  applicationCategory: isGame
+    ? 'GameApplication'
+    : d.kind === 'engine'
+      ? 'DeveloperApplication'
+      : 'UtilitiesApplication',
+  operatingSystem: isGame ? (d.itchUrl ? 'Web browser (WebGL)' : 'Windows (.NET 10)') : 'Windows',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'USD',
+    availability: 'https://schema.org/InStock',
+    url: d.itchUrl ?? d.downloadUrl ?? d.githubUrl ?? pageUrl,
+  },
+  sameAs: [d.itchUrl, d.githubUrl, d.downloadUrl].filter(Boolean),
   ...(d.basedOn ? { isBasedOn: d.basedOn } : {}),
-  ...(d.kind === 'tool'
-    ? { license: 'https://www.gnu.org/licenses/gpl-3.0.html' }
-    : { gamePlatform: 'Web browser', playMode: 'SinglePlayer', ...(d.itchUrl ? { installUrl: d.itchUrl } : {}) }),
+  ...(isGame
+    ? {
+        gamePlatform: d.itchUrl ? 'Web browser' : 'PC',
+        playMode: 'SinglePlayer',
+        ...(d.itchUrl ? { installUrl: d.itchUrl } : {}),
+      }
+    : { license: d.kind === 'tool' ? 'https://www.gnu.org/licenses/gpl-3.0.html' : undefined }),
 };
+
 const projectSchema = [
   {
     '@type': 'WebPage',
@@ -62,195 +84,351 @@ const projectSchema = [
       '@type': 'BreadcrumbList',
       itemListElement: [
         { '@type': 'ListItem', position: 1, name: 'Home', item: `${site.url}/` },
-        { '@type': 'ListItem', position: 2, name: 'Projects', item: `${site.url}/projects/` },
+        { '@type': 'ListItem', position: 2, name: 'Projects', item: `${site.url}${PROJECTS_INDEX}` },
         { '@type': 'ListItem', position: 3, name: d.title, item: pageUrl },
       ],
     },
   },
   appNode,
 ];
+
+const railSections = [
+  { id: 'hero', label: 'Top' },
+  { id: 'highlights', label: '01 Highlights' },
+  { id: 'contribution', label: '02 Contribution' },
+  ...(gallery.length > 0 ? [{ id: 'screenshots', label: '03 Gallery' }] : []),
+  { id: 'breakdown', label: '04 Breakdown' },
+  { id: 'get-it', label: '05 Credits' },
+  { id: 'lineup', label: '06 Lineup' },
+] as const;
+
+const hasSeparateGithub = Boolean(d.githubUrl && d.githubUrl !== view.live?.href);
 ---
 
-<Base title={d.title} description={d.summary} image={`/media/og/${project.id}.jpg`} schema={projectSchema}>
-  <header class="phero">
-    <Prism top="-120px" />
-    <div class="wrap">
-      <p class="kicker" data-reveal style="--reveal-delay:0"><a href="/overview/#projects">← Projects</a> · {d.genre}</p>
-      <h1><span class="kinetic-word" style="--word-idx:0" transition:name={`title-${project.id}`}>{d.title}</span></h1>
-      <p class="lead" data-reveal style="--reveal-delay:1">{d.summary}</p>
-      <p class="meta" data-reveal style="--reveal-delay:1">{d.engine} · {d.role} · {period}</p>
+<Base
+  title={d.title}
+  description={d.summary}
+  image={`/media/og/${project.id}.jpg`}
+  schema={projectSchema}
+  accent={d.world.accent}
+  sections={railSections}
+>
+  <div class="rail-frame">
+    <header class="ac-sub-hero" id="hero">
+      <nav class="ac-breadcrumb" aria-label="Breadcrumb">
+        <a href="/">Home</a>
+        <span aria-hidden="true">/</span>
+        <a href={PROJECTS_INDEX}>Projects</a>
+        <span aria-hidden="true">/</span>
+        <span>{d.title}</span>
+      </nav>
+
+      <div class="ac-tag-row">
+        <span class:list={['pill', view.live ? 'play' : 'wip']}>{view.status}</span>
+        {d.category && <span class="ac-mini-pill">{d.category}</span>}
+        <span class="ac-mini-pill">{period}</span>
+        <span class="ac-mini-pill">{d.engine}</span>
+      </div>
+
+      <h1>
+        <span transition:name={`title-${project.id}`}>{d.title}</span>
+      </h1>
+      <p class="ac-sub-lead">{d.summary}</p>
+
       {
         d.metrics.length > 0 && (
-          <div class="stat-chips" aria-label="Verified engineering metrics">
+          <ul class="stat-chips" aria-label="Verified engineering metrics">
             {d.metrics.map((m) => (
-              <span class="stat-chip">{m}</span>
+              <li class="stat-chip">{m}</li>
             ))}
-          </div>
+          </ul>
         )
       }
-      <div class="actions">
+
+      <div class="ac-cta-row" style="justify-content:flex-start;margin-top:20px">
         {
-          d.kind === 'tool' ? (
-            d.downloadUrl ? (
-              <a class="btn primary" href={d.downloadUrl}>
-                ↓ Download (Windows)
-              </a>
-            ) : (
-              <span class="btn" aria-disabled="true">↓ Download — not released yet</span>
-            )
-          ) : d.itchUrl ? (
-            <a class="btn primary" href={d.itchUrl}>
-              ▶ Play on itch.io
+          view.live ? (
+            <a class="btn primary" href={view.live.href} target="_blank" rel="noopener">
+              {view.live.label}
+              {d.kind === 'tool' && ' (Windows)'}
             </a>
           ) : (
-            <span class="btn" aria-disabled="true">▶ Not on itch.io yet</span>
+            <span class="btn" aria-disabled="true">
+              {view.pending}
+            </span>
           )
         }
         {
-          d.githubUrl && (
-            <a class="btn" href={d.githubUrl}>
-              Source on GitHub
+          hasSeparateGithub && (
+            <a class="btn" href={d.githubUrl} target="_blank" rel="noopener">
+              Source on GitHub ↗
             </a>
           )
         }
+        <a class="btn" href="#breakdown">Technical Breakdown ↓</a>
+      </div>
+    </header>
+
+    <div class="ac-hero-stage">
+      <div data-tilt data-tilt-max="2.5" transition:name={`cover-${project.id}`}>
+        <Figure
+          type={hero?.type}
+          src={hero?.src}
+          alt={hero?.alt ?? `${d.title} preview`}
+          caption={hero?.caption ?? `Fig. 1 — ${d.title}`}
+          priority
+        />
+      </div>
+      <div class="ac-stage-bar">
+        <span class="muted">Role: <strong>{d.role}</strong></span>
+        <button type="button" id="crt-toggle" class="key hud-key crt-key" aria-pressed="true">
+          CRT Scanlines: ON
+        </button>
       </div>
     </div>
-  </header>
-
-  <div class="wrap layout">
-    <article class="prose">
-      <!-- No data-reveal here: the cover morphs in from the project row (transition:name) and must be visible at once. -->
-      <div data-tilt data-tilt-max="2.5" transition:name={`cover-${project.id}`}>
-        <Figure type={hero?.type} src={hero?.src} alt={hero?.alt ?? `${d.title} gameplay`} caption={hero?.caption ?? `Fig. 1 — ${d.title}, gameplay`} priority />
-      </div>
-
-      <section data-reveal>
-        <h2>What I built</h2>
-        <p class="sub-h">core architecture &amp; ownership — nothing here is third-party work</p>
-        <ul>
-          {d.myContribution.map((item) => <li>{item}</li>)}
-        </ul>
-        {
-          d.changelog.length > 0 && (
-            <details class="changelog">
-              <summary>Iteration &amp; playtest history ({d.changelog.length} updates)</summary>
-              <ul>
-                {d.changelog.map((item) => (
-                  <li>{item}</li>
-                ))}
-              </ul>
-            </details>
-          )
-        }
-      </section>
-
-      <section class="content" data-reveal>
-        {plan ? <Fragment set:html={plan.before + plan.intro} /> : <Content />}
-      </section>
-    </article>
-
-    <aside class="side">
-      <div class="box" data-reveal data-tilt data-tilt-max="3">
-        <dl>
-          <dt>Status</dt>
-          <dd>{{ playable: 'Playable', released: 'Released', 'in-progress': 'Build in progress', planned: 'Rework planned' }[d.status]}</dd>
-          <dt>{d.kind === 'tool' ? 'Download' : 'Play'}</dt>
-          <dd>
-            {
-              d.kind === 'tool' ? (
-                d.downloadUrl ? <a href={d.downloadUrl}>GitHub Releases ↗</a> : <span class="muted">Not released yet</span>
-              ) : d.itchUrl ? (
-                <a href={d.itchUrl}>itch.io ↗</a>
-              ) : (
-                <span class="muted">Not published yet</span>
-              )
-            }
-          </dd>
-          <dt>Source</dt>
-          <dd>{d.githubUrl ? <a href={d.githubUrl}>GitHub ↗</a> : <span class="muted">Private repository</span>}</dd>
-          <dt>Role</dt>
-          <dd>{d.role}</dd>
-          <dt>Period</dt>
-          <dd>{period}</dd>
-          <dt>Tools</dt>
-          <dd>{d.tools.join(', ')}</dd>
-          <dt>Viewport</dt>
-          <dd>
-            <button type="button" id="crt-toggle" class="crt-toggle-btn" aria-pressed="true">
-              CRT Scanlines: ON
-            </button>
-          </dd>
-        </dl>
-      </div>
-    </aside>
 
     {
-      plan && (
-        <section class="content notes-row" data-reveal>
-          <NotesExplorer plan={plan} title={d.title}>
-            <Fragment slot="widget">{d.widget === 'shove-lab' && <ShoveLab />}</Fragment>
-          </NotesExplorer>
+      d.highlights.length > 0 && (
+        <section id="highlights">
+          <SectionStrip
+            num="01"
+            title="Key Architecture & Highlights"
+            meta={`${d.highlights.length} VERIFIED CAPABILITIES`}
+          />
+          <div class="hairline-grid-3">
+            {d.highlights.map((item, idx) => (
+              <article class="ac-cell" data-reveal>
+                <p class="ac-cell-label">{String(idx + 1).padStart(2, '0')} // SYSTEM</p>
+                <p>{item}</p>
+              </article>
+            ))}
+          </div>
         </section>
       )
     }
 
-    <article class="prose prose-tail">
-      {
-        gallery.length > 0 && (
-          <section data-reveal>
-            <h2>Gallery</h2>
-            <div class="gallery">
-              {gallery.map((m, i) => (
-                <div data-tilt data-tilt-max="3">
-                  <Figure type={m.type} src={m.src} alt={m.alt} caption={m.caption ?? `Fig. ${i + 2}`} />
-                </div>
-              ))}
+    <section id="contribution">
+      <SectionStrip num="02" title="My Contribution & Tools" meta={d.engine} />
+      <div class="hairline-split">
+        <div class="ac-panel-pad">
+          <h3>What I designed, built &amp; verified</h3>
+          <ul class="diamond-list">
+            {d.myContribution.map((item) => <li>{item}</li>)}
+          </ul>
+
+          {
+            d.changelog.length > 0 && (
+              <details class="changelog hud-panel">
+                <summary>Iteration &amp; playtest history ({d.changelog.length} updates)</summary>
+                <ul>
+                  {d.changelog.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </details>
+            )
+          }
+        </div>
+
+        <div class="ac-panel-pad">
+          <h3>Specifications &amp; Stack</h3>
+          <dl class="dl">
+            <div>
+              <dt>Role</dt>
+              <dd>{d.role}</dd>
             </div>
-          </section>
+            <div>
+              <dt>Timeline</dt>
+              <dd>{period}</dd>
+            </div>
+            <div>
+              <dt>Engine / Stack</dt>
+              <dd>{d.engine}</dd>
+            </div>
+            {
+              d.platforms.length > 0 && (
+                <div>
+                  <dt>Targets</dt>
+                  <dd>{d.platforms.join(' · ')}</dd>
+                </div>
+              )
+            }
+          </dl>
+
+          <p class="ac-cell-label" style="margin-top:20px">TOOLS &amp; PACKAGES</p>
+          <div class="ac-tag-row">
+            {d.tools.map((t) => <span class="ac-mini-pill">{t}</span>)}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {
+      gallery.length > 0 && (
+        <section id="screenshots">
+          <SectionStrip
+            num="03"
+            title="Visuals & Gameplay Captures"
+            meta={`${gallery.length} ADDITIONAL FRAMES`}
+          />
+          <div class="screenshots-1plus2">
+            {featuredShot && (
+              <div class="screenshots-featured">
+                <Figure
+                  type={featuredShot.type}
+                  src={featuredShot.src}
+                  alt={featuredShot.alt}
+                  caption={featuredShot.caption ?? `Fig. 2 — ${d.title}`}
+                />
+              </div>
+            )}
+            {restShots.length > 0 && (
+              <div
+                class={
+                  restShots.length === 3
+                    ? 'hairline-grid-3'
+                    : restShots.length === 1
+                      ? 'hairline-grid-1'
+                      : 'hairline-grid-2'
+                }
+              >
+                {restShots.map((m, idx) => (
+                  <div class="ac-cell">
+                    <Figure
+                      type={m.type}
+                      src={m.src}
+                      alt={m.alt}
+                      caption={m.caption ?? `Fig. ${idx + 3}`}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    <section id="breakdown">
+      <SectionStrip
+        num="04"
+        title="Technical Breakdown"
+        meta={d.widget === 'shove-lab' ? 'NOTES + INTERACTIVE SHOVE SANDBOX' : 'CODE · DIAGRAMS · DESIGN'}
+      />
+      <div class="ac-breakdown-pad prose">
+        {plan ? <Fragment set:html={plan.before + plan.intro} /> : <Content />}
+      </div>
+      {
+        plan && (
+          <div class="ac-breakdown-pad">
+            <NotesExplorer plan={plan} title={d.title}>
+              <Fragment slot="widget">{d.widget === 'shove-lab' && <ShoveLab />}</Fragment>
+            </NotesExplorer>
+          </div>
         )
       }
+    </section>
 
-      <section data-reveal>
-        <h2>Credits</h2>
-        <p class="sub-h">third-party assets used — with thanks</p>
-        {
-          d.credits.length > 0 ? (
-            <div class="table-wrap" role="region" aria-label="Third-party asset credits" tabindex="0">
-              <table>
-                <thead>
-                  <tr><th>Asset</th><th>Author</th><th>Licence</th></tr>
-                </thead>
-                <tbody>
-                  {d.credits.map((c) => (
+    <section id="get-it">
+      <SectionStrip num="05" title="Play, Source & Third-Party Credits" meta="FULL ATTRIBUTION" />
+      <div class="hairline-split">
+        <div class="ac-panel-pad">
+          <h3>Links &amp; Distribution</h3>
+          <p>
+            {d.itchUrl
+              ? 'This project runs directly in the browser on itch.io as a free WebGL release.'
+              : isGame
+                ? 'Source code, test suites and playable desktop/CLI instructions are available on GitHub.'
+                : 'Source repositories, automated test suites and releases are public on GitHub.'}
+          </p>
+          <div class="ac-cta-row" style="justify-content:flex-start;margin-top:16px">
+            {
+              view.live && (
+                <a class="btn primary" href={view.live.href} target="_blank" rel="noopener">
+                  {view.live.label}
+                </a>
+              )
+            }
+            {
+              hasSeparateGithub && (
+                <a class="btn" href={d.githubUrl} target="_blank" rel="noopener">
+                  Repository ↗
+                </a>
+              )
+            }
+            {
+              d.basedOn && (
+                <a class="btn" href={d.basedOn} target="_blank" rel="noopener">
+                  Upstream Fork ↗
+                </a>
+              )
+            }
+          </div>
+        </div>
+
+        <div class="ac-panel-pad">
+          <h3>Third-Party &amp; Asset Credits</h3>
+          {
+            d.credits.length > 0 ? (
+              <div class="table-wrap hud-panel" role="region" aria-label="Third-party asset credits" tabindex="0">
+                <table>
+                  <thead>
                     <tr>
-                      <td>{c.url ? <a href={c.url}>{c.asset}</a> : c.asset}</td>
-                      <td>{c.author}</td>
-                      <td>{c.license ?? <span class="muted">—</span>}</td>
+                      <th>Asset</th>
+                      <th>Author</th>
+                      <th>Licence</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <p class="muted">No third-party assets.</p>
-          )
+                  </thead>
+                  <tbody>
+                    {d.credits.map((c) => (
+                      <tr>
+                        <td>
+                          {c.url ? (
+                            <a href={c.url} target="_blank" rel="noopener">
+                              {c.asset}
+                            </a>
+                          ) : (
+                            c.asset
+                          )}
+                        </td>
+                        <td>{c.author}</td>
+                        <td>{c.license ?? 'See source'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p class="muted">No external assets used.</p>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <section id="lineup">
+      <SectionStrip num="06" title="More Projects" meta="CONTINUE EXPLORING" />
+      <div class="hairline-grid-3">
+        {
+          siblings.map((p) => (
+            <ProjectCard project={p} index={allProjects.findIndex((x) => x.id === p.id)} />
+          ))
         }
-      </section>
-    </article>
+      </div>
+    </section>
   </div>
+</Base>
 
-  <script>
-    import { onPage } from '../../scripts/page';
-    import { prefs } from '../../scripts/prefs';
+<script>
+  import { onPage } from '../../scripts/page';
+  import { prefs } from '../../scripts/prefs';
 
-    // Runs on every arrival at a project page (first load and client-side navigation alike).
-    onPage(() => {
-    // 1. Copy button on code blocks
+  onPage(({ signal }) => {
     document.querySelectorAll<HTMLPreElement>('pre.astro-code').forEach((pre) => {
       if (pre.parentElement?.classList.contains('code-block-wrap')) return;
       const wrap = document.createElement('div');
       wrap.className = 'code-block-wrap';
-      pre.parentNode?.insertBefore(wrap, pre);
+      pre.replaceWith(wrap);
       wrap.appendChild(pre);
 
       const btn = document.createElement('button');
@@ -258,23 +436,26 @@ const projectSchema = [
       btn.className = 'key copy-code-btn';
       btn.textContent = 'Copy';
       btn.setAttribute('aria-label', 'Copy code snippet to clipboard');
-      btn.addEventListener('click', async () => {
-        const code = pre.querySelector('code')?.innerText ?? pre.innerText;
-        try {
-          await navigator.clipboard.writeText(code);
-          btn.textContent = 'Copied ✓';
+      wrap.appendChild(btn);
+
+      btn.addEventListener(
+        'click',
+        async () => {
+          const code = pre.querySelector('code')?.textContent ?? '';
+          try {
+            await navigator.clipboard.writeText(code);
+            btn.textContent = 'Copied ✓';
+          } catch {
+            btn.textContent = 'Failed';
+          }
           setTimeout(() => {
             btn.textContent = 'Copy';
           }, 1600);
-        } catch {
-          btn.textContent = 'Failed';
-        }
-      });
-      wrap.appendChild(btn);
+        },
+        { signal },
+      );
     });
 
-    // 2. CRT scanline viewport toggle: a per-tab preference (src/scripts/prefs.ts, row `crt`), painted
-    // on <html> by the module; this key only presents it.
     const crtBtn = document.querySelector<HTMLButtonElement>('#crt-toggle');
     if (crtBtn) {
       const syncCrt = () => {
@@ -283,152 +464,14 @@ const projectSchema = [
         crtBtn.textContent = on ? 'CRT Scanlines: ON' : 'CRT Scanlines: OFF';
       };
       syncCrt();
-      crtBtn.addEventListener('click', () => {
-        prefs.set('crt', prefs.get('crt') === 'on' ? 'off' : 'on');
-        syncCrt();
-      });
+      crtBtn.addEventListener(
+        'click',
+        () => {
+          prefs.set('crt', prefs.get('crt') === 'on' ? 'off' : 'on');
+          syncCrt();
+        },
+        { signal },
+      );
     }
-    });
-  </script>
-</Base>
-
-<style>
-  .phero {
-    position: relative;
-    padding: 96px 0 48px;
-    overflow: hidden;
-  }
-  .phero h1 {
-    font-size: clamp(40px, 6vw, 68px);
-    margin: 12px 0 16px;
-  }
-  .phero .lead {
-    margin-bottom: 12px;
-  }
-  .actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 24px;
-  }
-  .phero .kicker a {
-    color: var(--text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .phero .kicker a:hover {
-    color: var(--peach);
-  }
-  .layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 260px;
-    gap: 40px;
-    padding-top: 24px;
-    padding-bottom: 80px;
-  }
-  .prose section {
-    margin-top: 56px;
-  }
-  /* The notes (R5) and the tail of the write-up span both columns; the sidebar keeps the first row. */
-  .notes-row,
-  .prose-tail {
-    grid-column: 1 / -1;
-  }
-  .notes-row {
-    margin-top: 8px;
-    min-width: 0;
-  }
-  .prose-tail > section:first-child {
-    margin-top: 48px;
-  }
-  .prose h2 {
-    font-size: 30px;
-  }
-  .content :global(h2) {
-    font-size: 30px;
-    margin-top: 56px;
-  }
-  .content :global(h3) {
-    font-size: 23px;
-    margin-top: 32px;
-  }
-  /* Release notes gather the "What changed in …" headings one level down (src/lib/notes.ts). */
-  .content :global(h4) {
-    font-size: 18px;
-    margin-top: 28px;
-    margin-bottom: 6px;
-    color: var(--peach);
-  }
-  .content :global(p),
-  .content :global(li) {
-    color: var(--text);
-  }
-  .gallery {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-  }
-  /* The sidebar's box sticks only within the first row (the aside stretches to the row's height), so it
-     never rides over the notes' pinned pane below. */
-  .side {
-    font-size: 14px;
-  }
-  .side .box {
-    position: sticky;
-    top: 88px;
-  }
-  .box {
-    background: var(--surface);
-    border: 1px solid var(--umber);
-    border-radius: var(--r-md);
-    padding: 16px;
-  }
-  .box dl {
-    margin: 0;
-  }
-  .box dt {
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--steel);
-    margin-top: 12px;
-  }
-  .box dt:first-child {
-    margin-top: 0;
-  }
-  .box dd {
-    margin: 3px 0 0;
-  }
-  .crt-toggle-btn {
-    font-family: var(--mono);
-    font-size: 11px;
-    padding: 4px 10px;
-    border-radius: var(--r-xs);
-    border: 1px solid var(--umber);
-    background: var(--bg);
-    color: var(--gold);
-    cursor: pointer;
-    margin-top: 2px;
-  }
-  .crt-toggle-btn:hover {
-    border-color: var(--coral);
-    color: var(--peach);
-  }
-  @media (max-width: 960px) {
-    .layout {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .side .box {
-      position: static;
-    }
-  }
-  @media (max-width: 860px) {
-    .phero {
-      padding: 64px 0 32px;
-    }
-    .gallery {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-</style>
+  });
+</script>

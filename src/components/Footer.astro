@@ -1,40 +1,78 @@
 ---
-import { site } from '../data/site';
-const year = new Date().getFullYear();
+import { getCollection } from 'astro:content';
+import { PROJECTS_INDEX, site } from '../data/site';
+
+const projects = (await getCollection('projects')).sort(
+  (a, b) => (a.data.order ?? 99) - (b.data.order ?? 99) || a.id.localeCompare(b.id),
+);
+const games = projects.filter((p) => p.data.kind === 'game');
+const toolsAndEngines = projects.filter((p) => p.data.kind !== 'game');
 ---
 
-<footer class="footer">
-  <div class="wrap">
-    <span>© {year} {site.name}</span>
-    <span class="sep" aria-hidden="true">·</span>
-    <a href={site.github}>GitHub</a>
-    <span class="sep" aria-hidden="true">·</span>
-    <a href={site.youtube}>YouTube</a>
-    <span class="sep" aria-hidden="true">·</span>
-    <a href={`mailto:${site.email}`}>{site.email}</a>
-    <span class="sep" aria-hidden="true">·</span>
-    <a href="/style-guide/">Style Guide</a>
-    <span class="sep" aria-hidden="true">·</span>
-    <span>built with Astro, hosted on GitHub Pages</span>
+<footer class="ac-footer">
+  <div class="rail-frame">
+    <div class="ac-footer-cols">
+      <div class="ac-footer-col">
+        <h3>Identity</h3>
+        <p class="ac-card-title">{site.name}</p>
+        <p class="muted">{site.title}</p>
+        <p class="muted">{site.location}</p>
+        <p><a href={`mailto:${site.email}`}>{site.email}</a></p>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Playable Games</h3>
+        <ul>
+          {
+            games.map((p) => (
+              <li>
+                <a href={`${PROJECTS_INDEX}${p.id}/`}>{p.data.title}</a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Open-Source Tooling</h3>
+        <ul>
+          {
+            toolsAndEngines.map((p) => (
+              <li>
+                <a href={`${PROJECTS_INDEX}${p.id}/`}>{p.data.title}</a>
+              </li>
+            ))
+          }
+          <li><a href={PROJECTS_INDEX}>All 6 projects ↗</a></li>
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>On This Site</h3>
+        <ul>
+          <li><a href="/#overview">01 Overview</a></li>
+          <li><a href="/#projects">02 Projects</a></li>
+          <li><a href="/#about">03 About &amp; Principles</a></li>
+          <li><a href="/#experience">04 Experience</a></li>
+          <li><a href="/#activities">05 Activities</a></li>
+          <li><a href="/#contact">Contact</a></li>
+        </ul>
+      </div>
+
+      <div class="ac-footer-col">
+        <h3>Profiles &amp; CV</h3>
+        <ul>
+          <li><a href={site.cv} download>↓ Download CV (PDF)</a></li>
+          <li><a href={site.itch} target="_blank" rel="noopener">itch.io ({site.itchHandle}) ↗</a></li>
+          <li><a href={site.github} target="_blank" rel="noopener">GitHub ({site.githubHandle}) ↗</a></li>
+          <li><a href={site.youtube} target="_blank" rel="noopener">YouTube ({site.youtubeHandle}) ↗</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ac-footer-bottom">
+      <span>© 2026 {site.name} · Game Development Portfolio</span>
+      <span>Built with Astro · Self-hosted fonts · Prism visual theme</span>
+    </div>
   </div>
 </footer>
-
-<style>
-  .footer {
-    padding: 48px 0;
-    font-size: 13px;
-    color: var(--text-3);
-    font-family: var(--mono);
-    border-top: var(--line);
-    position: relative;
-    z-index: 1;
-  }
-  .footer .wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .sep {
-    color: var(--umber);
-  }
-</style>

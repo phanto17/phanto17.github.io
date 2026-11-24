@@ -3,9 +3,8 @@ import '../styles/global.css';
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import ScrollRail, { type RailSection } from '../components/ScrollRail.astro';
 import { site, PERSON_ID } from '../data/site';
-// The preference boot (theme, motion, sound, CRT) runs inline before first paint; generated from
-// src/scripts/prefs-table.ts and design/tokens.json by tools/build-tokens.mjs.
 import prefsBoot from '../scripts/generated/prefs-boot.js?raw';
 
 interface Props {
@@ -13,24 +12,26 @@ interface Props {
   description?: string;
   /** Path of an og image under /public, optional. */
   image?: string;
-  /** Keep the page out of search results (404, style-guide). */
+  /** Keep the page out of search results (404, style-guide, overview). */
   noindex?: boolean;
-  /**
-   * Extra JSON-LD nodes for this page (no @context). They are emitted in one @graph together with
-   * the site's Person and WebSite nodes, so a node can point at the author with { '@id': PERSON_ID }.
-   */
+  /** Extra JSON-LD nodes for this page (no @context). */
   schema?: Record<string, unknown>[];
-  /** `world`: the field map fills the viewport; the signal field and the footer stay off. */
-  chrome?: 'default' | 'world';
+  /** Project accent colour applied inside <main id="main"> via .accent wrapper. */
+  accent?: string;
+  /** Desktop right-rail section anchors. */
+  sections?: readonly RailSection[];
 }
+
 const {
   title,
-  chrome = 'default',
+  accent,
+  sections = [],
   description = site.description,
   image = '/media/og/default.jpg',
   noindex = false,
   schema,
 } = Astro.props;
+
 const ogImage = new URL(image, site.url).toString();
 const fullTitle = title ? `${title} — ${site.name}` : `${site.name} — ${site.title}`;
 const canonical = new URL(Astro.url.pathname, Astro.site ?? site.url).toString();
@@ -51,8 +52,9 @@ const personNode = {
     '@type': 'CollegeOrUniversity',
     name: 'Collegium Da Vinci',
   },
-  sameAs: [site.github, site.youtube, 'https://phanto-official.itch.io'],
+  sameAs: [site.github, site.youtube, site.itch],
 };
+
 const websiteNode = {
   '@type': 'WebSite',
   '@id': `${site.url}/#website`,
@@ -61,6 +63,7 @@ const websiteNode = {
   inLanguage: 'en',
   publisher: { '@id': PERSON_ID },
 };
+
 const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websiteNode, ...(schema ?? [])] };
 ---
 
@@ -74,7 +77,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     {noindex ? <meta name="robots" content="noindex" /> : <link rel="canonical" href={canonical} />}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="sitemap" href="/sitemap.xml" />
-    <!-- Browser chrome colour follows the theme (set by the inline script below and by the theme switch). -->
     <meta name="theme-color" id="theme-color" content="#1a1713" transition:persist="theme-color" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={fullTitle} />
@@ -86,23 +88,30 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
     <meta property="og:image:alt" content={fullTitle} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:image" content={ogImage} />
-    <!-- Self-hosted WOFF2 preloads; no third-party font requests. -->
     <link rel="preload" href="/fonts/fraunces-normal-400-700-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-sans-normal-400-600-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/dm-mono-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin />
     {!noindex && <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\u003c')} />}
-    <!-- Page-to-page navigation with the View Transitions API (a CRT power-cycle, see global.css). -->
     <ClientRouter />
     <script is:inline set:html={prefsBoot} />
   </head>
-  <body data-chrome={chrome}>
+  <body>
     <a class="skip-link" href="#main">Skip to content</a>
     <canvas id="signal-field" class="signal-field" aria-hidden="true" transition:persist="signal-field"></canvas>
     <div id="cursor-reticle" class="cursor-reticle" aria-hidden="true" transition:persist="cursor-reticle"></div>
     <Nav />
     <main id="main">
-      <slot />
+      {
+        accent ? (
+          <div class="accent" style={`--acc: ${accent}`}>
+            <slot />
+          </div>
+        ) : (
+          <slot />
+        )
+      }
     </main>
+    <ScrollRail sections={sections} />
     <Footer />
     <script>
       import type { TransitionBeforeSwapEvent } from 'astro:transitions/client';
@@ -113,14 +122,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       const root = document.documentElement;
       const isMotionAllowed = () => prefs.isMotionAllowed();
 
-      // ---------------------------------------------------------------------------------------------
-      // Per-page bindings go through src/scripts/page.ts (`onPage`): with the ClientRouter this module
-      // runs once per session while the page's elements change on every navigation. Pointer effects
-      // are delegated (`trackHover`), so nothing is bound per element. Listeners on `window` and
-      // `document` are registered once, below.
-      // ---------------------------------------------------------------------------------------------
-
-      // 1. Scroll-triggered Fade-In & Stagger Choreography
       const initScrollReveal = () => {
         shared.reveal?.io.disconnect();
         const els = Array.from(document.querySelectorAll<HTMLElement>('[data-reveal]'));
@@ -145,7 +146,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
 
       onPage(initScrollReveal);
 
-      // 2. 3D Perspective Tilt & Specular Spotlight on [data-tilt] cards (one delegated listener)
       const restTilt = (card: HTMLElement) => {
         card.style.setProperty('--rx', '0deg');
         card.style.setProperty('--ry', '0deg');
@@ -171,7 +171,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         leave: restTilt,
       });
 
-      // 3. Magnetic Micro-Interaction on .btn elements (one delegated listener)
       const restMagnetic = (btn: HTMLElement) => {
         btn.style.setProperty('--bx', '0px');
         btn.style.setProperty('--by', '0px');
@@ -180,20 +179,14 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         move: (btn, e) => {
           if (!isMotionAllowed() || e.pointerType === 'touch' || btn.matches(':disabled')) return;
           const rect = btn.getBoundingClientRect();
-          const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.18;
-          const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.22;
+          const dx = (e.clientX - (rect.left + rect.width / 2)) * 0.12;
+          const dy = (e.clientY - (rect.top + rect.height / 2)) * 0.15;
           btn.style.setProperty('--bx', `${dx.toFixed(1)}px`);
           btn.style.setProperty('--by', `${dy.toFixed(1)}px`);
         },
         leave: restMagnetic,
       });
 
-      // ---------------------------------------------------------------------------------------------
-      // Session-wide behaviour (registered once).
-      // ---------------------------------------------------------------------------------------------
-
-      // The router rebuilds <html>'s attributes from the new page, whose boot script never ran in
-      // this browser: carry the preference attributes (and the js-* classes) across.
       document.addEventListener('astro:before-swap', (event) => {
         const next = (event as TransitionBeforeSwapEvent).newDocument.documentElement;
         ['class', ...CARRIED_ATTRIBUTES].forEach((name) => {
@@ -203,8 +196,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         });
       });
 
-      // Motion switched (the visitor's key or the OS): re-arm the reveals for the new rule, and clear
-      // any pointer-driven transforms when motion is turned off mid-interaction.
       prefs.onChange('motion', () => {
         initScrollReveal();
         if (isMotionAllowed()) return;
@@ -212,8 +203,6 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         document.querySelectorAll<HTMLElement>('.btn').forEach(restMagnetic);
       });
 
-      // Motion toolkit (GSAP, src/scripts/motion.ts): loaded after first paint, only when motion is
-      // allowed and data saver is off. Pages keep working without it; it only adds choreography.
       let motionBooted = false;
       const bootMotion = () => {
         const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
@@ -225,25 +214,21 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
       else window.addEventListener('load', bootMotion, { once: true });
       prefs.onChange('motion', bootMotion);
 
-      // Signal field (src/scripts/field.ts): the cursor-reactive colour field behind the page. Loaded
-      // after first paint; renders one still frame under reduced motion; skipped with data saver or no
-      // WebGL. The canvas persists across page navigations, so the WebGL context is created once.
-      // The map page has its own WebGL scene, so the field is decided per page: it starts on the first
-      // page that shows it (a visit may begin on the map) and pauses while the map is on screen.
       const fieldCanvas = document.getElementById('signal-field') as HTMLCanvasElement | null;
       let field: Promise<typeof import('../scripts/field')> | null = null;
       const loadField = (canvas: HTMLCanvasElement) =>
-        (field ??= import('../scripts/field').then((f) => { f.init(canvas); return f; }));
+        (field ??= import('../scripts/field').then((f) => {
+          f.init(canvas);
+          return f;
+        }));
       onPage(({ signal }) => {
         const nav = navigator as Navigator & { connection?: { saveData?: boolean } };
         if (!fieldCanvas || nav.connection?.saveData) return;
-        if (document.body.dataset.chrome === 'world') { void field?.then((f) => f.setActive(false)); return; }
         const show = () => void loadField(fieldCanvas).then((f) => f.setActive(true));
         if (document.readyState === 'complete') show();
         else window.addEventListener('load', show, { once: true, signal });
       });
 
-      // 4. Custom Tactical Cursor Reticle (fine pointer only)
       const reticle = document.getElementById('cursor-reticle');
       if (reticle && window.matchMedia('(pointer: fine)').matches) {
         window.addEventListener(
@@ -261,10 +246,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [personNode, websit
         });
       }
 
-      // 5. Retro micro-interactions, site-wide: every control answers a click with a phosphor ripple
-      // and, when the visitor has turned sound on, the `click` cue (src/scripts/sound.ts). Sound is
-      // opt-in and off by default; the switch lives on the Telegraph Recall cabinet (prefs.set('sound', …)).
-      const RIPPLE_HOSTS = '[data-crt-ripple], .btn, .pill, .proj, .crt-stage3-node';
+      const RIPPLE_HOSTS = '[data-crt-ripple], .btn, .pill';
       document.addEventListener('click', (e) => {
         const host = (e.target as HTMLElement | null)?.closest<HTMLElement>(RIPPLE_HOSTS);
         if (!host) return;

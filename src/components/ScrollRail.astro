@@ -1,0 +1,88 @@
+---
+export interface RailSection {
+  id: string;
+  label: string;
+}
+
+interface Props {
+  sections?: readonly RailSection[];
+}
+
+const { sections = [] } = Astro.props;
+---
+
+<aside class="scroll-rail" aria-label="Scroll progress and sections">
+  <div class="scroll-ruler" aria-hidden="true">
+    <span class="scroll-ruler-pct" id="scroll-ruler-pct">00%</span>
+    <div class="scroll-ruler-track">
+      <div class="scroll-ruler-thumb" id="scroll-ruler-thumb"></div>
+    </div>
+    <span>100</span>
+  </div>
+
+  {
+    sections.length > 0 && (
+      <nav class="scroll-index" aria-label="Page section links">
+        {sections.map((sec) => (
+          <a href={`#${sec.id}`} data-rail-link={sec.id}>
+            {sec.label}
+          </a>
+        ))}
+      </nav>
+    )
+  }
+</aside>
+
+<script>
+  import { onPage } from '../scripts/page';
+
+  onPage(({ signal }) => {
+    const pctEl = document.getElementById('scroll-ruler-pct');
+    const thumbEl = document.getElementById('scroll-ruler-thumb');
+    const links = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-rail-link]'));
+    const targets = links
+      .map((link) => {
+        const id = link.dataset.railLink;
+        const target = id ? document.getElementById(id) : null;
+        return target ? { id: id!, link, target } : null;
+      })
+      .filter((x): x is { id: string; link: HTMLAnchorElement; target: HTMLElement } => x !== null);
+
+    let raf = 0;
+
+    const update = () => {
+      raf = 0;
+      const doc = document.documentElement;
+      const max = Math.max(0, doc.scrollHeight - window.innerHeight);
+      const y = window.scrollY;
+      const ratio = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+      const pct = Math.round(ratio * 100);
+
+      if (pctEl) pctEl.textContent = `${String(pct).padStart(2, '0')}%`;
+      if (thumbEl) thumbEl.style.setProperty('--rail-y', `${Math.round(ratio * 66)}px`);
+
+      if (targets.length > 0) {
+        let activeId = targets[0].id;
+        const trigger = y + 140;
+        for (const item of targets) {
+          const top = item.target.getBoundingClientRect().top + y;
+          if (top <= trigger) activeId = item.id;
+        }
+        for (const item of targets) {
+          item.link.classList.toggle('is-current', item.id === activeId);
+        }
+      }
+    };
+
+    const onScroll = () => {
+      if (!raf) raf = window.requestAnimationFrame(update);
+    };
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true, signal });
+    window.addEventListener('resize', onScroll, { passive: true, signal });
+    signal.addEventListener('abort', () => {
+      if (raf) window.cancelAnimationFrame(raf);
+    });
+  });
+</script>

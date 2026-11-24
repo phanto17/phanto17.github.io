@@ -1,7 +1,16 @@
 /* Prism CRT — generated from design/tokens.json by tools/build-tokens.mjs. Do not edit by hand. */
 
+/* Breakpoints (src/scripts/generated/breakpoints.ts; tests/breakpoints.test.ts allows no other width):
+     wide      (min-width: 981px)
+     belowWide (max-width: 980px)
+     mid       (max-width: 760px)
+     aboveMid  (min-width: 761px)
+     narrow    (max-width: 420px)
+*/
+
 :root,
-html[data-theme='prism'] {
+html[data-theme='prism'],
+[data-theme-scope='prism'] {
   --bg-0: #0b070b;
   --bg: #1a1713;
   --surface: #2f291b;
@@ -47,6 +56,22 @@ html[data-theme='prism'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(11, 7, 11, 0.86);
+  --vignette: rgba(11, 7, 11, 0.75);
+  --panel: rgba(26, 23, 19, 0.84);
+  --ink-black: #000000;
+  --world-ground: #082a22;
+  --loc-station: #f3e6d3;
+  --loc-lab: #7fd6ff;
+  --loc-guild: #c6a8ff;
+  --loc-mast: #f27c52;
+  --ai-wander: #15452f;
+  --ai-wander-ink: #89f0bb;
+  --ai-alert: #4c3f0d;
+  --ai-alert-ink: #ffe36e;
+  --ai-flee: #561c1f;
+  --ai-flee-ink: #ff9d9d;
+  --pass: #7dffc8;
+  --pass-ink: #05130d;
   --glow: 0 0 14px rgba(242, 124, 82, 0.55), 0 0 48px rgba(242, 177, 128, 0.28);
   --glow-soft: 0 0 24px rgba(242, 124, 82, 0.25);
   --glow-amber: 0 0 14px rgba(246, 211, 112, 0.35);
@@ -60,10 +85,23 @@ html[data-theme='prism'] {
   --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(242, 124, 82, 0.55);
   --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --acc-tone: 100%;
+  --acc-edge: 70%;
+  --acc-ink: 60%;
+  --acc-offset: 2px;
+  --field-map: 1;
+  --field-map-lane: 0.13;
+  --field-fallback-1: #fff0d6;
+  --field-fallback-2: #a88959;
+  --field-fallback-3: #46573f;
+  --field-fallback-4: #2f8c84;
+  --field-fallback-5: #a9d4c7;
+  --field-fallback-lane: var(--field-map-lane);
   color-scheme: dark;
 }
 
-html[data-theme='paper'] {
+html[data-theme='paper'],
+[data-theme-scope='paper'] {
   --bg-0: #dfd3be;
   --bg: #f4ede1;
   --surface: #e9decb;
@@ -109,6 +147,22 @@ html[data-theme='paper'] {
   --key-border: rgba(43, 33, 24, 0.35);
   --key-border-hover: rgba(43, 33, 24, 0.35);
   --backdrop: rgba(43, 33, 24, 0.6);
+  --vignette: rgba(11, 7, 11, 0);
+  --panel: rgba(244, 237, 225, 0.84);
+  --ink-black: #000000;
+  --world-ground: #082a22;
+  --loc-station: #f3e6d3;
+  --loc-lab: #7fd6ff;
+  --loc-guild: #c6a8ff;
+  --loc-mast: #f27c52;
+  --ai-wander: #15452f;
+  --ai-wander-ink: #89f0bb;
+  --ai-alert: #4c3f0d;
+  --ai-alert-ink: #ffe36e;
+  --ai-flee: #561c1f;
+  --ai-flee-ink: #ff9d9d;
+  --pass: #7dffc8;
+  --pass-ink: #05130d;
   --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
   --glow-soft: none;
   --glow-amber: none;
@@ -122,10 +176,23 @@ html[data-theme='paper'] {
   --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
   --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
   --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(43, 33, 24, 0.2), 0 3px 8px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+  --acc-tone: 45%;
+  --acc-edge: 85%;
+  --acc-ink: 60%;
+  --acc-offset: 2px;
+  --field-map: 1;
+  --field-map-lane: 0.15;
+  --field-fallback-1: #fff0d6;
+  --field-fallback-2: #a88959;
+  --field-fallback-3: #46573f;
+  --field-fallback-4: #2f8c84;
+  --field-fallback-5: #a9d4c7;
+  --field-fallback-lane: var(--field-map-lane);
   color-scheme: light;
 }
 
-html[data-theme='crt'] {
+html[data-theme='crt'],
+[data-theme-scope='crt'] {
   --bg-0: #020403;
   --bg: #070b09;
   --surface: #0e1713;
@@ -171,6 +238,22 @@ html[data-theme='crt'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(2, 4, 3, 0.88);
+  --vignette: rgba(11, 7, 11, 0.75);
+  --panel: rgba(7, 11, 9, 0.84);
+  --ink-black: #000000;
+  --world-ground: #082a22;
+  --loc-station: #f3e6d3;
+  --loc-lab: #7fd6ff;
+  --loc-guild: #c6a8ff;
+  --loc-mast: #f27c52;
+  --ai-wander: #15452f;
+  --ai-wander-ink: #89f0bb;
+  --ai-alert: #4c3f0d;
+  --ai-alert-ink: #ffe36e;
+  --ai-flee: #561c1f;
+  --ai-flee-ink: #ff9d9d;
+  --pass: #7dffc8;
+  --pass-ink: #05130d;
   --glow: 0 0 18px rgba(82, 255, 168, 0.45), 0 0 42px rgba(246, 211, 112, 0.22);
   --glow-soft: 0 0 18px rgba(82, 255, 168, 0.25);
   --glow-amber: 0 0 14px rgba(246, 211, 112, 0.35);
@@ -184,10 +267,23 @@ html[data-theme='crt'] {
   --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(82, 255, 168, 0.45);
   --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --acc-tone: 100%;
+  --acc-edge: 70%;
+  --acc-ink: 60%;
+  --acc-offset: 2px;
+  --field-map: 0;
+  --field-map-lane: 0.18;
+  --field-fallback-1: var(--field-1);
+  --field-fallback-2: var(--field-2);
+  --field-fallback-3: var(--field-3);
+  --field-fallback-4: var(--field-4);
+  --field-fallback-5: var(--field-5);
+  --field-fallback-lane: var(--field-lane);
   color-scheme: dark;
 }
 
-html[data-theme='signal'] {
+html[data-theme='signal'],
+[data-theme-scope='signal'] {
   --bg-0: #06040c;
   --bg: #0d0a14;
   --surface: #1a1426;
@@ -233,6 +329,22 @@ html[data-theme='signal'] {
   --key-border: rgba(255, 255, 255, 0.14);
   --key-border-hover: rgba(255, 255, 255, 0.26);
   --backdrop: rgba(6, 4, 10, 0.86);
+  --vignette: rgba(11, 7, 11, 0.75);
+  --panel: rgba(13, 10, 20, 0.84);
+  --ink-black: #000000;
+  --world-ground: #082a22;
+  --loc-station: #f3e6d3;
+  --loc-lab: #7fd6ff;
+  --loc-guild: #c6a8ff;
+  --loc-mast: #f27c52;
+  --ai-wander: #15452f;
+  --ai-wander-ink: #89f0bb;
+  --ai-alert: #4c3f0d;
+  --ai-alert-ink: #ffe36e;
+  --ai-flee: #561c1f;
+  --ai-flee-ink: #ff9d9d;
+  --pass: #7dffc8;
+  --pass-ink: #05130d;
   --glow: 0 0 14px rgba(255, 79, 163, 0.5), 0 0 48px rgba(95, 215, 255, 0.28);
   --glow-soft: 0 0 24px rgba(95, 215, 255, 0.25);
   --glow-amber: 0 0 14px rgba(246, 211, 112, 0.35);
@@ -246,6 +358,18 @@ html[data-theme='signal'] {
   --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.16), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
   --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.22), inset 0 -3px 0 rgba(0, 0, 0, 0.38), 0 14px 30px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0, 0, 0, 0.55), 0 0 18px rgba(255, 79, 163, 0.5);
   --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.3), 0 3px 8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.55);
+  --acc-tone: 100%;
+  --acc-edge: 70%;
+  --acc-ink: 60%;
+  --acc-offset: 2px;
+  --field-map: 0;
+  --field-map-lane: 0.17;
+  --field-fallback-1: var(--field-1);
+  --field-fallback-2: var(--field-2);
+  --field-fallback-3: var(--field-3);
+  --field-fallback-4: var(--field-4);
+  --field-fallback-5: var(--field-5);
+  --field-fallback-lane: var(--field-lane);
   color-scheme: dark;
 }
 
@@ -296,6 +420,22 @@ html[data-theme='signal'] {
     --key-border: rgba(43, 33, 24, 0.35);
     --key-border-hover: rgba(43, 33, 24, 0.35);
     --backdrop: rgba(43, 33, 24, 0.6);
+    --vignette: rgba(11, 7, 11, 0);
+    --panel: rgba(244, 237, 225, 0.84);
+    --ink-black: #000000;
+    --world-ground: #082a22;
+    --loc-station: #f3e6d3;
+    --loc-lab: #7fd6ff;
+    --loc-guild: #c6a8ff;
+    --loc-mast: #f27c52;
+    --ai-wander: #15452f;
+    --ai-wander-ink: #89f0bb;
+    --ai-alert: #4c3f0d;
+    --ai-alert-ink: #ffe36e;
+    --ai-flee: #561c1f;
+    --ai-flee-ink: #ff9d9d;
+    --pass: #7dffc8;
+    --pass-ink: #05130d;
     --glow: 2px 2px 0 rgba(184, 59, 20, 0.18);
     --glow-soft: none;
     --glow-amber: none;
@@ -309,6 +449,18 @@ html[data-theme='signal'] {
     --key-rest: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
     --key-hover: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -3px 0 rgba(43, 33, 24, 0.18), 0 8px 20px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
     --key-active: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -1px 0 rgba(43, 33, 24, 0.2), 0 3px 8px rgba(43, 33, 24, 0.18), 0 0 0 1px rgba(43, 33, 24, 0.2);
+    --acc-tone: 45%;
+    --acc-edge: 85%;
+    --acc-ink: 60%;
+    --acc-offset: 2px;
+    --field-map: 1;
+    --field-map-lane: 0.15;
+    --field-fallback-1: #fff0d6;
+    --field-fallback-2: #a88959;
+    --field-fallback-3: #46573f;
+    --field-fallback-4: #2f8c84;
+    --field-fallback-5: #a9d4c7;
+    --field-fallback-lane: var(--field-map-lane);
     color-scheme: light;
   }
 }

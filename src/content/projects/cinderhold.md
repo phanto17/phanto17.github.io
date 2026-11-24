@@ -1,34 +1,41 @@
 ---
 title: Cinderhold
-summary: A 2D top-down dungeon crawler with telegraphed enemy attacks — data-driven weapons, enemy state machines, JSON saves, and floors stitched from hand-made rooms every run, with locked doors a check keeps fair.
+summary: A 2D top-down dungeon crawler with telegraphed enemy attacks, data-driven weapons, state-machine AI, JSON persistence and three floors guarded by a 300-seed flood-fill fairness check.
 genre: 2D dungeon crawler / roguelite
+kind: game
+category: "ACTION ROGUELITE // UNITY 6 2D"
+platforms:
+  - WebGL (itch.io)
+  - Unity 6 URP 2D
 status: playable
 itchUrl: https://phanto-official.itch.io/cinderhold
 dates:
-  start: "2026-10"   # rework start; the original tutorial-based prototype dates from Jun–Jul 2025
+  start: "2026-10"
 role: Solo — design & programming
-engine: Unity 6 · URP 2D
-order: 3
+engine: Unity 6 (6000.6) · URP 2D
+order: 2
 world:
   kind: dungeon
   accent: "#ff5d4a"
 highlights:
-  - Data-driven melee + tested health model
-  - Enemy state machines, boss as data
-  - Loot, shop and JSON saves, all tested
-  - Room generator with a fairness check
+  - Data-driven WeaponData ScriptableObjects & pure-C# HealthPool combat model with dodge i-frames
+  - Six-state enemy AI behind an IEnemyContext boundary plus boss Cinderclaw encounter patterns
+  - Seeded room stitching across Floors 1–2 with a 300-seed flood-fill lock-fairness verifier
+  - Reproducible scene & prefab construction via an idempotent headless editor script (CinderholdSetup)
+  - Unified GameClock owning hit-stop and pause alongside screen-space pixel HUD and lighting
+  - 105 EditMode + 41 PlayMode tests pinning physics collisions, save round trips and room seeds
 metrics:
-  - 105 EditMode + 41 PlayMode tests
-  - 300-seed flood-fill fairness check
+  - 105 EditMode + 41 PlayMode tests (live 0.5.0 build)
+  - 300-seed flood-fill lock-fairness verifier
   - Idempotent headless setup script
 myContribution:
-  - "Foundation & reproducible setup (October 2026): a fresh Unity 6 project started from the empty Universal 2D template created by one idempotent headless editor script — assembly definitions, Input System actions (keyboard + gamepad), Kenney Tiny Dungeon sliced into 132 sprites with Tile assets, a pixel-perfect camera (320×180 at 16 PPU) and no hand-edited scene YAML."
-  - "Combat core: weapons are ScriptableObjects (damage, knockback, hit-stop, windup / active / recovery / cooldown, reach, hitbox, swing arc) driven by `MeleeAttacker` over `IDamageable` targets; health lives in a pure-C# `HealthPool` (clamping, invulnerability frames, dodge window, death once) wrapped by a thin component with 50 ms hit-stop, flash/squash and 150 ms input buffering."
-  - "Enemy AI: each enemy type is an `EnemyDefinition` asset applied to one generic prefab at spawn. Behaviour is a six-state plain-C# state machine (Idle, Patrol, Chase, Attack, Flee, Recover) behind an `IEnemyContext` interface of senses and actuators, with telegraphed floor hitboxes and punish windows; the boss, Cinderclaw, uses the same brain with a cycling attack pattern."
-  - "Generated floors & lock-fairness verifier (0.5.0): Floors 1 and 2 are stitched at load from ten hand-made 10×7 room templates via a seeded walk, with locked doors and keys placed before their locks; every generated layout must pass a flood-fill verifier proving no order of spending keys can strand the player (tested over 300 seeds per floor)."
-  - "Progression, persistence & UI: pure-C# progress/level/shop models, versioned JSON save blobs over a swappable `ISaveStore` (PlayerPrefs on web, memory in tests), event-driven screen-space HUD, single `GameClock` owning both pause and hit-stop, and CC0 recorded audio backed by a procedural waveform synthesizer (`SfxSynth`) fallback."
-  - "Tests: 105 EditMode tests and 41 PlayMode tests running headlessly from the command line, covering the health pool, AI state transitions, room generator over 300 seeds, save/load round trips, dodge invulnerability, locked-door checkpoints and torch lighting."
-  - "Most of the code was written with Claude Code under my direction: I set the scope and the order of the systems, decided the design rules (telegraphed attacks, data over code, one clock), reviewed every change and its tests, and chose what to cut. The commits say so. The earlier June–July 2025 tutorial prototype is kept only as a frozen reference and not reused."
+  - "Foundation & reproducible setup (October 2026): fresh Unity 6 project bootstrapped from the empty Universal 2D template by one idempotent headless script — asmdefs, Input System actions, 132 sliced Tiny Dungeon sprites, 320×180 Pixel Perfect Camera and zero hand-edited YAML."
+  - "Combat core: `WeaponData` ScriptableObjects (damage, knockback, hit-stop, windup/active/recovery/cooldown, swing arc) paired with pure-C# `HealthPool` clamping, dodge invulnerability frames, 50 ms hit-stop and 150 ms input buffering."
+  - "Enemy AI: `EnemyDefinition` data assets driving a generic prefab through a pure-C# six-state machine (Idle, Patrol, Chase, Attack, Flee, Recover) over `IEnemyContext`, with telegraphed floor hitboxes and Cinderclaw boss patterns."
+  - "Generated floors & lock-fairness verifier (0.5.0): Floors 1 and 2 stitched from ten hand-made 10×7 room templates via a seeded walk, verified across 300 seeds per floor so no key spending order can ever strand the player."
+  - "Progression, saves & UI: pure-C# levelling and shop logic, versioned JSON persistence over swappable `ISaveStore` (PlayerPrefs on web), single `GameClock` and CC0 Kenney/cynicmusic audio with procedural waveform fallback."
+  - "Tests: 105 EditMode and 41 PlayMode tests executed headlessly to guard health rules, AI transitions, room fairness, save round trips, dash collisions and lighting."
+  - "Most of the code was written with Claude Code under my direction: I set the architecture and design rules, reviewed every change and its tests, and playtested every web build. The frozen 2025 tutorial prototype was never reused."
 changelog:
   - "First playtest (a recorded run with commentary) drove a revision pass: the walls had no collision in the web build because a composite collider built by script produced no geometry at runtime, which a scene-level test now guards; mouse attacks aim at the cursor; damage numbers moved from world space to the HUD so they are legible at the pixel scale; enemies got health bars; health, enemy pacing and heart drops were tuned after a 36-second first death; a short controls hint appears on each floor."
   - "Recorded audio (0.2.0): every sound is now a CC0 clip from Kenney's Impact, RPG, Interface and Music Jingles packs, chosen so that none of them is a sound of my other two games (swings are cloth whooshes, the player's hurt is a plate-armour clank, deaths are tolls on a bell pitched down, the boss roars with a slowed door creak). A library asset in Resources maps each sound id to its clips, level, pitch and jitter; the synthesised versions stay behind it as a fallback, so an id without a recording still sounds. Two cynicmusic loops (CC0): a brooding guitar theme on the floors and a drums-and-violin track that crossfades in when Cinderclaw notices you and out again when it dies; the floor loop carries through portals because the music player survives scene loads."
@@ -44,7 +51,6 @@ tools:
   - TextMesh Pro
   - Unity Test Framework (EditMode + PlayMode, run headlessly)
   - Claude Code
-clip: /media/cinderhold/clip.webm
 media:
   - { type: image, src: /media/cinderhold/cover.avif, alt: "Cinderhold pixel-art key art: the knight mid-dodge with afterimages escaping Cinderclaw's glowing red floor telegraph in a torchlit dungeon", caption: "Fig. 1 — Cinderhold key art: dodging Cinderclaw's telegraphed slam" }
   - { type: image, src: /media/cinderhold/hud-live.avif, alt: "Live 0.5.0 WebGL build on a generated Floor 1 showing the knight under flickering wall sconces, health pips, level bar, sword and Dodge cooldown gauge", caption: "Fig. 2 — 0.5.0 web build: generated Floor 1 with full HUD and Dodge gauge" }
@@ -170,4 +176,4 @@ The first recorded playtest showed the player walking straight through walls. Th
 
 ### What's next
 
-This finishes the upgrade list I set for the game. The next plan is a wider one: animations, better visuals, balance and more to find on each floor.
+The live itch.io build (`0.5.0`) remains the reference baseline shown above (`105 EditMode + 41 PlayMode tests`). On local disk, an uncommitted `1.0.0` roguelike expansion adds Riposte crits, six Relics, Chests, Blood Pact Shrines, `SpikeTraps`, `ExplosiveBarrels`, Spider/Wraith/Cultist enemies, Cinderclaw Phase 2 (`BossEnrage`) and a fog-of-war `Minimap` (backed by `110 EditMode + 46 PlayMode tests`), queued for final integration and release testing before publishing `1.0.0` to itch.io.
